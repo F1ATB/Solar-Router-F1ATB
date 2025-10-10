@@ -34,17 +34,18 @@ Routeur photovoltaïque basé sur **ESP32**, permettant d’optimiser l’autoco
 
 - 💬 **Communication et intégration domotique**
   - Serveur Web HTTP intégré.
+  - Serveur Telnet (port 23 ) intégré.
   - **MQTT** pour l’intégration dans Home Assistant, Domoticz, Jeedom, etc.
   - **OTA (Over-The-Air)** : mise à jour logicielle à distance via WiFi ou Ethernet.
-  - Configuration via **WiFi Manager** ou page Web embarquée.
+  - Configuration via  page Web embarquée.
 
 - 🔒 **Sécurité et fiabilité**
   - **Watchdog** matériel/logiciel pour redémarrage automatique en cas de blocage.
 
 
 - 🧩 **Compatibilité matérielle**
-  - ESP32,  WT32-ETH01, T-ETH-Lite, etc.
-  - Connexion **WiFi** ou **Ethernet (W5500)**.
+  - ESP32 Wroom,  WT32-ETH01, ESP32-ETH01, etc.
+  - Connexion **WiFi** ou **Ethernet (PHY_LAN8720)**.
   - Alimentation possible via PoE (selon module).
 
 ---
