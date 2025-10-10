@@ -1,8 +1,8 @@
 # ⚡ Routeur Photovoltaïque F1ATB
 
-Routeur photovoltaïque basé sur **ESP32 / ESP32-S3**, permettant d’optimiser l’autoconsommation d’une installation solaire en redirigeant les surplus de production vers des charges (chauffe-eau, chauffage, pompe, etc.) au lieu de les injecter sur le réseau.
+Routeur photovoltaïque basé sur **ESP32**, permettant d’optimiser l’autoconsommation d’une installation solaire en redirigeant les surplus de production vers des charges (chauffe-eau, chauffage, pompe, etc.) au lieu de les injecter sur le réseau.
 
-![Routeur F1ATB](https://f1atb.fr/wp-content/uploads/2023/07/Routeur-Photovoltaique-v15.jpg)
+![Détails Routeur F1ATB](https://f1atb.fr/fr)
 
 ---
 
