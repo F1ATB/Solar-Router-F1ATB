@@ -51,7 +51,7 @@ Routeur photovoltaïque basé sur **ESP32**, permettant d’optimiser l’autoco
 
 ## 📊 Exemple d’interface Web
 
-![Interface Web](https://f1atb.fr/wp-content/uploads/2023/06/web-server-f1atb.jpg)
+![Interface Web](https://f1atb.fr/wp-content/uploads/2024/06/Capture-decran-2024-06-01-081356.png)
 
 ---
 
