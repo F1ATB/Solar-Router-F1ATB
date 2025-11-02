@@ -23,6 +23,7 @@ void LectureNotDef() {
   }
   Pva_valide = true;
   filtre_puissance();
+  EnergieActiveValide = true;
   PuissanceRecue = true;
   if (cptLEDyellow > 30) {
     cptLEDyellow = 4;

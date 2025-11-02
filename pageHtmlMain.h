@@ -710,10 +710,13 @@ const char *MainJS = R"====(
         tabPW2sT.shift(); //Enleve PVA
         tabPW2sT.push(LastPW_T);
         tabPW2sT.push(LastPVA_T);
-        Plot('SVG_PW2sM',tabPW2sM,Koul[Coul_W][3],'Puissance Active '+GID("nomSondeMobile").innerHTML+' sur 10 mn en W',Koul[Coul_VA][3],'Puissance Apparente sur 10 mn en VA'); 
+        var Nom_simul=GID("nomSondeMobile").innerHTML;
+        if (Source_data=="NotDef") Nom_simul="(Puissance simulée. Source inconnue)";
+        Plot('SVG_PW2sM',tabPW2sM,Koul[Coul_W][3],'Puissance Active '+ Nom_simul +' sur 10 mn en W',Koul[Coul_VA][3],'Puissance Apparente sur 10 mn en VA'); 
         if (biSonde) {
+          if (Source_data!="NotDef") Nom_simul=GID("nomSondeFixe").innerHTML;
           GID('SVG_PW2sT').style.display="block";
-          Plot('SVG_PW2sT',tabPW2sT,Koul[Coul_W][3],'Puissance Active '+GID("nomSondeFixe").innerHTML+' sur 10 mn en W',Koul[Coul_VA][3],'Puissance Apparente sur 10 mn en VA'); 
+          Plot('SVG_PW2sT',tabPW2sT,Koul[Coul_W][3],'Puissance Active '+ Nom_simul +' sur 10 mn en W',Koul[Coul_VA][3],'Puissance Apparente sur 10 mn en VA'); 
         }
         if (tabActOuvre.length>0) Plot_ouvertures_2s();
      }

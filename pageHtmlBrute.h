@@ -211,8 +211,10 @@ const char *PageBruteJS = R"====(
                   S+='<tr><td>R&eacute;seau WiFi :</td><td>'+message[6]+'</td></tr>';
                   S+='<tr><td>Canal WiFi :</td><td>'+message[4]+'</td></tr>';
                 }
-                S+='<tr><td>Adresse MAC ESP32 :</td><td>'+message[5]+'</td></tr>';                
-                S+='<tr><td>Adresse IP ESP32 :</td><td>'+message[7]+'</td></tr>';
+                S+='<tr><td>Adresse MAC ESP32 :</td><td>'+message[5]+'</td></tr>'; 
+                var LesIP=message[7].split(US);               
+                S+='<tr><td>Adresse IP<small>V4</small> ESP32 :</td><td>'+LesIP[0]+'</td></tr>';
+                S+='<tr><td>Adresse IP<small>V6</small> ESP32 :</td><td><small>'+LesIP[1]+'</small></td></tr>';
                 S+='<tr><td>Adresse passerelle :</td><td>'+message[8]+'</td></tr>';
                 S+='<tr><td>Masque du r&eacute;seau :</td><td>'+message[9]+'</td></tr>';
               } else {

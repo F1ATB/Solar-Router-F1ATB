@@ -1,4 +1,4 @@
-#define Version "15.10"
+#define Version "15.11"
 #define HOSTNAME "RMS-ESP32-"
 #define CLE_Rom_Init 912567899  //Valeur pour tester si ROM vierge ou pas. Un changement de valeur remet à zéro toutes les données. / Value to test whether blank ROM or not.
 
@@ -192,6 +192,11 @@
   - V15.10
     Modification recurrence sortie MQTT pour accepter 1s
     Affichage adresse IPV6
+  - V15.11
+    Création du mode Demi-Sinus 
+    Forcage des Actions en page d'Accueil inactif si mot de passe non valide
+    ValJson Test pour différencier SG et HW
+    Retour à 200ms la période d'appel des Shelly pour éviter une saturation
 
   
   Les détails sont disponibles sur / Details are available here:
@@ -266,6 +271,14 @@
 
 #define SER_BUF_SIZE 4096
 #define TEMPERATURE_PRECISION 12
+
+#define MODE_INACTIF 0
+#define MODE_DECOUPE_ONOFF 1  //Découpe pour Triac,OnOff pour SSR
+#define MODE_MULTISINUS 2
+#define MODE_TRAINSINUS 3
+#define MODE_PWM 4
+#define MODE_DEMISINUS 5
+
 
 
 //Nombre Actions Max
@@ -369,8 +382,6 @@ int16_t tabPw_Maison_2s[300];   //Puissance Active: toutes les 2s
 int16_t tabPw_Triac_2s[300];    //Puissance Triac: toutes les 2s
 int16_t tabPva_Maison_2s[300];  //Puissance Active: toutes les 2s
 int16_t tabPva_Triac_2s[300];
-int8_t tabPulseSinusOn[101];
-int8_t tabPulseSinusTotal[101];
 int8_t tab_histo_ouverture[LesActionsLength][600];
 int8_t tab_histo_2s_ouverture[LesActionsLength][300];
 int16_t IdxStock2s = 0;
@@ -379,7 +390,21 @@ float PmaxReseau = 36000;  //Puissance Max pour eviter des débordements
 bool LissageLong = false;
 bool Pva_valide = false;
 
-
+//Tableaux pour Multi-sinus. (optimisation Michy)
+uint8_t tabPulseSinusTotal[101]= { 2, 
+  61,43,33,25,40,33,57,37,11,20,  55,25,23,57,40,25,53,61,21, 5, 
+  19,59,61,25, 8,23,37,25,31,20,  29,47,61,59,40,25,27,29,59, 5, 
+  61,19,51,59,40,37,17,25,51, 4,  51,25,17,37,40,59,51,19,61, 5, 
+  59,29,27,25,40,59,61,47,29,20,  31,25,37,23, 8,25,61,59,19, 5, 
+  21,61,53,25,40,57,23,25,55,20,  11,37,57,33,40,25,33,43,61, 2
+};
+uint8_t tabPulseSinusOn[101]  =  { 0, 
+   1, 1, 1, 1, 2, 2, 4, 3, 1, 2,   6, 3, 3, 8, 6, 4, 9,11, 4, 1, 
+   4,13,14, 6, 2, 6,10, 7, 9, 6,   9,15,20,20,14, 9,10,11,23, 2, 
+  25, 8,22,26,18,17, 8,12,25, 2,  26,13, 9,20,22,33,29,11,36, 3, 
+  36,18,17,16,26,39,41,32,20,14,  22,18,27,17, 6,19,47,46,15, 4, 
+  17,50,44,21,34,49,20,22,49,18,  10,34,53,31,38,24,32,42,60, 2
+};
 //Triac
 bool erreurTriac = false;
 byte pTriac = 0;  //index table choix Pins pour Gachette Triac & ZC
@@ -540,10 +565,12 @@ volatile int16_t IT10ms_in = 0;     //Interruption apres deglitch
 volatile int16_t ITmode = 0;        //IT externe Triac ou interne
 volatile unsigned short CptIT = 0;  //Compeur IT Triac ou 20ms;
 volatile unsigned short StepIT = 1;
+volatile bool Phase230V = false;
 hw_timer_t *timer = NULL;
 hw_timer_t *timer10ms = NULL;
 
-
+volatile int16_t testPulse=0;
+volatile int16_t testTrame=0;
 
 volatile int Retard[LesActionsLength];
 volatile int Actif[LesActionsLength];
@@ -616,6 +643,7 @@ WebServer server(80);  // Simple Web Server on port 80
 // === Serveur Telnet ===
 WiFiServer telnetServer(23);  //Port Telnet 23
 WiFiClient telnetClient;
+bool TelnetOn=false;
 bool dispPw = false;   //Affiche  Power sur serial et Telnet
 bool dispAct = false;  //Affiche  Ouverture Actions sur serial et Telnet
 
@@ -662,18 +690,31 @@ void IRAM_ATTR currentNull() {
 
 void GestionIT_10ms() {
   CptIT = CptIT + StepIT;
+  Phase230V = !Phase230V;
   for (int i = 0; i < NbActions; i++) {
     switch (Actif[i]) {  //valeur en RAM
-      case 0:            //Inactif
+      case MODE_INACTIF:            //Inactif
 
         break;
-      case 1:  //Decoupe Sinus uniquement pour Triac
+      case MODE_DECOUPE_ONOFF:  //Decoupe Sinus uniquement pour Triac
         if (i == 0) {
           PulseComptage[0] = 0;
           digitalWrite(pulseTriac, LOW);  //Stop Découpe Triac
         }
         break;
-      case 4:  //PWM ne depend pas IT 10ms
+      case MODE_PWM:  //PWM ne depend pas IT 10ms
+
+        break;
+      case MODE_DEMISINUS:                                                                                                        //Demi-Sinus
+        PulseComptage[i] = PulseComptage[i] + PulseOn[i];                                                            //Augmente la phase
+        if (((Phase230V && PulseTotal[i] == 0) || (!Phase230V && PulseTotal[i] == 1)) && PulseComptage[i] >= 100) {  //Phase differente
+          PulseTotal[i] = 0;
+          if (Phase230V) PulseTotal[i] = 1;  //Enregistrement de la phase positive ou negative du ON
+          digitalWrite(Gpio[i], OutOn[i]);
+          PulseComptage[i] = PulseComptage[i] - 100;
+        } else {
+          digitalWrite(Gpio[i], OutOff[i]);  //Stop
+        }
 
         break;
       default:              // Multi Sinus ou Train de sinus
@@ -693,9 +734,11 @@ void GestionIT_10ms() {
   }
 }
 
+
+
 // Interruption Timer interne toutes les 100 micro secondes
-void IRAM_ATTR onTimer() {  //Interruption every 100 micro second
-  if (Actif[0] == 1) {      // Découpe Sinus
+void IRAM_ATTR onTimer() {              //Interruption every 100 micro second
+  if (Actif[0] == MODE_DECOUPE_ONOFF) {  // Découpe Sinus
     PulseComptage[0] = PulseComptage[0] + 1;
     if (PulseComptage[0] > Retard[0] && Retard[0] < 98 && ITmode > 0) {  //100 steps in 10 ms
       digitalWrite(pulseTriac, HIGH);                                    //Activate Triac
@@ -1033,6 +1076,7 @@ void setup() {
   // Lancer serveur Telnet
   telnetServer.begin();
   telnetServer.setNoDelay(true);
+  TelnetOn=true; //Evite caractères dans buffer à l'init.
   TelnetPrintln("Serveur Telnet actif sur le port 23");
 
   LireSerial();
@@ -1198,12 +1242,12 @@ void Task_LectureRMS(void *pvParameters) {
       if (Source == "ShellyEm") {
         LectureShellyEm();
         LastRMS_Millis = millis();
-        PeriodeProgMillis = 100 + ralenti;  //On adapte la vitesse pour ne pas surchargé Wifi.La gestion overproduction est toujours à 200ms
+        PeriodeProgMillis = 200 + ralenti;  //On adapte la vitesse pour ne pas surchargé Wifi.La gestion overproduction est toujours à 200ms
       }
       if (Source == "ShellyPro") {
         LectureShellyProEm();
         LastRMS_Millis = millis();
-        PeriodeProgMillis = 100 + ralenti;  //On adapte  la vitesse pour ne pas surchargé Wifi
+        PeriodeProgMillis = 200 + ralenti;  //On adapte  la vitesse pour ne pas surchargé Wifi
       }
 
       if (Source == "Ext") {
@@ -1247,6 +1291,7 @@ void loop() {
   //********************
   ArduinoOTA.handle();
   server.handleClient();
+  LireSerial();
   // Vérifie si un nouveau client Telnet
   if (telnetServer.hasClient()) {
     if (telnetClient && telnetClient.connected()) {
@@ -1276,7 +1321,7 @@ void loop() {
 
 
       for (int i = 0; i < NbActions; i++) {
-        if (Actif[i] > 0) {
+        if (Actif[i] != MODE_INACTIF) {
           tab_histo_ouverture[i][IdxStockPW] = 100 - Retard[i];
         } else {
           tab_histo_ouverture[i][IdxStockPW] = 0;
@@ -1299,7 +1344,7 @@ void loop() {
       tabPva_Maison_2s[IdxStock2s] = PVAS_M - PVAI_M;
       tabPva_Triac_2s[IdxStock2s] = PVAS_T - PVAI_T;
       for (int i = 0; i < NbActions; i++) {
-        if (Actif[i] > 0) {
+        if (Actif[i] != MODE_INACTIF) {
           tab_histo_2s_ouverture[i][IdxStock2s] = 100 - Retard[i];
         } else {
           tab_histo_2s_ouverture[i][IdxStock2s] = 0;
@@ -1320,6 +1365,7 @@ void loop() {
       GestionOverproduction();
     }
   }
+  LireSerial();
   if (tps - previousMQTTMillis > PeriodeMQTTMillis) {
 
     previousMQTTMillis = tps;
@@ -1356,7 +1402,7 @@ void loop() {
   //*********************************************
   if (tps - previousWifiMillis > 30000) {  //Test présence WIFI toutes les 30s et autres
     if (!wifi_connectedIPV6G && WiFi.globalIPv6().toString().length() > 4) {
-      StockMessage("IPv6 globale: [" + WiFi.globalIPv6().toString()+"]");
+      StockMessage("IPv6 globale: [" + WiFi.globalIPv6().toString() + "]");
       wifi_connectedIPV6G = true;
     }
     previousWifiMillis = tps;
@@ -1478,13 +1524,17 @@ void GestionOverproduction() {  // chaque 200ms (adaptation 5 fois par seconde)
   float laTemperature;
   bool forceOff;
   bool lissage = false;
+  int Vout;
+  int pos=0;
   //Puissance est la puissance en entrée de maison. >0 si soutire. <0 si injecte
   //Cas du Triac. Action 0
+
+
   float Puissance = float(PuissanceS_M - PuissanceI_M);
   if (NbActions == 0) LissageLong = true;  //Cas d'un capteur seul et actions déporté sur autre ESP
   for (int i = 0; i < NbActions; i++) {
-    Actif[i] = LesActions[i].Actif;                      //0=Inactif,1=Decoupe ou On/Off, 2=Multi, 3= Train , 4=PWM
-    if (Actif[i] == 2 || Actif[i] == 3) lissage = true;  //En RAM
+    Actif[i] = LesActions[i].Actif;                                                                                //0=Inactif,1=Decoupe ou On/Off, 2=Multi, 3= Train , 4=PWM, 5=Demi-Sinus
+    if (Actif[i] == MODE_MULTISINUS || Actif[i] == MODE_TRAINSINUS || Actif[i] == MODE_DEMISINUS) lissage = true;  //En RAM
     forceOff = false;
     LeCanalTemp = LesActions[i].CanalTempEnCours(HeureCouranteDeci);
     float laTemperature = -120;
@@ -1500,14 +1550,14 @@ void GestionOverproduction() {  // chaque 200ms (adaptation 5 fois par seconde)
     } else {
       Type_En_Cours = LesActions[i].TypeEnCours(HeureCouranteDeci, laTemperature, LTARFbin, Retard[i]);  //0=NO,1=OFF,2=ON,3=PW,4=Triac
     }
-    if (Actif[i] > 0 && Type_En_Cours > 1) {  // On ne traite plus le NO
+    if (Actif[i] != MODE_INACTIF && Type_En_Cours > 1) {  // On ne traite plus le NO
       if (Type_En_Cours == 2) {
         RetardF[i] = 0;
       } else {  // 3 ou 4
         SeuilPw = float(LesActions[i].Valmin(HeureCouranteDeci));
         MaxTriacPw = float(LesActions[i].Valmax(HeureCouranteDeci));
         GainBoucle = float(LesActions[i].Reactivite);                                                        //Valeur stockée dans Port
-        if (Actif[i] == 1 && i > 0) {                                                                        //Les relais en On/Off
+        if (Actif[i] == MODE_DECOUPE_ONOFF && i > 0) {                                                        //Les relais en On/Off
           if (Puissance > MaxTriacPw) { RetardF[i] = 100; }                                                  //OFF
           if (Puissance < SeuilPw) { RetardF[i] = 0; }                                                       //On
         } else {                                                                                             // le Triac ou les relais en sinus
@@ -1530,22 +1580,35 @@ void GestionOverproduction() {  // chaque 200ms (adaptation 5 fois par seconde)
       PulseOn[i] = 0;  //Stop Triac ou relais
     } else {
 
-      switch (Actif[i]) {  //valeur en RAM du Mode de regulation
-        case 1:            //Decoupe Sinus pour Triac ou On/Off pour relais
+      switch (Actif[i]) {        //valeur en RAM du Mode de regulation
+        case MODE_DECOUPE_ONOFF:  //Decoupe Sinus pour Triac ou On/Off pour relais
           if (i > 0) LesActions[i].RelaisOn();
           break;
-        case 2:  // Multi Sinus
+        case MODE_MULTISINUS:  // Multi Sinus
           PulseOn[i] = tabPulseSinusOn[100 - Retard[i]];
           PulseTotal[i] = tabPulseSinusTotal[100 - Retard[i]];
+          pos = PulseComptage[i];
+          if (pos >= PulseTotal[i]) {
+            PulseComptage[i] = 0;
+          }
           break;
-        case 3:  // Train de Sinus
-          PulseOn[i] = 100 - Retard[i];
+        case MODE_TRAINSINUS:  // Train de Sinus
+          PulseOn[i] =100 - Retard[i];
           PulseTotal[i] = 99;  //Nombre impair pour éviter courant continu
+          if(testTrame>0){
+            PulseOn[i] =testPulse;//mode Test mesure de Puissance
+            PulseTotal[i] =testTrame; // 
+          }
           break;
-        case 4:  //PWM
-          int Vout = int(RetardF[i] * 2.55);
+        case MODE_PWM:  //PWM
+          Vout = int(RetardF[i] * 2.55);
           if (OutOn[i] == 1) Vout = 255 - Vout;
           ledcWrite(Gpio[i], Vout);
+          break;
+        case MODE_DEMISINUS:                         // Demi-Sinus
+          PulseOn[i] = 100 - Retard[i];              //Avance de phase
+          if (PulseTotal[i] > 1) PulseTotal[i] = 0;  //0 ou 1 pour mémoriser phase230V dernier pulse
+          break;
       }
     }
   }
@@ -1559,7 +1622,7 @@ void GestionOverproduction() {  // chaque 200ms (adaptation 5 fois par seconde)
     if (dispAct) {
       dispOut += " | ";
       for (int i = 0; i < NbActions; i++) {
-        if (Actif[i] > 0) dispOut += String(100 - Retard[i]) + "% | ";
+        if (Actif[i] != MODE_INACTIF) dispOut += String(100 - Retard[i]) + "% | ";
       }
     }
     TelnetPrintln(dispOut);
@@ -1586,8 +1649,8 @@ void InitGPIOs() {
     pinMode(pulseTriac, OUTPUT);
     digitalWrite(pulseTriac, LOW);  //Stop Triac
   } else {
-    Actif[0] = 0;
-    LesActions[0].Actif = 0;
+    Actif[0] = MODE_INACTIF;
+    LesActions[0].Actif = MODE_INACTIF;
   }
   Gpio[0] = pulseTriac;
   LesActions[0].Gpio = pulseTriac;
@@ -1654,8 +1717,8 @@ void EnergieQuotidienne() {
 void H_Ouvre_Equivalent(unsigned long dt) {
   float Dheure = float(dt) / 3600000.0;
   for (int i = 0; i < NbActions; i++) {
-    if (Actif[i] > 0) {                                       //valeur en RAM du Mode de regulation
-      if (i == 0 && Actif[i] == 1) {                          //Decoupe pour Triac
+    if (Actif[i] != MODE_INACTIF) {                           //valeur en RAM du Mode de regulation
+      if (i == 0 && Actif[i] == MODE_DECOUPE_ONOFF) {                          //Decoupe pour Triac
         float teta = 6.28318 * (100.0 - RetardF[i]) / 100.0;  //2*PI integral sin²
         LesActions[i].H_Ouvre += Dheure * (teta - sin(2.0 * teta) / 2.0) / 6.28318;
       } else {

@@ -310,7 +310,7 @@ void handleAjaxESP32() {  // Envoi des dernières infos sur l'ESP32
   } else {
     acces = WiFi.RSSI() + RS + WiFi.BSSIDstr() + RS + WiFi.channel();
     Mac = WiFi.macAddress();
-    adr = WiFi.localIP().toString() + RS + WiFi.gatewayIP().toString() + RS + WiFi.subnetMask().toString();
+    adr = WiFi.localIP().toString() + US + WiFi.globalIPv6().toString() + RS + WiFi.gatewayIP().toString() + RS + WiFi.subnetMask().toString();
   }
   S += String(H) + RS + String(ESP32_Type) + RS + acces + RS + Mac + RS + ssid + RS + adr;
   S += RS + coeur0 + RS + coeur1 + RS + String(P_cent_EEPROM) + RS;
@@ -371,7 +371,8 @@ void handleAjaxData() {  //Données page d'accueil
 void handleAjax_etatActions() {
   int Force = server.arg("Force").toInt();
   int NumAction = server.arg("NumAction").toInt();
-  if (Force != 0 && NumAction < NbActions) {
+  ExtraitCookie();
+  if (Force != 0 && NumAction < NbActions && CleAccesRef == CleAcces) {
     if (Force > 0) {
       if (LesActions[NumAction].tOnOff < 0) {
         LesActions[NumAction].tOnOff = 0;
@@ -533,6 +534,8 @@ void handlePinsActionsJS() {  //Pins disponibles
 
 void handlePara() {
   lectureCookie(ParaHtml);
+  Serial.print("Clé accès reçue :" + CleAcces);
+  Serial.println("  Attendue :" + CleAccesRef);
   previousTempMillis = millis() - 120000;
 }
 void handleParaUpdate() {
@@ -878,6 +881,18 @@ void CacheEtClose(int16_t seconde) {
   server.sendHeader("Connection", "close");
 }
 void lectureCookie(String S) {
+   ExtraitCookie();
+  if (S != "") {
+    server.sendHeader("Connection", "close");
+    if (CleAccesRef == CleAcces) {
+      server.sendHeader("Cache-Control", "max-age=300");
+      server.send(200, "text/html", S);
+    } else {
+      server.send(200, "text/html", ParaCleHtml);  //Demande clé d'acces / mot de passe
+    }
+  }
+}
+void ExtraitCookie(){
   CleAcces = "";
   if (server.hasHeader("Cookie")) {
     String cookie = server.header("Cookie");
@@ -890,15 +905,5 @@ void lectureCookie(String S) {
     }
     CleAcces.trim();
   }
-  TelnetPrint("Clé accès reçue :" + CleAcces);
-  TelnetPrintln("  Attendue :" + CleAccesRef);
-  if (S != "") {
-    server.sendHeader("Connection", "close");
-    if (CleAccesRef == CleAcces) {
-      server.sendHeader("Cache-Control", "max-age=300");
-      server.send(200, "text/html", S);
-    } else {
-      server.send(200, "text/html", ParaCleHtml);  //Demande clé d'acces / mot de passe
-    }
-  }
+  
 }

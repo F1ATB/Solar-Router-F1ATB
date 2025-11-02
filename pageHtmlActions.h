@@ -157,6 +157,7 @@ const char *ActionsJS = R"====(
       var Radio0 = "<div ><input type='radio' name='modeactif" + iAct +"' id='radio" + iAct +"-0' onclick='checkDisabled();'>Inactif</div>";
       var Radio1 = "<div ><input type='radio' name='modeactif" + iAct +"' id='radio" + iAct +"-1'  onclick='checkDisabled();'>Découpe sinus</div>";
       if (iAct > 0){Radio1 = "<div ><input type='radio' name='modeactif" + iAct +"' id='radio" + iAct +"-1'  onclick='checkDisabled();'>On/Off</div>";}
+      Radio1 += "<div ><input type='radio' name='modeactif" + iAct +"' id='radio" + iAct +"-5'  onclick='checkDisabled();'>Demi-sinus</div>";
       Radio1 += "<div ><input type='radio' name='modeactif" + iAct +"' id='radio" + iAct +"-2'  onclick='checkDisabled();'>Multi-sinus</div>";
       Radio1 += "<div ><input type='radio' name='modeactif" + iAct +"' id='radio" + iAct +"-3'  onclick='checkDisabled();'>Train de sinus</div>";
       Radio1 += "<div id='Pwm" + iAct + "'><input type='radio' name='modeactif" + iAct +"' id='radio" + iAct +"-4'  onclick='checkDisabled();'>PWM</div>";
@@ -388,7 +389,7 @@ const char *ActionsJS = R"====(
               if (Tinf>1500 || Tinf<-500) TinfC=""; //Temperature entre -50 et 150° représenté en dixième
               if (Tsup>1500 || Tsup<-500) TsupC=""; //Temperature entre -50 et 150
               if (iAct > 0) {
-                  var Routage=["","Routage ON/Off","Routage Multi-sinus","Routage Train de Sinus","PWM"];
+                  var Routage=["","Routage ON/Off","Routage Multi-sinus","Routage Train de Sinus","PWM","Routage Demi-Sinus"];
                   S += "<div class='zPw' ><div class='radioC' ><input type='radio'  name='R" + idZ +"' onclick='selectZ(3," + i + "," + iAct + ");' " + check +">" +Routage[LesActions[iAct].Actif] + "</div>";
                   if (LesActions[iAct].Actif<=1) {
                       S += "<div><small>On : &nbsp;</small>Pw &lt;<input id='Pw_min_"+idZ+"' onmousemove='Disp(this)' type='number' value='"+Vmin+"' onchange='NewVal(this)' >W</div>";
@@ -401,7 +402,7 @@ const char *ActionsJS = R"====(
                   }
                   
               } else {
-                  var Routage=["","Routage Découpe Sinus","Routage Multi-sinus","Routage Train de Sinus"];
+                  var Routage=["","Routage Découpe Sinus","Routage Multi-sinus","Routage Train de Sinus","","Routage Demi-Sinus"];
                   S += "<div  class='zTriac' ><div class='radioC' ><input type='radio'  name='R" + idZ +"' onclick='selectZ(4," + i + "," + iAct + ");' " + check +">" +Routage[LesActions[iAct].Actif] + "</div>";
                   S += "<div>Seuil Pw &nbsp;<input id='Pw_min_"+idZ+"' onmousemove='Disp(\"pwTr\")' type='number' value='"+Vmin+"' onchange='NewVal(this)'>W</div>";
                   S += "<div><small>Puissance active en entrée de maison</small></div>";
@@ -556,8 +557,8 @@ const char *ActionsJS = R"====(
     GID("Freq_PWM").style.display="none";
     GID("commun").style.display = (ModePara>0 && ReacCACSI<100 ) ? "block":"none";
     for (var iAct = 0; iAct < LesActions.length; iAct++) {
-        for (var i=0;i<=4;i++){
-            if( GID("radio" + iAct +"-"+ i).checked ) { LesActions[iAct].Actif =i;} //0=Inactif,1=Decoupe ou On/Off, 2=Multi, 3= Train, 4= PWM
+        for (var i=0;i<=5;i++){
+            if( GID("radio" + iAct +"-"+ i).checked ) { LesActions[iAct].Actif =i;} //0=Inactif,1=Decoupe ou On/Off, 2=Multi, 3= Train, 4= PWM, 5=Demi-Sinus
         }
         if (GID("selectPin"+iAct).value==-1 && LesActions[iAct].Actif>1 && iAct>0){LesActions[iAct].Actif=1;GID("radio" + iAct +"-" +LesActions[iAct].Actif).checked = true;}  
         TracePeriodes(iAct);
@@ -576,6 +577,7 @@ const char *ActionsJS = R"====(
         GID("radio" + iAct +"-2").disabled = disable; 
         GID("radio" + iAct +"-3").disabled = disable;
         GID("radio" + iAct +"-4").disabled = disable;
+        GID("radio" + iAct +"-5").disabled = disable;
         GID("ordreoff"+iAct).style.display=disp;  
         GID("ordreon"+iAct).style.display =disp;
         if (GID("selectPin"+iAct).value==-1 && GID("ordreOn"+iAct).value.indexOf(IS)>0) GID("ordreOn"+iAct).value="";                   
