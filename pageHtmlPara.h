@@ -583,7 +583,7 @@ const char *ParaJS = R"====(
         var Vip =(ModePara==0) ? 0:ip2int(GID("RMS_IP"+i).value.trim());
         S +=RS+ Vip;
     }
-    S="?lesparas="+clean(S);
+    S="?lesparas="+encodeURIComponent(S);
     document.cookie="CleAcces=" + GID("CleAcces").value.trim() ;
     if ((GID("dhcp").checked ||  checkIP("adrIP")&&checkIP("gateway"))   && (!GID("MQTTRepete").checked ||  checkIP("MQTTIP"))){
       var xhttp = new XMLHttpRequest();
@@ -808,14 +808,7 @@ const char *ParaRouteurJS = R"====(
      GID(id).innerHTML = T; }
     }
   function GV(id, T) { GID(id).value = T; }
-  function clean(S){ //Remplace & et ? pour les envois au serveur
-    let res=S.replace(/\%/g,"%25");
-    res = res.replace(/\&/g, "%26");
-    res = res.replace(/\#/g, "%23");
-    res = res.replace(/\+/g, "%2B");
-    res=res.replace(/amp;/g,"");
-    return res.replace(/\?/g,"%3F");
-  }
+  
   function int2ip (V) {
     var ipInt=parseInt(V);
     return ( (ipInt>>>24) +'.' + (ipInt>>16 & 255) +'.' + (ipInt>>8 & 255) +'.' + (ipInt & 255) );

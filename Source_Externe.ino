@@ -90,7 +90,7 @@ void CallESP32_Externe() {
           Pva_valide = data_[i].toInt();
           break;
         case 6:
-          PuissanceS_M = PintMax(data_[i].toInt());
+          PuissanceS_M = PintMax(data_[i].toInt()) + OffsetP; //OffsetP pour des essais uniquement
           break;
         case 7:
           PuissanceI_M = PintMax(data_[i].toInt());

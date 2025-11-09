@@ -138,10 +138,20 @@ void DecodeSerial() {
     if (testPulse > testTrame) testPulse = testTrame;
     TelnetPrintln("Rapport cyclique Pulse " + String(testPulse * 10) + " ms / Trame " + String(testTrame * 10) + " ms  : P=" + String(testPulse) + "  T=" + String(testTrame));
   }
-  if ((sw.indexOf("H")>=0 || sw.indexOf("?")>=0 ) && p==-1){
+  if (sw.indexOf("R:") >= 0) {
+    if (valeur == "") {
+      RetardVx = -1;
+    } else {
+      RetardVx = valeur.toInt();
+    }
+  }
+  if (sw.indexOf("Offset:") >= 0) {  //Decalage mesure Puissance pour essais
+    OffsetP = valeur.toInt();
+  }
+  if ((sw.indexOf("H") >= 0 || sw.indexOf("?") >= 0) && p == -1) {
     MessageCommandes();
   }
-  if (SerialIn!="") TelnetPrintln(">>" + SerialIn);
+  if (SerialIn != "") TelnetPrintln(">>" + SerialIn);
   SerialIn = "";
 }
 // commandes disponibles par port serie ou Telnet
@@ -159,6 +169,9 @@ T:xxx        | En mode Train de Sinus force la longeur de Trame.
              | T:xxx = xxx*10ms, T:0 retourne en Train de sinus normal
 P:yyy        | En mode Train de Sinus force la longueur des Pulses. 
              | P:yyy = yyy*10ms. P<=T . Evitez P impaire et Trame paire. 
+R:x          | Affiche pour le Triac (x=0) ou les Relais (1,2..) , 
+             | le Retard en% somme de| Propor | Integral | Dérivé.
+             | R: pour annuler          
 H ou ?       | pour avoir cette aide
 **************
 )====";
@@ -171,4 +184,15 @@ void MessageCommandes() {
     SplitS(M, Before, "\n", M);
     TelnetPrintln(Before);
   }
+}
+
+//*************
+//* Test Pmax *
+//*************
+float PfloatMax(float Pin) {
+  return constrain(Pin, float(-1.0F * PmaxReseau), float(PmaxReseau));
+}
+
+int PintMax(int Pin) {
+  return constrain(Pin, int(-1 * PmaxReseau), int(PmaxReseau));
 }

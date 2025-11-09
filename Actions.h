@@ -40,14 +40,14 @@ public:
   int OutOn;
   int OutOff;
   int tOnOff;
-  byte Reactivite;
+  byte Kp,Ki,Kd;
   byte NbPeriode;
   byte ExtSelAct;  //Selection Action en cours
   int8_t ExtValide;   //Condition Action externe
   int16_t ExtHequiv;   //Duree heure *100 action externe
   int16_t ExtOuvert;   //Pourcent ouverture
 
-  bool On;
+  bool On,PID;
   float H_Ouvre;
   byte Type[8];  //0=NO(pas utilisé),1=OFF,2=ON,3=PW,4=Triac
   int16_t Hdeb[8];

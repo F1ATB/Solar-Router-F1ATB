@@ -14,8 +14,6 @@ const char *ActionsHtml = R"====(
     .form{width:100%;text-align:left;} 
     .form2 {margin:auto;padding:5px;display: table;text-align:left;width:100%;}
     .titre{display:flex;justify-content:center;cursor:pointer;color:black;font-weight:bold;font-size:110%;}
-    .slideTriac{width:100%;position:relative;margin:4px;padding:4px;border:2px inset grey;background-color:#fff8f8;color:black;font-size:14px;}
-    .slideTriacIn{display:flex;justify-content:center;width:100%;}
     .planning,#CACSI,#Freq_PWM{width:100%;position:relative;margin:4px;padding:2px;border:2px inset grey;background-color:white;color:black;border-radius:8px;}
     #CACSI,#Freq_PWM{background-color:#ffa;}
     #commun,#CACSI{display:none;}
@@ -48,12 +46,18 @@ const char *ActionsHtml = R"====(
     input {margin: 5px;text-align:left;font-size:15px;max-width:150px;}
     #message{position:fixed;border:inset 4px grey;top:2px;right:2px;background-color:#333;color:white;font-size:16px;display:none;text-align:left;padding:5px;}
     .bord1px{border:solid 1px grey; margin:4px;padding:2px;border-radius:4px;}
-    #mode,#option,.bouton_curseur,.les_select{display:flex;justify-content: space-between;font-size:20px;text-align:center;}
+    #mode,#option,.les_select{display:flex;justify-content: space-between;font-size:20px;text-align:center;}
     #mode,#option,.les_select{background-color:#ddd;border-radius:4px;margin:4px;padding:3px;}
     .boutons{display:inline-flex;}
     .TitZone{font-size:12px;font-style: italic;font-weight: bold;}
     .minmax{display: flex;  justify-content: center;align-items: center;}
     .minmax div{margin-right:5px;margin-left:5px;}
+    .bouton_curseur,.les_select{display:flex;justify-content: space-between;font-size:20px;text-align:center;margin:4px;padding:4px;border:2px inset grey;background-color:#fff8f8;color:black;border-radius:4px;}
+    .slideTriac{width:100%;position:relative;display:table;}
+    .slideTriacIn{display:table-row;width:100%;}
+    .Tcell1{display:table-cell;width:35%;text-align:right;}
+    .Tcell2{display:table-cell;width:60%;text-align:right;}
+    .Tcell3{display:table-cell;width:5%;text-align:left;padding-left:10px;}
   </style>
   <title>Actions</title>
   </head>
@@ -138,7 +142,7 @@ const char *ActionsJS = R"====(
       DispTimer();
       LoadCouleurs();      
   }
-  function creerAction(aActif, aTitre, aHost, aPort, aOrdreOn, aOrdreOff, aRepet,aTempo,aReactivite, aPeriodes) {
+  function creerAction(aActif, aTitre, aHost, aPort, aOrdreOn, aOrdreOff, aRepet,aTempo,aKp,aKi,aKd,aPID, aPeriodes) {
       var S = {
           Actif: aActif,
           Titre: aTitre,
@@ -148,7 +152,10 @@ const char *ActionsJS = R"====(
           OrdreOff: aOrdreOff,
           Repet: aRepet,
           Tempo: aTempo,
-          Reactivite: aReactivite,
+          Kp: aKp,
+          Ki: aKi,
+          Kd: aKd,
+          PID: aPID,
           Periodes: aPeriodes     
       }
       return S;
@@ -187,11 +194,24 @@ const char *ActionsJS = R"====(
 
         S +="<div  class='bouton_curseur' ><div class='boutons'><input id='adds' type='button' value='-' class='tbut'  onclick='AddSub(-1," + iAct + ")' onmousemove='Disp(this)' >";
         S +="<input id='adds' type='button' value='+' class='tbut' onclick='AddSub(1," + iAct + ")' onmousemove='Disp(this)'></div>";
-        S +="<div class='slideTriac' id='fen_slide" + iAct +"'><div class='slideTriacIn'>";
-              S +="<div>R&eacute;activit&eacute; lente ou charge importante</div>";
-              S +="<input type='range' min='1' max='100' value='50' id='slider" + iAct + "' style='width:30%;' oninput=\"GH('sensi" + iAct +"',Math.floor(this.value));\" onmousemove='Disp(this)' >";
-              S +="<div>R&eacute;activit&eacute; rapide ou charge faible</div><br>";
-        S +="</div><div class='slideTriacIn'><strong><div id='sensi" + iAct + "'></div></strong></div>";
+        S +="<div class='slideTriac' id='fen_slide" + iAct +"'>";
+              S +="<div class='slideTriacIn' id='Propor"+iAct+"'>";
+                S +="<div class='Tcell1'>Coef. Proportionnel</div>";
+                S +="<div class='Tcell2'><input type='range' min='1' max='100' value='50' id='sliderKp" + iAct + "' style='width:100%;max-width:none;' oninput=\"GH('sensiKp" + iAct +"',Math.floor(this.value));\" onmousemove='Disp(this)' ></div>";
+                S +="<div class='Tcell3'><strong id='sensiKp" + iAct + "'></strong></div>";
+              S +="</div>";
+              S +="<div class='slideTriacIn'>";
+                S +="<div class='Tcell1'>Coef. Intégral ou R&eacute;activit&eacute; </div>";
+                S +="<div class='Tcell2'><input type='range' min='1' max='100' value='50' id='sliderKi" + iAct + "'  style='width:100%;max-width:none;' oninput=\"GH('sensiKi" + iAct +"',Math.floor(this.value));\" onmousemove='Disp(this)' ></div>";
+                S +="<div class='Tcell3'><strong id='sensiKi" + iAct + "'></strong></div>";
+              S +="</div>";
+              S +="<div class='slideTriacIn' id='Derive"+iAct+"'>";
+                S +="<div class='Tcell1'>Coef. Dérivé</div>";
+                S +="<div class='Tcell2'><input type='range' min='1' max='100' value='50' id='sliderKd" + iAct + "' style='width:100%;max-width:none;' oninput=\"GH('sensiKd" + iAct +"',Math.floor(this.value));\" onmousemove='Disp(this)' ></div>";
+                S +="<div class='Tcell3'><strong id='sensiKd" + iAct + "'></strong></div>";
+              S +="</div>";
+        S +="</div>";
+        S +="<div id='PIDbox" + iAct + "'><label> PID On</label><input type='checkbox' id='PID" + iAct +"' onclick='checkDisabled();'></div>";
         S +="</div></div>";
         S += "<div id='infoAction" + iAct + "' class='infoAction'></div>";
         S += "<div id='curseurs" + iAct + "' class='curseur'  onmousedown='mouseClick=true;'  onmousemove='mouseMove(this,event," + iAct + ");'  ontouchstart='touchMove(this,event," + iAct + ");'  ontouchmove='touchMove(this,event," + iAct + ");' ></div>";
@@ -206,8 +226,13 @@ const char *ActionsJS = R"====(
       GV("ordreOff" + iAct, LesActions[iAct].OrdreOff);
       GV("repet" + iAct, LesActions[iAct].Repet);
       GV("tempo" + iAct, LesActions[iAct].Tempo);
-      GV("slider" + iAct ,LesActions[iAct].Reactivite); 
-      GH("sensi" + iAct ,LesActions[iAct].Reactivite);
+      GV("sliderKp" + iAct ,LesActions[iAct].Kp); 
+      GH("sensiKp" + iAct ,LesActions[iAct].Kp);
+      GV("sliderKi" + iAct ,LesActions[iAct].Ki); 
+      GH("sensiKi" + iAct ,LesActions[iAct].Ki);
+      GV("sliderKd" + iAct ,LesActions[iAct].Kd); 
+      GH("sensiKd" + iAct ,LesActions[iAct].Kd);
+      GID("PID" + iAct ).checked = LesActions[iAct].PID==1 ? true:false;
       if(LesActions[iAct].OrdreOn.indexOf(IS)>0){
         var vals=LesActions[iAct].OrdreOn.split(IS);
         GID("selectPin"+iAct).value=vals[0];
@@ -582,11 +607,17 @@ const char *ActionsJS = R"====(
         GID("ordreon"+iAct).style.display =disp;
         if (GID("selectPin"+iAct).value==-1 && GID("ordreOn"+iAct).value.indexOf(IS)>0) GID("ordreOn"+iAct).value="";                   
         GID("ligne_bas"+iAct).style.display  =( LesActions[iAct].Actif==1 && GID("selectPin"+iAct).value<=0 && iAct>0) ?  "flex" :"none";
-        GID("fen_slide"+iAct).style.display = (LesActions[iAct].Actif== 1 && iAct>0  ) ? "none" : "block";
+        GID("fen_slide"+iAct).style.display = (LesActions[iAct].Actif== 1 && iAct>0  ) ? "none" : "table";
         if( GID("radio" + iAct +"-4").checked) {
           GID("Freq_PWM").style.display="block";
           GID("commun").style.display =  "block";
         }
+        if (ModePara==0) {
+          GID("PID" + iAct ).checked =false;
+        } 
+        GID("PIDbox" + iAct).style.display=(ModePara==0 || (GID("selectPin"+iAct).value<=0 && iAct>0)) ?"none":"block";          
+        GID("Propor"+iAct).style.display = (GID("PID"+iAct).checked ) ? "table-row" : "none";
+        GID("Derive"+iAct).style.display = (GID("PID"+iAct).checked ) ? "table-row" : "none";
         
     }
     GID("Pwm0").style.display = "none"; //Pas de PWM sur la sortie Triac
@@ -605,24 +636,24 @@ const char *ActionsJS = R"====(
               pTriac = parseInt(LesParas[3]);
               ReacCACSI = LesParas[4]; //1,24 8 ou 100 pour EstimCACSI
               if (ReacCACSI<100) {
-                GID("CACSI" + ReacCACSI).checked = true; //Reactivité CACSI et non Estimation
+                GID("CACSI" + ReacCACSI).checked = true; //Reactivité Ki CACSI et non Estimation
                 GID("CACSI").style = "display:block;";
               }
               GID("Fpwm" + LesParas[5]).checked = true;
               LesActions.splice(0,LesActions.length);
               for (var iAct=1;iAct<Les_ACTIONS.length-1;iAct++){
                 var champs=Les_ACTIONS[iAct].split(RS);
-                var NbPeriodes=champs[9];
+                var NbPeriodes=champs[12];
                 var Periodes=[];
-                var j=10;
+                var j=13;
                 for (var i=0;i<NbPeriodes;i++){
                   Periodes[i]={Type:champs[j],Hfin:champs[j+1],Vmin:champs[j+2],Vmax:champs[j+3],Tinf:champs[j+4],Tsup:champs[j+5],Hmin:champs[j+6],Hmax:champs[j+7],CanalTemp:champs[j+8],SelAct:champs[j+9],Ooff:champs[j+10],O_on:champs[j+11],Tarif:champs[j+12]};
                   j=j+13;
                 }
-                LesActions[iAct-1]=creerAction(champs[0], champs[1], champs[2], champs[3], champs[4], champs[5], champs[6],champs[7],champs[8], Periodes);
+                LesActions[iAct-1]=creerAction(champs[0], champs[1], champs[2], champs[3], champs[4], champs[5], champs[6],champs[7],champs[8],champs[9],champs[10],champs[11], Periodes);
               }    
               if (LesActions.length==0){  //Action Triac
-                  LesActions.push( creerAction(0, "Titre Triac", "", 50, "", "","", 0,10, [{
+                  LesActions.push( creerAction(0, "Titre Triac", "", 50, "", "","", 0,10,10,10,0, [{
                           Hfin: 2400,
                           Type: 4,
                           Vmin:0,
@@ -639,7 +670,7 @@ const char *ActionsJS = R"====(
                       }
                   ]));
               }
-              LesActions.push( creerAction(0, "Titre Relais " + LesActions.length, "", 80, "", "", 240,0,10, [{
+              LesActions.push( creerAction(0, "Titre Relais " + LesActions.length, "", 80, "", "", 240,0,10,10,10,0, [{
                       Hfin: 2400,
                       Type: 3,
                       Vmin:0,
@@ -685,7 +716,10 @@ const char *ActionsJS = R"====(
         LesActions[iAct].OrdreOff = GID("ordreOff" + iAct).value.trim();
         LesActions[iAct].Repet = GID("repet" + iAct).value;
         LesActions[iAct].Tempo = GID("tempo" + iAct).value;
-        LesActions[iAct].Reactivite = GID("slider" + iAct).value;
+        LesActions[iAct].Kp = GID("sliderKp" + iAct).value;
+        LesActions[iAct].Ki = GID("sliderKi" + iAct).value;
+        LesActions[iAct].Kd = GID("sliderKd" + iAct).value;
+        LesActions[iAct].PID = GID("PID" + iAct).checked ? 1:0;
         if (GID("selectPin"+iAct).value>=0) LesActions[iAct].OrdreOn=GID("selectPin"+iAct).value +IS + GID("selectOut"+iAct).value;
         if (iAct>0 && (GID("selectPin"+iAct).value==0 || LesActions[iAct].Titre=="")) LesActions[iAct].Actif=-1; //Action à effacer
       }
@@ -695,7 +729,7 @@ const char *ActionsJS = R"====(
             S +=LesActions[iAct].Actif+RS+LesActions[iAct].Titre+RS;
             S +=LesActions[iAct].Host+RS+LesActions[iAct].Port+RS;
             S +=LesActions[iAct].OrdreOn+RS+LesActions[iAct].OrdreOff+RS+LesActions[iAct].Repet+RS+LesActions[iAct].Tempo+RS;
-            S +=LesActions[iAct].Reactivite + RS + LesActions[iAct].Periodes.length+RS;
+            S +=LesActions[iAct].Kp + RS + LesActions[iAct].Ki +RS + LesActions[iAct].Kd +RS + LesActions[iAct].PID + RS + LesActions[iAct].Periodes.length+RS;
             for (var i=0;i<LesActions[iAct].Periodes.length;i++){
               if(ModePara==0){ //Standard
                 LesActions[iAct].Periodes[i].CanalTemp=-1;
@@ -714,7 +748,7 @@ const char *ActionsJS = R"====(
       }
       if (ReacCACSI<100) ReacCACSI  = document.querySelector('input[name="ReacCACSI"]:checked').value; //Pas d'estimation
       var Fpwm  = document.querySelector('input[name="Fpwm"]:checked').value;
-      S=clean(S);
+      S=encodeURIComponent(S);
       S = "?ReacCACSI=" + ReacCACSI + "&Fpwm=" + Fpwm +"&actions="+S+"|"; //On ne peut pas terminer par GS
       
       var xhttp = new XMLHttpRequest();
@@ -739,6 +773,9 @@ const char *ActionsJS = R"====(
         ListeActions[v]= T +nomActions[esp][iAct][1];    
       }
     }
+    for (var iAct = 0; iAct < LesActions.length; iAct++) {
+        GID("PID" + iAct ).checked = LesActions[iAct].PID==1 ? true:false;
+    }
     checkDisabled();
   }
   
@@ -756,7 +793,7 @@ const char *ActionsJS = R"====(
           m = "Nom ou Titre";
           break;
       case "slid":
-          m = "Gain de la boucle d'asservissement. Faible, la r&eacute;gulation est lente mais stable. Elev&eacute;, la r&eacute;gulation est rapide mais risque d'oscillations. A ajuster suivant la charge branch&eacute;e au triac.";
+          m = "Gain de la boucle d'asservissement:  Proportionnel, Intégral, Dérivé. A ajuster suivant la charge branch&eacute;e.";
           break;
       case "host":
           m = "Adresse IP machine sur réseau LAN, nom de domaine ou rien pour l'ESP32.<br>Ex : <b>192.168.1.25</b> ou <b>machine.local</b> .";

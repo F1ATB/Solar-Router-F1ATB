@@ -69,7 +69,7 @@ const char *HeureHtml = R"====(
               GID("attente").style="visibility: hidden;";
             }         
           };
-          xhttp.open('GET', '/HourUpdate?New_H='+clean(New_H), true);
+          xhttp.open('GET', '/HourUpdate?New_H='+encodeURIComponent(New_H), true);
           xhttp.send(); 
         }
     </script>

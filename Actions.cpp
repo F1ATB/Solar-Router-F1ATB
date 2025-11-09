@@ -18,7 +18,10 @@ Action::Action(int aIdx) {
   T_LastAction = int(millis() / 1000);
   On = false;
   Actif = 0;  //0=Inactif,1=Decoupe ou On/Off, 2=Multi, 3= Train , 4=PWM
-  Reactivite = 10;
+  Kp = 10;
+  Ki = 10;
+  Kd = 10;
+  PID =false;
   OutOn = 1;
   OutOff = 0;
   Tempo = 0;
@@ -128,7 +131,13 @@ void Action::Definir(String ligne) {
     Repet = max(Tempo + 4, Repet);  //Pour eviter conflit
   }
   ligne = ligne.substring(ligne.indexOf(RS) + 1);
-  Reactivite = byte(ligne.substring(0, ligne.indexOf(RS)).toInt());
+  Kp = byte(ligne.substring(0, ligne.indexOf(RS)).toInt());
+  ligne = ligne.substring(ligne.indexOf(RS) + 1);
+  Ki = byte(ligne.substring(0, ligne.indexOf(RS)).toInt());
+  ligne = ligne.substring(ligne.indexOf(RS) + 1);
+  Kd = byte(ligne.substring(0, ligne.indexOf(RS)).toInt());
+  ligne = ligne.substring(ligne.indexOf(RS) + 1);
+  PID = byte(ligne.substring(0, ligne.indexOf(RS)).toInt());
   ligne = ligne.substring(ligne.indexOf(RS) + 1);
   NbPeriode = byte(ligne.substring(0, ligne.indexOf(RS)).toInt());
   ligne = ligne.substring(ligne.indexOf(RS) + 1);
@@ -176,7 +185,10 @@ String Action::Lire() {
   S += OrdreOff + RS;
   S += String(Repet) + RS;
   S += String(Tempo) + RS;
-  S += String(Reactivite) + RS;
+  S += String(Kp) + RS;
+  S += String(Ki) + RS;
+  S += String(Kd) + RS;
+  S += String(PID) + RS;
   S += String(NbPeriode) + RS;
   for (byte i = 0; i < NbPeriode; i++) {
     S += String(Type[i]) + RS;
@@ -299,7 +311,7 @@ void Action::CallExterne(String host, String url, int port) {
       clientExt.stop();
       delay(500);
       if (!clientExt.connect(hostbuf, port, 3000)) {
-        delay(100); //Necessaire
+        delay(100);  //Necessaire
         StockMessage("connection to :" + host + " failed");
         delay(100);
         return;

@@ -87,7 +87,7 @@ const char *ConnectAP_Html = R"====(
              }
           }         
         };
-        var adr ="/AP_SetWifi?ssid="+clean(ssid)+"&passe=" + clean(GID("passe").value);
+        var adr ="/AP_SetWifi?ssid="+encodeURIComponent(ssid)+"&passe=" + encodeURIComponent(GID("passe").value);
         xhttp.open('GET', adr, true);
         xhttp.send();
         GID("form-passe").style.display = "none";

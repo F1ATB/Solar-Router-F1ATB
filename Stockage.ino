@@ -313,7 +313,13 @@ void LectureEnROM() {
       address += sizeof(unsigned short);
       LesActions[iAct].Tempo = EEPROM.readUShort(address);
       address += sizeof(unsigned short);
-      LesActions[iAct].Reactivite = EEPROM.readByte(address);
+      LesActions[iAct].Kp = EEPROM.readByte(address);
+      address += sizeof(byte);
+      LesActions[iAct].Ki = EEPROM.readByte(address);
+      address += sizeof(byte);
+      LesActions[iAct].Kd = EEPROM.readByte(address);
+      address += sizeof(byte);
+      LesActions[iAct].PID = EEPROM.readByte(address);
       address += sizeof(byte);
       LesActions[iAct].NbPeriode = EEPROM.readByte(address);
       address += sizeof(byte);
@@ -497,7 +503,13 @@ int EcritureEnROM() {
     address += sizeof(unsigned short);
     EEPROM.writeUShort(address, LesActions[iAct].Tempo);
     address += sizeof(unsigned short);
-    EEPROM.writeByte(address, LesActions[iAct].Reactivite);
+    EEPROM.writeByte(address, LesActions[iAct].Kp);
+    address += sizeof(byte);
+    EEPROM.writeByte(address, LesActions[iAct].Ki);
+    address += sizeof(byte);
+    EEPROM.writeByte(address, LesActions[iAct].Kd);
+    address += sizeof(byte);
+    EEPROM.writeByte(address, LesActions[iAct].PID);
     address += sizeof(byte);
     EEPROM.writeByte(address, LesActions[iAct].NbPeriode);
     address += sizeof(byte);
@@ -665,7 +677,8 @@ String Fichier_parametres(String ip, String para, String action) {
     for (int iAct = 0; iAct < NbActions; iAct++) {
       S += "{\"Action\":" + String(iAct) + AddByte("Actif", LesActions[iAct].Actif) + AddStr("Titre", LesActions[iAct].Titre);
       S += AddStr("Host", LesActions[iAct].Host) + AddUshort("Port", LesActions[iAct].Port) + AddStr("OrdreOn", LesActions[iAct].OrdreOn) + AddStr("OrdreOff", LesActions[iAct].OrdreOff);
-      S += AddUshort("Repet", LesActions[iAct].Repet) + AddUshort("Tempo", LesActions[iAct].Tempo) + AddByte("Reactivite", LesActions[iAct].Reactivite);
+      S += AddUshort("Repet", LesActions[iAct].Repet) + AddUshort("Tempo", LesActions[iAct].Tempo);
+      S += AddByte("Kp", LesActions[iAct].Kp) + AddByte("Ki", LesActions[iAct].Ki) + AddByte("Kd", LesActions[iAct].Kd) + AddByte("PID", LesActions[iAct].PID);
       NbPeriode = LesActions[iAct].NbPeriode;
       S += AddByte("NbPeriode", NbPeriode) + ",\"Périodes\":[";
       for (byte i = 0; i < NbPeriode; i++) {
@@ -800,7 +813,14 @@ void ImportParametres(String Conf) {
       LesActions[iAct].OrdreOff = StringJson("OrdreOff", Conf);
       LesActions[iAct].Repet = UShortJson("Repet", Conf);
       LesActions[iAct].Tempo = UShortJson("Tempo", Conf);
-      LesActions[iAct].Reactivite = ByteJson("Reactivite", Conf);
+      LesActions[iAct].Kp = ByteJson("Kp", Conf);
+      if (Conf.indexOf("Reactivite") > 0) {  //Ancien nom de variable en V15
+        LesActions[iAct].Ki = ByteJson("Reactivite", Conf);
+      } else {
+        LesActions[iAct].Ki = ByteJson("Ki", Conf);
+      }
+      LesActions[iAct].Kd = ByteJson("Kd", Conf);
+      LesActions[iAct].PID = ByteJson("PID", Conf);
       LesActions[iAct].NbPeriode = ByteJson("NbPeriode", Conf);
       Hdeb = 0;
       for (byte i = 0; i < LesActions[iAct].NbPeriode; i++) {
