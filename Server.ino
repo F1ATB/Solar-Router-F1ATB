@@ -352,7 +352,8 @@ void handleAjaxData() {  //Données page d'accueil
   String DateLast = "Attente d'une mise à l'heure par internet";
   if (Horloge == 1) DateLast = "Attente d'une mise à l'heure par le Linky";
   if (ModeReseau == 0 && WiFi.getMode() != WIFI_STA) DateLast = "Sélectionnez un réseau <a href='/Wifi'>Wifi</a>";
-  if (Horloge > 1) DateLast = "Attente d'une mise à l'heure  <a href='/Heure' >manuellement</a> ";
+  if (Horloge > 1 && Horloge <5) DateLast = "Attente d'une mise à l'heure  <a href='/Heure' >manuellement</a> ";
+  if (Horloge == 5) DateLast = "Attente d'une mise à l'heure un ESP externe (maître)";
   if (HeureValide) {
     DateLast = DATE;
   }

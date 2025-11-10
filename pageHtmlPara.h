@@ -15,7 +15,7 @@ const char *ParaHtml = R"====(
     .canalT {display: table;}
     .canalTr {display: table-row;width:100%;}
     .canalTc {display: table-cell;padding:1px;text-align:center;width:100%;font-size:12px;}
-    label,.nomR{display: table-cell;margin: 5px;text-align:left;font-size:20px;height:25px;width:70%;}
+    label,.nomR.#HorExt{display: table-cell;margin: 5px;text-align:left;font-size:20px;height:25px;width:70%;}
     input{display: table-cell;margin: 5px;text-align:left;font-size:20px;height:25px;}
     select{display: table-cell;margin: 5px;text-align:left;}
     .source label{display: table-cell;margin: 5px;text-align:left;font-size:12px;height:21px;width:initial;}
@@ -233,7 +233,8 @@ const char *ParaHtml = R"====(
             <label for='Hor1' style='text-align:right;'>Linky</label><input type='radio' name='Horlo' id='Hor1' value="1" onclick="checkDisabled();"  >
             <label for='Hor2' style='text-align:right;'>Interne</label><input type='radio' name='Horlo' id='Hor2' value="2" onclick="checkDisabled();"  >
             <label for='Hor3' style='text-align:right;'>IT 10ms/100Hz (Triac)</label><input type='radio' name='Horlo' id='Hor3' value="3" onclick="checkDisabled();"  >
-            <label for='Hor4' style='text-align:right;'>IT 20ms/50Hz</label><input type='radio' name='Horlo' id='Hor4' value="4" onclick="checkDisabled();"  >                 
+            <label for='Hor4' style='text-align:right;'>IT 20ms/50Hz</label><input type='radio' name='Horlo' id='Hor4' value="4" onclick="checkDisabled();"  > 
+            <span id='HorExt' ><label for='Hor5' style='text-align:right;'>ESP externe</label><input type='radio' name='Horlo' id='Hor5' value="5" onclick="checkDisabled();"  > </span>               
         </div>
       </div>
     </div>
@@ -616,7 +617,7 @@ const char *ParaJS = R"====(
     ModePara = document.querySelector('input[name="ModeP"]:checked').value;
     Horloge = document.querySelector('input[name="Horlo"]:checked').value;
     var pESP = document.querySelector('input[name="pESP"]:checked').value;
-    GID("Bheure").style.display= (Horloge>1) ? "inline-block": "none";
+    GID("Bheure").style.display= (Horloge>1 && Horloge<5) ? "inline-block": "none";
     GID("Bwifi").style.display= (ESP32_Type<10) ? "inline-block": "none";
     GID("infoIP").style.display = (GID("dhcp").checked || ModeReseau==2) ? "none" : "table";
     GID("dhcp").style.visibility= (ModeReseau==2) ? "hidden" : "visible";
@@ -655,6 +656,7 @@ const char *ParaJS = R"====(
     }
     GID('ligneTopicP').style.display = (GID("Pmqtt").checked) ? "table-row" : "none";
     Source = document.querySelector('input[name="sources"]:checked').value;
+    GID('HorExt').style.display = (Source=='Ext' && GID("RMSextIP").value != "") ? "inline" : "none";
     if (Source !='Ext') Source_data=Source;
     AdaptationSource();
   }

@@ -193,26 +193,26 @@ const char *ActionsJS = R"====(
         S += "</div>";
 
         S +="<div  class='bouton_curseur' ><div class='boutons'><input id='adds' type='button' value='-' class='tbut'  onclick='AddSub(-1," + iAct + ")' onmousemove='Disp(this)' >";
-        S +="<input id='adds' type='button' value='+' class='tbut' onclick='AddSub(1," + iAct + ")' onmousemove='Disp(this)'></div>";
-        S +="<div class='slideTriac' id='fen_slide" + iAct +"'>";
-              S +="<div class='slideTriacIn' id='Propor"+iAct+"'>";
-                S +="<div class='Tcell1'>Coef. Proportionnel</div>";
-                S +="<div class='Tcell2'><input type='range' min='1' max='100' value='50' id='sliderKp" + iAct + "' style='width:100%;max-width:none;' oninput=\"GH('sensiKp" + iAct +"',Math.floor(this.value));\" onmousemove='Disp(this)' ></div>";
-                S +="<div class='Tcell3'><strong id='sensiKp" + iAct + "'></strong></div>";
-              S +="</div>";
-              S +="<div class='slideTriacIn'>";
-                S +="<div class='Tcell1'>Coef. Intégral ou R&eacute;activit&eacute; </div>";
-                S +="<div class='Tcell2'><input type='range' min='1' max='100' value='50' id='sliderKi" + iAct + "'  style='width:100%;max-width:none;' oninput=\"GH('sensiKi" + iAct +"',Math.floor(this.value));\" onmousemove='Disp(this)' ></div>";
-                S +="<div class='Tcell3'><strong id='sensiKi" + iAct + "'></strong></div>";
-              S +="</div>";
-              S +="<div class='slideTriacIn' id='Derive"+iAct+"'>";
-                S +="<div class='Tcell1'>Coef. Dérivé</div>";
-                S +="<div class='Tcell2'><input type='range' min='1' max='100' value='50' id='sliderKd" + iAct + "' style='width:100%;max-width:none;' oninput=\"GH('sensiKd" + iAct +"',Math.floor(this.value));\" onmousemove='Disp(this)' ></div>";
-                S +="<div class='Tcell3'><strong id='sensiKd" + iAct + "'></strong></div>";
-              S +="</div>";
+          S +="<input id='adds' type='button' value='+' class='tbut' onclick='AddSub(1," + iAct + ")' onmousemove='Disp(this)'></div>";
+          S +="<div class='slideTriac' id='fen_slide" + iAct +"'>";
+                S +="<div class='slideTriacIn' id='Propor"+iAct+"'>";
+                  S +="<div class='Tcell1'>Coef. Proportionnel</div>";
+                  S +="<div class='Tcell2'><input type='range' min='0' max='100' value='50' id='sliderKp" + iAct + "' style='width:100%;max-width:none;' oninput=\"GH('sensiKp" + iAct +"',Math.floor(this.value));\" onmousemove='Disp(this)' ></div>";
+                  S +="<div class='Tcell3'><strong id='sensiKp" + iAct + "'></strong></div>";
+                S +="</div>";
+                S +="<div class='slideTriacIn'>";
+                  S +="<div class='Tcell1'>Coef. Intégral ou R&eacute;activit&eacute; </div>";
+                  S +="<div class='Tcell2'><input type='range' min='0' max='100' value='50' id='sliderKi" + iAct + "'  style='width:100%;max-width:none;' oninput=\"GH('sensiKi" + iAct +"',Math.floor(this.value));\" onmousemove='Disp(this)' ></div>";
+                  S +="<div class='Tcell3'><strong id='sensiKi" + iAct + "'></strong></div>";
+                S +="</div>";
+                S +="<div class='slideTriacIn' id='Derive"+iAct+"'>";
+                  S +="<div class='Tcell1'>Coef. Dérivé</div>";
+                  S +="<div class='Tcell2'><input type='range' min='0' max='100' value='50' id='sliderKd" + iAct + "' style='width:100%;max-width:none;' oninput=\"GH('sensiKd" + iAct +"',Math.floor(this.value));\" onmousemove='Disp(this)' ></div>";
+                  S +="<div class='Tcell3'><strong id='sensiKd" + iAct + "'></strong></div>";
+                S +="</div>";
+          S +="</div>";
+          S +="<div id='PIDbox" + iAct + "'><label> PID On</label><input type='checkbox' id='PID" + iAct +"' onclick='checkDisabled();'></div>";
         S +="</div>";
-        S +="<div id='PIDbox" + iAct + "'><label> PID On</label><input type='checkbox' id='PID" + iAct +"' onclick='checkDisabled();'></div>";
-        S +="</div></div>";
         S += "<div id='infoAction" + iAct + "' class='infoAction'></div>";
         S += "<div id='curseurs" + iAct + "' class='curseur'  onmousedown='mouseClick=true;'  onmousemove='mouseMove(this,event," + iAct + ");'  ontouchstart='touchMove(this,event," + iAct + ");'  ontouchmove='touchMove(this,event," + iAct + ");' ></div>";
       S += "</div>";
@@ -615,7 +615,7 @@ const char *ActionsJS = R"====(
         if (ModePara==0) {
           GID("PID" + iAct ).checked =false;
         } 
-        GID("PIDbox" + iAct).style.display=(ModePara==0 || (GID("selectPin"+iAct).value<=0 && iAct>0)) ?"none":"block";          
+        GID("PIDbox" + iAct).style.display=(ModePara==0 || (GID("selectPin"+iAct).value<=0 && iAct>0) || (LesActions[iAct].Actif==1 && iAct>0)) ?"none":"block";          
         GID("Propor"+iAct).style.display = (GID("PID"+iAct).checked ) ? "table-row" : "none";
         GID("Derive"+iAct).style.display = (GID("PID"+iAct).checked ) ? "table-row" : "none";
         

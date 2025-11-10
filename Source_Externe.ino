@@ -13,7 +13,7 @@ void CallESP32_Externe() {
   if (RMS_NbCx[RMSextIdx] < 100) RMS_NbCx[RMSextIdx]++;
   String host = IP2String(RMSextIP);
   if (!clientESP_RMS.connect(host.c_str(), 80, 3000)) {
-  
+
     delay(500);
     if (!clientESP_RMS.connect(host.c_str(), 80, 3000)) {
       delay(100);
@@ -31,7 +31,7 @@ void CallESP32_Externe() {
     if (millis() - timeout > 5000) {
       clientESP_RMS.stop();
       delay(100);
-      StockMessage("client ESP_RMS Timeout !" + host);      
+      StockMessage("client ESP_RMS Timeout !" + host);
       if (RMS_Note[RMSextIdx] > 0) RMS_Note[RMSextIdx]--;
       return;
     }
@@ -73,7 +73,27 @@ void CallESP32_Externe() {
     }
     for (int i = 0; i <= idx; i++) {
       switch (i) {
-
+        case 0:
+          if (Horloge == 5) {  //Mise à l'heure par ESP externe
+            int16_t H = 0, M = 0;
+            String HM="0"+data_[i];
+            int p = HM.indexOf(":");
+            
+            H = HM.substring(p - 2, p).toInt() % 24;
+            M = HM.substring(p + 1, p + 3).toInt() % 60;
+         
+            if (H != 0 && M != 0) {             
+              if (H>Int_Heure) {
+                Int_Seconde=0;
+                Int_Minute=0;
+              }
+              Int_Heure = H;
+              if (M>Int_Minute) Int_Seconde=0;
+              Int_Minute = M;
+              HeureValide = true;
+            }
+          }
+          break;
         case 1:
           Source_data = data_[i];
           break;
@@ -90,7 +110,7 @@ void CallESP32_Externe() {
           Pva_valide = data_[i].toInt();
           break;
         case 6:
-          PuissanceS_M = PintMax(data_[i].toInt()) + OffsetP; //OffsetP pour des essais uniquement
+          PuissanceS_M = PintMax(data_[i].toInt()) + OffsetP;  //OffsetP pour des essais uniquement
           break;
         case 7:
           PuissanceI_M = PintMax(data_[i].toInt());
@@ -144,7 +164,6 @@ void CallESP32_Externe() {
     }
     RMSExtDataB = "";
   }
- 
 }
 void IndexSource() {
   RMSextIdx = 0;
