@@ -15,7 +15,7 @@ const char *ParaHtml = R"====(
     .canalT {display: table;}
     .canalTr {display: table-row;width:100%;}
     .canalTc {display: table-cell;padding:1px;text-align:center;width:100%;font-size:12px;}
-    label,.nomR.#HorExt{display: table-cell;margin: 5px;text-align:left;font-size:20px;height:25px;width:70%;}
+    label,.nomR,#HorExt{display: table-cell;margin: 5px;text-align:left;font-size:20px;height:25px;width:70%;}
     input{display: table-cell;margin: 5px;text-align:left;font-size:20px;height:25px;}
     select{display: table-cell;margin: 5px;text-align:left;}
     .source label{display: table-cell;margin: 5px;text-align:left;font-size:12px;height:21px;width:initial;}

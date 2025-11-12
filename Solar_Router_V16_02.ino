@@ -1,4 +1,4 @@
-#define Version "16.01"
+#define Version "16.02"
 #define HOSTNAME "RMS-ESP32-"
 #define CLE_Rom_Init 912567899  //Valeur pour tester si ROM vierge ou pas. Un changement de valeur remet à zéro toutes les données. / Value to test whether blank ROM or not.
 
@@ -206,6 +206,8 @@
     Possibilité de choisir un routeur maître en Horloge
     Correction bug affichage Action
     Blocage integrateur I du PID à 50 si non utilisé
+  - V16.02
+    Correction bug d'affichage page paramètres
 
   
   Les détails sont disponibles sur / Details are available here:
