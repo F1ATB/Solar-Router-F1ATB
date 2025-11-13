@@ -26,6 +26,7 @@ const char *PageBrute = R"====(
     #donneeDistante{font-size:50%;text-align:center;margin-bottom:10px;display:none;}
     .bloc a:link {color:#116;text-decoration: none;}
     .bloc a:visited {color:#226;text-decoration: none;}
+    #DataESP32
   </style>
   <title>Data brute F1ATB</title>
   </head>
@@ -213,8 +214,11 @@ const char *PageBruteJS = R"====(
                 }
                 S+='<tr><td>Adresse MAC ESP32 :</td><td>'+message[5]+'</td></tr>'; 
                 var LesIP=message[7].split(US);               
-                S+='<tr><td>Adresse IP<small>V4</small> ESP32 :</td><td>'+LesIP[0]+'</td></tr>';
-                S+='<tr><td>Adresse IP<small>V6</small> ESP32 :</td><td><small>'+LesIP[1]+'</small></td></tr>';
+                S+='<tr><td>Adresse IP<small>V4</small> ESP32 :</td><td><a href="http://'+LesIP[0]+'">'+LesIP[0]+'</a></td></tr>';
+                S+='<tr><td>Adresse IP .local ESP32 :</td><td><a href="http://'+LesIP[1]+'.local">'+LesIP[1]+'.local</a></td></tr>';
+                if (LesIP[2] !=""){
+                    S+='<tr><td>Adresse IP<small>V6</small> ESP32 :</td><td><small><a href="http://['+LesIP[2]+']">['+LesIP[2]+']</a></small></td></tr>';
+                }
                 S+='<tr><td>Adresse passerelle :</td><td>'+message[8]+'</td></tr>';
                 S+='<tr><td>Masque du r&eacute;seau :</td><td>'+message[9]+'</td></tr>';
               } else {
@@ -421,7 +425,7 @@ const char *PageBruteJS = R"====(
               }
               IdxMessage=groupes[2];
             }
-            setCouleur();
+            //setCouleur();
             setTimeout('LoadData();',2000);
           }  
         }

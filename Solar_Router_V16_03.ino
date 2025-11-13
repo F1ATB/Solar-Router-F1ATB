@@ -1,4 +1,4 @@
-#define Version "16.02"
+#define Version "16.03"
 #define HOSTNAME "RMS-ESP32-"
 #define CLE_Rom_Init 912567899  //Valeur pour tester si ROM vierge ou pas. Un changement de valeur remet à zéro toutes les données. / Value to test whether blank ROM or not.
 
@@ -208,6 +208,9 @@
     Blocage integrateur I du PID à 50 si non utilisé
   - V16.02
     Correction bug d'affichage page paramètres
+  - V16.03
+    Initialisation intégrateur PID à 100 pour ne pas ouvrir au démarrage
+    Affichage adresse IP .local
 
   
   Les détails sont disponibles sur / Details are available here:
@@ -851,7 +854,7 @@ void setup() {
     Retard[i] = 100;
     RetardF[i] = 100.0;
     LastErrorPw[i] = 0;
-    IntegrErrorPw[i] = 0;
+    IntegrErrorPw[i] = 100.0;
     DeriveF[i]=0;
     OutOn[i] = 1;
     OutOff[i] = 0;
@@ -1065,7 +1068,7 @@ void setup() {
         if (WiFi.status() == WL_CONNECTED && ModeReseau < 2) {          //SR19
           RMS_IP[0] = String2IP(WiFi.localIP().toString());             //SR19
           // Go into software AP and STA modes.                                                                                                                                //SR19
-          StockMessage("Connecté par WiFi via WPS, IP : " + WiFi.localIP().toString() + " nom d'hôte : <a href='http://" + hostname + ".local'>" + hostname + ".local</a>"                                                                      //SR19
+          StockMessage("Connecté par WiFi via WPS, IP : " + WiFi.localIP().toString() + " nom d'hôte : <a href='http://" + hostname + ".local' >" + hostname + ".local</a>"                                                                      //SR19
                                                                                                                                                               " Copiez/collez le nom d'hôte dans votre navigateur. ESP32 en mode AP et STA.");  //SR19
           LireSerial();                                                                                                                                                                                                                         //SR19
           WiFi.softAP(ap_default_ssid, ap_default_psk);                                                                                                                                                                                         //on entre en mode AP pour enregistrer et lancer le RMS                                                                //SR19
@@ -1606,7 +1609,8 @@ void GestionOverproduction() {  // chaque 200ms (adaptation 5 fois par seconde)
         RetardF[i] = constrain(RetardF[i], 0.0, 100.0);
       }
     } else {
-      RetardF[i] = 100;
+      RetardF[i] = 100.0;
+      IntegrErrorPw[i]=100.0;
     }
     Retard[i] = int(RetardF[i]);           //Valeure entiere pour piloter le Triac et les relais
     if (RetardVx == i && Actif[i] != 0) {  //Affiche calcul retards port série ou Telnet

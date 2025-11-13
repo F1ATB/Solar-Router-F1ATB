@@ -306,11 +306,11 @@ void handleAjaxESP32() {  // Envoi des dernières infos sur l'ESP32
   if (ESP32_Type >= 10) {
     acces = " " + RS + " " + RS + " ";
     Mac = Ethernet.macAddress();
-    adr = Ethernet.localIP().toString() + RS + Ethernet.gatewayIP().toString() + RS + Ethernet.subnetMask().toString();
+    adr = Ethernet.localIP().toString() +US + hostname + US +"" + RS + Ethernet.gatewayIP().toString() + RS + Ethernet.subnetMask().toString();
   } else {
     acces = WiFi.RSSI() + RS + WiFi.BSSIDstr() + RS + WiFi.channel();
     Mac = WiFi.macAddress();
-    adr = WiFi.localIP().toString() + US + WiFi.globalIPv6().toString() + RS + WiFi.gatewayIP().toString() + RS + WiFi.subnetMask().toString();
+    adr = WiFi.localIP().toString() + US + hostname +  US + WiFi.globalIPv6().toString() + RS + WiFi.gatewayIP().toString() + RS + WiFi.subnetMask().toString();
   }
   S += String(H) + RS + String(ESP32_Type) + RS + acces + RS + Mac + RS + ssid + RS + adr;
   S += RS + coeur0 + RS + coeur1 + RS + String(P_cent_EEPROM) + RS;
