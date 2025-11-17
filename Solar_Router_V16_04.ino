@@ -1,4 +1,4 @@
-#define Version "16.03"
+#define Version "16.04"
 #define HOSTNAME "RMS-ESP32-"
 #define CLE_Rom_Init 912567899  //Valeur pour tester si ROM vierge ou pas. Un changement de valeur remet à zéro toutes les données. / Value to test whether blank ROM or not.
 
@@ -211,6 +211,9 @@
   - V16.03
     Initialisation intégrateur PID à 100 pour ne pas ouvrir au démarrage
     Affichage adresse IP .local
+  - V16.04
+    Modif arrondi des retards
+    Mode DemiSinus pris en compte dans MQTT.ino
 
   
   Les détails sont disponibles sur / Details are available here:
@@ -1612,7 +1615,7 @@ void GestionOverproduction() {  // chaque 200ms (adaptation 5 fois par seconde)
       RetardF[i] = 100.0;
       IntegrErrorPw[i]=100.0;
     }
-    Retard[i] = int(RetardF[i]);           //Valeure entiere pour piloter le Triac et les relais
+    Retard[i] = round(RetardF[i]);           //Valeure entiere pour piloter le Triac et les relais
     if (RetardVx == i && Actif[i] != 0) {  //Affiche calcul retards port série ou Telnet
       char buffer[50];
       sprintf(buffer, "Ecart= %4.0fW Retard= %3u P= %4.1f I= %4.1f D= %4.1f", ErrorPw, Retard[i], Propor, IntegrErrorPw[i], DeriveF[i]);

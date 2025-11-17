@@ -142,15 +142,17 @@ void callback(char *topic, byte *payload, unsigned int length) {
           if (message.indexOf("Mode\":") > 0){
               String modeRecu = StringJson("Mode", message); 
               if (modeRecu == "Inactif") {
-                  LesActions[i].Actif = 0;
+                  LesActions[i].Actif = MODE_INACTIF;
               } else if (modeRecu == "Decoupe" || modeRecu == "OnOff") {
-                  LesActions[i].Actif = 1;
+                  LesActions[i].Actif = MODE_DECOUPE_ONOFF;
               } else if (modeRecu == "Multi") {
-                  LesActions[i].Actif = 2;
+                  LesActions[i].Actif = MODE_MULTISINUS;
               } else if (modeRecu == "Train") {
-                  LesActions[i].Actif = 3;
+                  LesActions[i].Actif = MODE_TRAINSINUS;
               } else if (modeRecu == "PWM") {
-                  LesActions[i].Actif = 4;
+                  LesActions[i].Actif = MODE_PWM;
+              } else if (modeRecu == "Demi") {
+                  LesActions[i].Actif = MODE_DEMISINUS;
               }
           }
           if (message.indexOf("Periode\":") > 0) {
