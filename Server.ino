@@ -793,13 +793,13 @@ void handleAP_SetWifi() {
     TelnetPrintln(IP);
     S = "Ok" + RS;
     S += "ESP 32 connecté avec succès au wifi : " + ssid + " avec l'adresse IP : " + IP;
-    S += "<br><br> Connectez vous au wifi : " + ssid;
-    S += "<br><br> Cliquez sur l'adresse : <a href='http://" + IP + "' >http://" + IP + "</a>";
+    S += "<br /><br /> Connectez vous au wifi : " + ssid;
+    S += "<br /><br /> Cliquez sur l'adresse : <a href='http://" + IP + "' >http://" + IP + "</a>";
     dhcpOn = 1;
     ModeReseau = 0;  //A priori
     EcritureEnROM();
   } else {
-    S = "No" + RS + "ESP32 non connecté à :" + ssid + "<br>";
+    S = "No" + RS + "ESP32 non connecté à :" + ssid + "<br />";
   }
   server.sendHeader("Connection", "close");
   server.send(200, "text/html", S);

@@ -107,42 +107,42 @@ void Lecture_JSY333() {
     MK333_dataBrute = "<strong>Triphasé</strong>";
 
     if (Intensite_M1 < 0)
-      MK333_dataBrute += "<br>Phase1 : " + String(Tension_M1) + "V x " + String(Intensite_M1) + "A = " + String(int(PVA_M_inst1)) + "VA</br>";
+      MK333_dataBrute += "<br />Phase1 : " + String(Tension_M1) + "V x " + String(Intensite_M1) + "A = " + String(int(PVA_M_inst1)) + "VA</br>";
     else
-      MK333_dataBrute += "<br>Phase1 : " + String(Tension_M1) + "V x +" + String(Intensite_M1) + "A = +" + String(int(PVA_M_inst1)) + "VA</br>";
+      MK333_dataBrute += "<br />Phase1 : " + String(Tension_M1) + "V x +" + String(Intensite_M1) + "A = +" + String(int(PVA_M_inst1)) + "VA</br>";
 
     if (Intensite_M2 < 0)
-      MK333_dataBrute += "<br>Phase2 : " + String(Tension_M2) + "V x " + String(Intensite_M2) + "A = " + String(int(PVA_M_inst2)) + "VA</br>";
+      MK333_dataBrute += "<br />Phase2 : " + String(Tension_M2) + "V x " + String(Intensite_M2) + "A = " + String(int(PVA_M_inst2)) + "VA</br>";
     else
-      MK333_dataBrute += "<br>Phase2 : " + String(Tension_M2) + "V x +" + String(Intensite_M2) + "A = +" + String(int(PVA_M_inst2)) + "VA</br>";
+      MK333_dataBrute += "<br />Phase2 : " + String(Tension_M2) + "V x +" + String(Intensite_M2) + "A = +" + String(int(PVA_M_inst2)) + "VA</br>";
 
     if (Intensite_M3 < 0)
-      MK333_dataBrute += "<br>Phase3 : " + String(Tension_M3) + "V x " + String(Intensite_M3) + "A = " + String(int(PVA_M_inst3)) + "VA</br>";
+      MK333_dataBrute += "<br />Phase3 : " + String(Tension_M3) + "V x " + String(Intensite_M3) + "A = " + String(int(PVA_M_inst3)) + "VA</br>";
     else
-      MK333_dataBrute += "<br>Phase3 : " + String(Tension_M3) + "V x +" + String(Intensite_M3) + "A = +" + String(int(PVA_M_inst3)) + "VA</br>";
+      MK333_dataBrute += "<br />Phase3 : " + String(Tension_M3) + "V x +" + String(Intensite_M3) + "A = +" + String(int(PVA_M_inst3)) + "VA</br>";
 
     if (PuissanceS_M_inst == 0)
-      MK333_dataBrute += "<br>Puissance active injectée    : " + String(PuissanceI_M_inst) + "W</br>";
+      MK333_dataBrute += "<br />Puissance active injectée    : " + String(PuissanceI_M_inst) + "W</br>";
     else
-      MK333_dataBrute += "<br>Puissance active soutirée    : " + String(PuissanceS_M_inst) + "W</br>";
+      MK333_dataBrute += "<br />Puissance active soutirée    : " + String(PuissanceS_M_inst) + "W</br>";
 
     if (PVAS_M_inst == 0)
-      MK333_dataBrute += "<br>Puissance apparente injectée : " + String(PVAI_M_inst) + "VA</br>";
+      MK333_dataBrute += "<br />Puissance apparente injectée : " + String(PVAI_M_inst) + "VA</br>";
     else
-      MK333_dataBrute += "<br>Puissance apparente soutirée : " + String(PVAS_M_inst) + "VA</br>";
+      MK333_dataBrute += "<br />Puissance apparente soutirée : " + String(PVAS_M_inst) + "VA</br>";
 
     if (PVA_M_inst1 != 0)
-      MK333_dataBrute += "<br>Facteur de puissance phase 1 : " + String(abs(PW_inst1 / PVA_M_inst1)) + "</br>";
+      MK333_dataBrute += "<br />Facteur de puissance phase 1 : " + String(abs(PW_inst1 / PVA_M_inst1)) + "</br>";
     if (PVA_M_inst2 != 0)
-      MK333_dataBrute += "<br>Facteur de puissance phase 2 : " + String(abs(PW_inst2 / PVA_M_inst2)) + "</br>";
+      MK333_dataBrute += "<br />Facteur de puissance phase 2 : " + String(abs(PW_inst2 / PVA_M_inst2)) + "</br>";
     if (PVA_M_inst3 != 0)
-      MK333_dataBrute += "<br>Facteur de puissance phase 3 : " + String(abs(PW_inst3 / PVA_M_inst3)) + "</br>";
+      MK333_dataBrute += "<br />Facteur de puissance phase 3 : " + String(abs(PW_inst3 / PVA_M_inst3)) + "</br>";
 
-    MK333_dataBrute += "<br>Energie jour nette soutirée (Linky): " + String(Energie_jour_Soutiree) + "Wh</br>";
-    MK333_dataBrute += "<br>Energie jour nette injectée (Linky): " + String(Energie_jour_Injectee) + "Wh</br>";
+    MK333_dataBrute += "<br />Energie jour nette soutirée (Linky): " + String(Energie_jour_Soutiree) + "Wh</br>";
+    MK333_dataBrute += "<br />Energie jour nette injectée (Linky): " + String(Energie_jour_Injectee) + "Wh</br>";
 
-    MK333_dataBrute += "<br>Energie totale soutirée : " + String(Energie_M_Soutiree) + "Wh</br>";
-    MK333_dataBrute += "<br>Energie totale injectée : " + String(Energie_M_Injectee) + "Wh</br>";
+    MK333_dataBrute += "<br />Energie totale soutirée : " + String(Energie_M_Soutiree) + "Wh</br>";
+    MK333_dataBrute += "<br />Energie totale injectée : " + String(Energie_M_Injectee) + "Wh</br>";
 
     Pva_valide = true;
     filtre_puissance();

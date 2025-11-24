@@ -2,23 +2,25 @@
 // Page HTML et Javascript Mise à l'heure horloge interne *
 //********************************************************
 const char *CouleursHtml = R"====(
-  <!doctype html>
-  <html><head><meta charset="UTF-8">
-  <link rel="stylesheet" href="/commun.css">
-  <style>
-    .Zone{width:100%;border:1px solid grey;border-radius:10px;margin-top:10px;background-color:rgba(30,30,30,0.3);} 
-    .boldT{text-align:left;font-weight:bold;padding:10px;}
-    .form {margin:auto;padding:10px;display: table;text-align:left;width:100%;}
-    .ligne {display: table-row;margin-top:5px;}
-    .ligneB{font-weight: bold;}
-    .ligne div{display: table-cell;margin: 5px;text-align:left;font-size:20px;height:25px;}
-    .liste{display:flex;justify-content:center;text-align:left;} 
-    #onglets2{display:block;}
-    .Bparametres{border:inset 10px azure;}
-    .Bcouleurs{border:inset 4px azure;}
-    .les_boutons{display:flex;justify-content:space-between;}
-  </style>
-  <title>Colors</title>
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="/commun.css">
+    <style>
+      .Zone{width:100%;border:1px solid grey;border-radius:10px;margin-top:10px;background-color:rgba(30,30,30,0.3);} 
+      .boldT{text-align:left;font-weight:bold;padding:10px;}
+      .form {margin:auto;padding:10px;display: table;text-align:left;width:100%;}
+      .ligne {display: table-row;margin-top:5px;}
+      .ligneB{font-weight: bold;}
+      .ligne div{display: table-cell;margin: 5px;text-align:left;font-size:20px;height:25px;}
+      .liste{display:flex;justify-content:center;text-align:left;} 
+      #onglets2{display:block;}
+      .Bparametres{border:inset 10px azure;}
+      .Bcouleurs{border:inset 4px azure;}
+      .les_boutons{display:flex;justify-content:space-between;}
+    </style>
+    <title>Colors</title>
   </head>
   <body onload="Init();">
     <div id='lesOnglets'></div>
@@ -26,108 +28,122 @@ const char *CouleursHtml = R"====(
     <div class="Zone">
         <div class="form"  id="colors"></div>
     </div>
-    
-    <br>
+    <br />
     <div class='les_boutons'>
       <input  class='bouton' type='button' onclick="CouleurDefaut();CoulPage();setCouleur();" value='Couleurs par défaut' >
-        <input  class='bouton' type='button' onclick="SendValues();" value='Sauvegarder' >
+      <input  class='bouton' type='button' onclick="SendValues();" value='Sauvegarder' >
     </div>
     <small>Valide après 30s ou un Ctrl+F5 pour vider le cache du navigateur.</small>
     <script>
-        var BordsInverse=[".Bparametres",".Bcouleurs"];
-    
-        function Init(){
-          SetHautBas();
-          SetCurseurs();
-          LoadParaRouteur(); 
-          LoadCouleurs();        
+      var BordsInverse=[".Bparametres",".Bcouleurs"];
+      function Init(){
+        SetHautBas();
+        SetCurseurs();
+        LoadParaRouteur(); 
+        LoadCouleurs();        
+      }
+      function SetCurseurs() {
+        var S="<div class='ligne ligneB'><div>Champ</div><div>Texte</div><div>Fond / Courbe</div><div>Bordure</div></div>";
+        for (var i=0;i<Koul.length;i++){
+          S +=  "<div class='ligne'>";
+          S += "<div>"+ Koul[i][0] + "</div>";
+          S += "<div><input type='color' id='text_color"+ i +"' value='#000000'  onchange='readCouleur();'></div>";
+          S += "<div><input type='color' id='bg_color"+ i +"' value='#000000'  onchange='readCouleur();'></div>";
+          S += "<div><input type='color' id='bord_color"+ i +"' value='#000000'  onchange='readCouleur();'></div>";
+          S +="</div>";
         }
-        function SetCurseurs(){
-            var S="<div class='ligne ligneB'><div>Champ</div><div>Texte</div><div>Fond / Courbe</div><div>Bordure</div></div>";
-            for (var i=0;i<Koul.length;i++){
-              S +=  "<div class='ligne'>";
-                  S += "<div>"+ Koul[i][0] + "</div>";
-                  S += "<div><input type='color' id='text_color"+ i +"' value='#000000'  onchange='readCouleur();'></div>";
-                  S += "<div><input type='color' id='bg_color"+ i +"' value='#000000'  onchange='readCouleur();'></div>";
-                  S += "<div><input type='color' id='bord_color"+ i +"' value='#000000'  onchange='readCouleur();'></div>";
-              S +="</div>";
-            }
-            GH("colors",S);
-
-        }
-        function readCouleur(){
-          for (var i=0;i<Koul.length;i++){
-            if (Koul[i][1]) Koul[i][1]=GID("text_color"+ i).value.substr(1); //Texte
-            if (Koul[i][3]) Koul[i][3]=GID("bg_color"+ i).value.substr(1); //Back ground
-            if (Koul[i][5]) Koul[i][5]=GID("bord_color"+ i).value.substr(1);
+        GH("colors", S);
+      }
+      function readCouleur() {
+        for (var i=0;i<Koul.length;i++) {
+          // Texte
+          if (Koul[i][1]) {
+            Koul[i][1]=GID("text_color"+ i).value.substr(1);
           }
-          CoulPage();
-          setCouleur();  
-        }
-        function CoulPage(){
-            setColorQuery("body","#" + Koul[0][1]);
-            document.body.style.background="linear-gradient(#"+Koul[0][5]+",#"+ Koul[0][3]+",#"+Koul[0][5]+")";
-        }
-        function SendValues(){
-          var S="?couleurs=";
-          for (var i=0;i<Koul.length;i++){
-            if (Koul[i][1]) S +=Koul[i][1]; //Texte
-            if (Koul[i][3]) S +=Koul[i][3]; //Back ground
-            if (Koul[i][5]) S +=Koul[i][5];
+          //Back ground
+          if (Koul[i][3]){
+            Koul[i][3]=GID("bg_color"+ i).value.substr(1);
           }
-          var xhttp = new XMLHttpRequest();
-          xhttp.onreadystatechange = function() { 
-            if (this.readyState == 4 && this.status == 200) {
-              var retour=this.responseText;
-              location.reload();
-            }         
-          };
-          xhttp.open('GET', '/CouleurUpdate'+S, true);
-          xhttp.send();
- 
-
+          if (Koul[i][5]) {
+            Koul[i][5]=GID("bord_color"+ i).value.substr(1);
+          }
         }
-        function AdaptationSource(){}
-        function FinParaRouteur(){
-          GID("Bheure").style.display= (Horloge>1) ? "inline-block": "none";
-          GID("Bwifi").style.display= (ESP32_Type<10) ? "inline-block": "none";
+        CoulPage();
+        setCouleur();  
+      }
+      function CoulPage() {
+        setColorQuery("body","#" + Koul[0][1]);
+        document.body.style.background="linear-gradient(#"+Koul[0][5]+",#"+ Koul[0][3]+",#"+Koul[0][5]+")";
+      }
+      function SendValues() {
+        var S="?couleurs=";
+        for (var i=0;i<Koul.length;i++){
+          if (Koul[i][1]) S +=Koul[i][1]; //Texte
+          if (Koul[i][3]) S +=Koul[i][3]; //Back ground
+          if (Koul[i][5]) S +=Koul[i][5];
         }
-         
-        
+        var xhttp = new XMLHttpRequest();
+        xhttp.onreadystatechange = function() { 
+          if (this.readyState == 4 && this.status == 200) {
+            var retour=this.responseText;
+            location.reload();
+          }         
+        };
+        xhttp.open('GET', '/CouleurUpdate'+S, true);
+        xhttp.send();
+      }
+      function AdaptationSource() {}
+      function FinParaRouteur() {
+        GID("Bheure").style.display= (Horloge>1) ? "inline-block": "none";
+        GID("Bwifi").style.display= (ESP32_Type<10) ? "inline-block": "none";
+      }
     </script>
-    <br>
+    <br />
     <div id='pied'></div>
-    <br>
+    <br />
   <script src="/ParaRouteurJS"></script>
   <script src="/CommunCouleurJS"></script>
-  </body></html>
- 
+  </body>
+</html>
  )====";
 
 
 const char *CommunCouleurJS = R"====(
-  var Koul=[]; //Couleurs courantes
-  var Coul_Page,Coul_Bout,Coul_W,Coul_VA,Coul_Wh,Coul_Tab,Coul_Graphe,Coul_Temp,Coul_Ouvre;//Index couleurs
-  
+  //Couleurs courantes  
+  var Koul = [];
+  //Index couleurs
+  var Coul_Page, Coul_Bout, Coul_W, Coul_VA, Coul_Wh, Coul_Tab, Coul_Graphe, Coul_Temp, Coul_Ouvre;
   function LoadCouleurs() {
     var xhttp = new XMLHttpRequest();
-        xhttp.onreadystatechange = function() { 
-          if (this.readyState == 4 && this.status == 200) {
-            var Retour=this.responseText;
-            if (Retour!=""){
-              var L=Retour.length;
-              var j=0;
-              for (var i=0;i<Koul.length;i++){
-                if (Koul[i][1] && (j+6)<=L) {Koul[i][1] = Retour.substring(j,j+6); j=j+6; }//Texte
-                if (Koul[i][3] && (j+6)<=L) {Koul[i][3]= Retour.substring(j,j+6); j=j+6; } //Back ground
-                if (Koul[i][5] && (j+6)<=L) {Koul[i][5]= Retour.substring(j,j+6); j=j+6; } //Border
-              }
+    xhttp.onreadystatechange = function() { 
+      if (this.readyState == 4 && this.status == 200) {
+        var Retour = this.responseText;
+        if (Retour != "") {
+          var L=Retour.length;
+          var j = 0;
+          for (var i = 0; i < Koul.length; i++) {
+            // Texte
+            if (Koul[i][1] && (j+6) <= L) {
+              Koul[i][1] = Retour.substring(j,j+6);
+              j = j + 6;
             }
-            setCouleur();
-          }         
-        };
-        xhttp.open('GET', '/CouleursAjax', true);
-        xhttp.send();
+            // Back ground
+            if (Koul[i][3] && (j + 6) <= L) {
+              Koul[i][3] = Retour.substring(j,j+6);
+              j = j + 6;
+            }
+            // Border
+            if (Koul[i][5] && (j + 6) <= L) {
+              Koul[i][5] = Retour.substring(j, j+6);
+              j = j + 6;
+            }
+          }
+        }
+        setCouleur();
+      }         
+    };
+    xhttp.open('GET', '/CouleursAjax', true);
+    xhttp.send();
   }
   
   function setCouleur(){
@@ -142,7 +158,6 @@ const char *CommunCouleurJS = R"====(
       } else {
         if (GID("text_color"+ i)) GID("text_color"+ i).style.display="none";
       }
-
       if (Koul[i][3]){ //Background
         if (GID("bg_color"+ i)) GID("bg_color"+ i).value = "#" +Koul[i][3];
         if(Koul[i][4]) {
@@ -153,7 +168,6 @@ const char *CommunCouleurJS = R"====(
       } else {
         if (GID("bg_color"+ i)) GID("bg_color"+ i).style.display="none";
       }
-      
       if (Koul[i][5]){ //Border
         if (GID("bord_color"+ i)) GID("bord_color"+ i).value = "#" +Koul[i][5];
         if (Koul[i][6]){
@@ -165,7 +179,6 @@ const char *CommunCouleurJS = R"====(
         if (GID("bord_color"+ i)) GID("bord_color"+ i).style.display="none";
       }       
     }
-    
     //Inversion bouton haut page
     for (var i=0;i<BordsInverse.length;i++){
       var liste=document.querySelectorAll(BordsInverse[i]);
@@ -176,14 +189,13 @@ const char *CommunCouleurJS = R"====(
         var tmp = rgb.split(",");
         var hexColor="#";
         for(var k=0;k<3;k++){
-            var c=Math.min(255,Math.floor(tmp[k]*1.8)); //eclaircir
-            var H="00" +c.toString(16);
-            hexColor += H.substr(-2);
+          var c=Math.min(255,Math.floor(tmp[k]*1.8)); //eclaircir
+          var H="00" +c.toString(16);
+          hexColor += H.substr(-2);
         }
         liste[j].style.borderColor=hexColor;
       }
     }
-    
   }
   
   function setColorQuery(S,C){
@@ -236,7 +248,9 @@ const char *CommunCouleurJS = R"====(
     Coul.push(["Ouverture SSR/Triac 1",,,"33ffaa",,,]);
     Coul.push(["Ouverture SSR/Triac 2",,,"6688ff",,,]);
     Coul.push(["Ouverture SSR/Triac 3",,,"aaff11",,,]);
-    Koul=Coul.slice(); //copie de travail
+    //copie de travail
+    Koul=Coul.slice();
   }
-  CouleurDefaut(); //Copie pour Couleurs courantes
+  //Copie pour Couleurs courantes
+  CouleurDefaut();
  )====";
