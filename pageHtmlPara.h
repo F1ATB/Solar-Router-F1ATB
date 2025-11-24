@@ -69,7 +69,7 @@ const char *ParaHtml = R"====(
             <input type='checkbox' name='TempoRTEon' id='TempoRTEon' style='width:25px;' ><span class='fsize10'>Nécessite un Reset de l'ESP32</span>
           </div>
           <div class='ligne' id="l_wifi_1">
-            <label for='MQTTRepete'>Puissances et températures envoyées au serveur MQTT<br>Période (s) répétition  (0= pas d'envoi) : </label>
+            <label for='MQTTRepete'>Puissances et températures envoyées au serveur MQTT<br />Période (s) répétition  (0= pas d'envoi) : </label>
             <input type='number' name='MQTTRepete' id='MQTTRepete'  onclick="checkDisabled();" >
           </div>
           <div class='ligne' id="l_wifi_2">
@@ -168,13 +168,13 @@ const char *ParaHtml = R"====(
             <input type='radio' name='pLED' id='LED3' value="3"  >
           </div>
           <div class="ligneF source">
-            <label for='LED10' style='text-align:right;'>SSD1306/1309 OLED<br>sda=gpio 18, scl=gpio 19</label>
+            <label for='LED10' style='text-align:right;'>SSD1306/1309 OLED<br />sda=gpio 18, scl=gpio 19</label>
             <input type='radio' name='pLED' id='LED10' value="10"  >
-            <label for='LED11' style='text-align:right;'>SSD1306/1309 OLED<br>sda=gpio 4, scl=gpio 32</label>
+            <label for='LED11' style='text-align:right;'>SSD1306/1309 OLED<br />sda=gpio 4, scl=gpio 32</label>
             <input type='radio' name='pLED' id='LED11' value="11"  >
-            <label for='LED12' style='text-align:right;'>SH1106 OLED<br>sda=gpio 18, scl=gpio 19</label>
+            <label for='LED12' style='text-align:right;'>SH1106 OLED<br />sda=gpio 18, scl=gpio 19</label>
             <input type='radio' name='pLED' id='LED12' value="12"  >
-            <label for='LED13' style='text-align:right;'>SH1106 OLED<br>sda=gpio 4, scl=gpio 32</label>
+            <label for='LED13' style='text-align:right;'>SH1106 OLED<br />sda=gpio 4, scl=gpio 32</label>
             <input type='radio' name='pLED' id='LED13' value="13"  >
           </div>
         </div>
@@ -208,11 +208,11 @@ const char *ParaHtml = R"====(
         </div>
         <div class="form"  id="infoIP">
           <div class='ligne'>
-            <label for='adrIP'>Adresse IP si fixe (ex : 192.168.1.245) : <br><span class='fsize10'>N&eacute;cessite un Reset de l'ESP32</span></label>
+            <label for='adrIP'>Adresse IP si fixe (ex : 192.168.1.245) : <br /><span class='fsize10'>Nécessite un Reset de l'ESP32</span></label>
             <input type='text' name='adrIP' id='adrIP' >
           </div>
           <div class='ligne'>
-            <label for='gateway'>Passerelle / Gateway (ex : 192.168.1.254) :  <br><span class='fsize10'>En g&eacute;n&eacute;ral l'adresse de votre box internet</span></label>
+            <label for='gateway'>Passerelle / Gateway (ex : 192.168.1.254) :  <br /><span class='fsize10'>En général l'adresse de votre box internet</span></label>
             <input type='text' name='gateway' id='gateway' >
           </div>
           <div class='ligne'>
@@ -220,7 +220,7 @@ const char *ParaHtml = R"====(
             <input type='text' name='masque' id='masque' >
           </div>
           <div class='ligne'>
-            <label for='dns'>DNS (ex : 192.168.1.254) :  <br><span class='fsize10'>En g&eacute;n&eacute;ral l'adresse de votre box internet</span></label>
+            <label for='dns'>DNS (ex : 192.168.1.254) :  <br /><span class='fsize10'>En général l'adresse de votre box internet</span></label>
             <input type='text' name='dns' id='dns' >
           </div>
         </div>
@@ -292,11 +292,11 @@ const char *ParaHtml = R"====(
             <input type='text' name='RMSextIP' id='RMSextIP' autocomplete='on'>
           </div>
           <div class='ligne' id="ligneEnphaseUser">
-            <label for='EnphaseUser'>Enphase Envoy-S metered User : <span class='fsize10'><br>Pour firmvare Envoy-S V7 seulement</span></label>
+            <label for='EnphaseUser'>Enphase Envoy-S metered User : <span class='fsize10'><br />Pour firmvare Envoy-S V7 seulement</span></label>
             <input type='text' name='EnphaseUser' id='EnphaseUser' autocomplete='on'>
           </div>
           <div class='ligne' id="ligneEnphasePwd">
-            <label for='EnphasePwd'>Enphase Envoy-S metered Password : <span class='fsize10'><br>Pour firmvare Envoy-S V7 seulement</span></label>
+            <label for='EnphasePwd'>Enphase Envoy-S metered Password : <span class='fsize10'><br />Pour firmvare Envoy-S V7 seulement</span></label>
             <input type='password' name='EnphasePwd' id='EnphasePwd' autocomplete='on'>
           </div>
           <div class='ligne' id="ligneEnphaseSerial">
@@ -383,13 +383,13 @@ const char *ParaHtml = R"====(
         </div>
     </div>
     <div  id='BoutonsBas'>        
-        <br><input  class='bouton' type='button' onclick="SendValues();" value='Sauvegarder' >
+        <br /><input  class='bouton' type='button' onclick="SendValues();" value='Sauvegarder' >
         <div class="lds-dual-ring" id="attente"></div>
         <input  class='bouton' type='button' onclick='Reset();' value='ESP32 Reset' >
     </div>
-    <br>
+    <br />
     <div id='pied'></div>
-    <br>
+    <br />
     <div id="donEnv" >
       <form action="https://www.paypal.com/donate" method="post" target="_top">
         <input type="hidden" name="hosted_button_id" value="Z35E9D5D9N9DN" >
@@ -690,12 +690,12 @@ const char *ParaJS = R"====(
       if (Source=='Enphase') txtExt = "Enphase-Envoy";
       if (Source=='SmartG') txtExt = "SmartGateways";
       if (Source=='HomeW') txtExt = "HomeWizard";
-      var lab_enphaseShelly= "Numéro série passerelle IQ Enphase : <span class='fsize10'><br>Pour firmvare Envoy-S V7 seulement</span>";
+      var lab_enphaseShelly= "Numéro série passerelle IQ Enphase : <span class='fsize10'><br />Pour firmvare Envoy-S V7 seulement</span>";
       if (Source=='ShellyEm' || Source=='ShellyPro') {
         txtExt = "Shelly (Pro) Em ";
-        lab_enphaseShelly="<div class='shem'><strong>Shelly (Pro) Em</strong><br>";
-        lab_enphaseShelly +="Monophasé : Courant maison sur voie 0,1 ou 2<br>Triphasé : mettre 3";
-        lab_enphaseShelly +="</div><div class='shem'><Strong>Shelly Em Gen3</strong><br>";
+        lab_enphaseShelly="<div class='shem'><strong>Shelly (Pro) Em</strong><br />";
+        lab_enphaseShelly +="Monophasé : Courant maison sur voie 0,1 ou 2<br />Triphasé : mettre 3";
+        lab_enphaseShelly +="</div><div class='shem'><Strong>Shelly Em Gen3</strong><br />";
         lab_enphaseShelly +="Courant maison sur voie 0 = 30, voie 1 = 31</div>";
       }
       GID('labExtIp').innerHTML = txtExt;
@@ -705,9 +705,9 @@ const char *ParaJS = R"====(
       GID('ligneEnphasePwd').style.display = (Source=='Enphase') ? "table-row" : "none";
       GID('ligneEnphaseSerial').style.display = (Source=='Enphase' || Source=='ShellyEm' || Source=='ShellyPro') ? "table-row" : "none"; //Numéro de serie ou voie
   }
-  function FinParaRouteur(){
+  function FinParaRouteur() {
     var Soptions="";
-    for (var c=0;c<nb_ESP;c++){
+    for (var c=0;c<nb_ESP;c++) {
       GID("RMS_IP"+c).value =IP_RMS[c];
       GH("RMS_Nom"+c,nomRMS[c]);
       GID("Routeur_"+c).style="display: table-row";
@@ -720,225 +720,231 @@ const char *ParaJS = R"====(
         GID("Routeur_"+d).style="display: table-row";
       }
     }
-    
     for (var i=0;i<4;i++){      
       GH("refTempIP"+i,Soptions);
       GID("refTempIP"+i).value = refTempIP[i];
     }
-     setTimeout('checkDisabled();',500);
-                
+    setTimeout(checkDisabled,500);        
   }
 )====";
 
 //Paramètres du routeur et fonctions générales pour toutes les pages.
 const char *ParaRouteurJS = R"====(
-  var Source="";
-  var Source_data="";
-  var RMSextIP="";
-  var ES=String.fromCharCode(27); //Escape Separator
-  var FS=String.fromCharCode(28); //File Separator
-  var GS=String.fromCharCode(29); //Group Separator
-  var RS=String.fromCharCode(30); //Record Separator
-  var US=String.fromCharCode(31); //Unit Separator
-  var nomSondeFixe="Sonde Fixe";
-  var nomSondeMobile="Sonde Mobile";
-  var nb_ESP = 0;
-  var nomRMS=[];
-  var IP_RMS=[];
-  var nomTemperature=[];
-  var nomActions=[];
-  var ModeReseau=0;
-  var ModePara=0;
-  var Horloge=0;
-  var LocalIP ="";
-  var ESP32_Type =0;
-    
-  function LoadParaRouteur() {
-    var xhttp = new XMLHttpRequest();
-        xhttp.onreadystatechange = function() { 
-          if (this.readyState == 4 && this.status == 200) {
-             var LesParas=this.responseText;
-             var Para=LesParas.split(GS);
-             Source=Para[0];
-             Source_data=Para[1];
-             LocalIP=Para[2];
-             RMSextIP= Para[7]; 
-             AdaptationSource();  
-             GH("nom_R",Para[3]);
-             GH("version",Para[4]);
-             GH("nomSondeFixe",Para[5]);
-             GH("nomSondeMobile",Para[6]); 
-             nomSondeFixe=Para[5];
-             nomSondeMobile=Para[6];
-             ModeReseau=Para[8];
-             ModePara=Para[9];
-             Horloge=Para[10];
-             ESP32_Type=Para[11];
-             var IpNoms=Para[12].split(RS);
-             nb_ESP=IpNoms.length - 1;
-             for (var c=0;c<nb_ESP;c++){
-              var ip_nom=IpNoms[c].split(US);
-              IP_RMS[c]=int2ip(ip_nom[0]); 
-              nomRMS[c]=ip_nom[1];
-              if (c==0) {
-                var LesTemp=ip_nom[2].split(FS); //Noms temperature ESP local
-                for (var i=0;i<LesTemp.length -1;i++){
-                  var LaTemp=LesTemp[i].split(ES);
-                  nomTemperature[LaTemp[0]] = LaTemp[1];
-                }
-              }
-              var lesNomsActions=ip_nom[3].split(FS);
-              nomActions[c]=[]; 
-              for (var i=0;i<lesNomsActions.length -1;i++){
-                  var Nact=lesNomsActions[i].split(ES);
-                  nomActions[c][i]=Nact;
-              }
-             }
-             IP_RMS[0] = Para[2]; 
-             document.title=nomRMS[0] +" - " + document.title;
-             nomRMS[0] = nomRMS[0] +" (local)";
-             FinParaRouteur();
-          
-          }         
-        };
-        xhttp.open('GET', '/ParaRouteurAjax', true);
-        xhttp.send();
-  }
-  function GID(id) { return document.getElementById(id); }
-  function GH(id, T) {
-    if ( GID(id)){
-     GID(id).innerHTML = T; }
-    }
-  function GV(id, T) { GID(id).value = T; }
+var Source="";
+var Source_data="";
+var RMSextIP="";
+var ES=String.fromCharCode(27); //Escape Separator
+var FS=String.fromCharCode(28); //File Separator
+var GS=String.fromCharCode(29); //Group Separator
+var RS=String.fromCharCode(30); //Record Separator
+var US=String.fromCharCode(31); //Unit Separator
+var nomSondeFixe="Sonde Fixe";
+var nomSondeMobile="Sonde Mobile";
+var nb_ESP = 0;
+var nomRMS=[];
+var IP_RMS=[];
+var nomTemperature=[];
+var nomActions=[];
+var ModeReseau=0;
+var ModePara=0;
+var Horloge=0;
+var LocalIP ="";
+var ESP32_Type =0;
   
-  function int2ip (V) {
-    var ipInt=parseInt(V);
-    return ( (ipInt>>>24) +'.' + (ipInt>>16 & 255) +'.' + (ipInt>>8 & 255) +'.' + (ipInt & 255) );
+function LoadParaRouteur() {
+  var xhttp = new XMLHttpRequest();
+  xhttp.onreadystatechange = function() { 
+    if (this.readyState == 4 && this.status == 200) {
+      var LesParas=this.responseText;
+      var Para=LesParas.split(GS);
+      Source=Para[0];
+      Source_data=Para[1];
+      LocalIP=Para[2];
+      RMSextIP= Para[7]; 
+      AdaptationSource();  
+      GH("nom_R",Para[3]);
+      GH("version",Para[4]);
+      GH("nomSondeFixe",Para[5]);
+      GH("nomSondeMobile",Para[6]); 
+      nomSondeFixe=Para[5];
+      nomSondeMobile=Para[6];
+      ModeReseau=Para[8];
+      ModePara=Para[9];
+      Horloge=Para[10];
+      ESP32_Type=Para[11];
+      var IpNoms=Para[12].split(RS);
+      nb_ESP=IpNoms.length - 1;
+      for (var c=0;c<nb_ESP;c++){
+      var ip_nom=IpNoms[c].split(US);
+      IP_RMS[c]=int2ip(ip_nom[0]); 
+      nomRMS[c]=ip_nom[1];
+      if (c==0) {
+        var LesTemp=ip_nom[2].split(FS); //Noms temperature ESP local
+        for (var i=0;i<LesTemp.length -1;i++){
+          var LaTemp=LesTemp[i].split(ES);
+          nomTemperature[LaTemp[0]] = LaTemp[1];
+        }
+      }
+      var lesNomsActions=ip_nom[3].split(FS);
+      nomActions[c]=[]; 
+      for (var i=0;i<lesNomsActions.length -1;i++){
+        var Nact=lesNomsActions[i].split(ES);
+        nomActions[c][i]=Nact;
+      }
+      }
+      IP_RMS[0] = Para[2]; 
+      document.title=nomRMS[0] +" - " + document.title;
+      nomRMS[0] = nomRMS[0] +" (local)";
+      FinParaRouteur();
+    }         
+  };
+  xhttp.open('GET', '/ParaRouteurAjax', true);
+  xhttp.send();
+}
+function GID(id) {
+  return document.getElementById(id);
+}
+function GH(id, T) {
+  if ( GID(id)) {
+    GID(id).innerHTML = T;
   }
-  function ip2int(ip) {
-    ip=ip.trim();
-    return ip.split('.').reduce(function(ipInt, octet) { return (ipInt<<8) + parseInt(octet, 10)}, 0) >>> 0;
-  }
-  function SetHautBas(){
-      var S="<div class='onglets'><div class='Bonglet Baccueil'><a href='/'>Accueil</a></div><div class='Bonglet Bbrut'><a href='/Brute'>Donn&eacute;es brutes</a></div><div class='Bonglet Bparametres'><a href='/Para'>Param&egrave;tres</a></div><div class='Bonglet Bactions'><a href='/Actions'>Actions</a></div></div>";
-      S +="<div id='onglets2'><div class='Bonglet2 Bgeneraux'><a href='/Para'>Généraux</a></div><div class='Bonglet2 Bexport'><a href='/Export'>Import / Export</a></div><div class='Bonglet2 Bota'><a href='/OTA'>Mise à jour par OTA</a></div><div id='Bwifi' class='Bonglet2 Bwifi'><a href='/Wifi'>WIFI</a></div>";
-      S +="<div class='Bonglet2 Bheure' id='Bheure'><a href='/Heure'>Heure</a></div><div class='Bonglet2 Bcouleurs'><a href='/Couleurs'>Couleurs</a></div></div>";
-      S +="<h2 id='nom_R'>Routeur Solaire - RMS</h2>";
-      GH("lesOnglets",S);
-      GH("pied","<div>Routeur Version : <span id='version'></span></div><div><a href='https:F1ATB.fr/fr' >F1ATB.fr</a></div>");
-  }
-  function Hdeci2Hmn(H){
-    var HI=parseInt(H);
-    return Math.floor(HI / 100) + ":" + ("0" + Math.floor(0.6 * (HI +0.4 - 100 * Math.floor(HI / 100)))).substr(-2, 2);
-  }
-  function Hmn2Hdeci(H){
-    var separ=":";
-    if (H.indexOf(".")>0) separ=".";
-    if (H.indexOf("h")>0) separ="h";
-    var val=H.split(separ);
-    var h = Math.floor(100*parseInt(val[0]) + 0.4 + 100*parseInt(val[1])/60);
-    h=Math.max(0,h);h=Math.min(2400,h);
-    return h;  
-  }
-  function Reset(){
-      GID("attente").style="visibility: visible;";
-      var xhttp = new XMLHttpRequest();
-        xhttp.onreadystatechange = function() { 
-          if (this.readyState == 4 && this.status == 200) {
-            GID('BoutonsBas').innerHTML=this.responseText;
-            GID("attente").style="visibility: hidden;";
-            setTimeout(location.reload(),1000);
-          }         
-        };
-        xhttp.open('GET', '/restart', true);
-        xhttp.send();
-  }
+}
+function GV(id, T) {
+  GID(id).value = T;
+}
+function int2ip (V) {
+  var ipInt=parseInt(V);
+  return ( (ipInt>>>24) +'.' + (ipInt>>16 & 255) +'.' + (ipInt>>8 & 255) +'.' + (ipInt & 255) );
+}
+function ip2int(ip) {
+  ip=ip.trim();
+  return ip.split('.').reduce(function(ipInt, octet) { return (ipInt<<8) + parseInt(octet, 10)}, 0) >>> 0;
+}
+function SetHautBas(){
+  var S="<div class='onglets'><div class='Bonglet Baccueil'><a href='/'>Accueil</a></div><div class='Bonglet Bbrut'><a href='/Brute'>Données brutes</a></div><div class='Bonglet Bparametres'><a href='/Para'>Paramètres</a></div><div class='Bonglet Bactions'><a href='/Actions'>Actions</a></div></div>";
+  S +="<div id='onglets2'><div class='Bonglet2 Bgeneraux'><a href='/Para'>Généraux</a></div><div class='Bonglet2 Bexport'><a href='/Export'>Import / Export</a></div><div class='Bonglet2 Bota'><a href='/OTA'>Mise à jour par OTA</a></div><div id='Bwifi' class='Bonglet2 Bwifi'><a href='/Wifi'>WIFI</a></div>";
+  S +="<div class='Bonglet2 Bheure' id='Bheure'><a href='/Heure'>Heure</a></div><div class='Bonglet2 Bcouleurs'><a href='/Couleurs'>Couleurs</a></div></div>";
+  S +="<h2 id='nom_R'>Routeur Solaire - RMS</h2>";
+  GH("lesOnglets",S);
+  GH("pied","<div>Routeur Version : <span id='version'></span></div><div><a href='https:F1ATB.fr/fr' >F1ATB.fr</a></div>");
+}
+function Hdeci2Hmn(H){
+  var HI=parseInt(H);
+  return Math.floor(HI / 100) + ":" + ("0" + Math.floor(0.6 * (HI +0.4 - 100 * Math.floor(HI / 100)))).substr(-2, 2);
+}
+function Hmn2Hdeci(H){
+  var separ=":";
+  if (H.indexOf(".")>0) separ=".";
+  if (H.indexOf("h")>0) separ="h";
+  var val=H.split(separ);
+  var h = Math.floor(100*parseInt(val[0]) + 0.4 + 100*parseInt(val[1])/60);
+  h=Math.max(0,h);h=Math.min(2400,h);
+  return h;  
+}
+function Reset() {
+  GID("attente").style="visibility: visible;";
+  var xhttp = new XMLHttpRequest();
+  xhttp.onreadystatechange = function() { 
+    if (this.readyState == 4 && this.status == 200) {
+      GID('BoutonsBas').innerHTML=this.responseText;
+      GID("attente").style="visibility: hidden;";
+      setTimeout(location.reload(),1000);
+    }         
+  };
+  xhttp.open('GET', '/restart', true);
+  xhttp.send();
+}
+)====";
 
-)====";
 const char *CommunCSS = R"====(
-    a:link {color:#aaf;text-decoration: none;}
-    a:visited {color:#ccf;text-decoration: none;}
-    .onglets{margin-top:4px;left:0px;font-size:130%;}
-    #onglets2{margin-top:10px;left:0px;font-size:80%;display:none;}
-    .Bonglet{margin-left:20px;border:outset 4px grey;background-color:#333;border-radius:6px;padding-left:20px;padding-right:20px;display:inline-block;}
-    .Bonglet2{margin-left:20px;border:outset 2px grey;background-color:#333;border-radius:4px;padding-left:20px;padding-right:20px;display:inline-block;}
-    #pied{display:flex;justify-content:space-between;font-size:14px;}
-    .fsize12{font-size:12px;height:16px;}
-    .fsize10{font-size:10px;height:14px;}
-    .fsize8{font-size:8px;}
-    .tableau { background-color:white;display:inline-block;margin:auto;padding:4px;color:black;border:10px inset azure;}
-    table{border-collapse:collapse;}
-    .lds-dual-ring {color: #cccc5b;visibility: hidden;}
-    .lds-dual-ring,.lds-dual-ring:after {box-sizing: border-box;}
-    .lds-dual-ring {display: inline-block;width: 80px;height: 80px;}
-    .lds-dual-ring:after {content: " ";display: block;width: 64px;height: 64px;margin: 8px;border-radius: 50%;border: 6.4px solid currentColor;border-color: currentColor transparent currentColor transparent;animation: lds-dual-ring 1.2s linear infinite;}
-    @keyframes lds-dual-ring {0% {transform: rotate(0deg);} 100% {transform: rotate(360deg);}}
-    .bouton,input[type=file]::file-selector-button{margin: 5px;text-align:left;font-size:20px;height:28px;border:3px grey outset;border-radius:7px;cursor:pointer;}
+  a:link {color:#aaf;text-decoration: none;}
+  a:visited {color:#ccf;text-decoration: none;}
+  .onglets{margin-top:4px;left:0px;font-size:130%;}
+  #onglets2{margin-top:10px;left:0px;font-size:80%;display:none;}
+  .Bonglet{margin-left:20px;border:outset 4px grey;background-color:#333;border-radius:6px;padding-left:20px;padding-right:20px;display:inline-block;}
+  .Bonglet2{margin-left:20px;border:outset 2px grey;background-color:#333;border-radius:4px;padding-left:20px;padding-right:20px;display:inline-block;}
+  #pied{display:flex;justify-content:space-between;font-size:14px;}
+  .fsize12{font-size:12px;height:16px;}
+  .fsize10{font-size:10px;height:14px;}
+  .fsize8{font-size:8px;}
+  .tableau { background-color:white;display:inline-block;margin:auto;padding:4px;color:black;border:10px inset azure;}
+  table{border-collapse:collapse;}
+  .lds-dual-ring {color: #cccc5b;visibility: hidden;}
+  .lds-dual-ring,.lds-dual-ring:after {box-sizing: border-box;}
+  .lds-dual-ring {display: inline-block;width: 80px;height: 80px;}
+  .lds-dual-ring:after {content: " ";display: block;width: 64px;height: 64px;margin: 8px;border-radius: 50%;border: 6.4px solid currentColor;border-color: currentColor transparent currentColor transparent;animation: lds-dual-ring 1.2s linear infinite;}
+  @keyframes lds-dual-ring {0% {transform: rotate(0deg);} 100% {transform: rotate(360deg);}}
+  .bouton,input[type=file]::file-selector-button{margin: 5px;text-align:left;font-size:20px;height:28px;border:3px grey outset;border-radius:7px;cursor:pointer;}
 )====";
+
 const char *ParaCleHtml = R"====(
-  <!doctype html>
-  <html><head><meta charset="UTF-8">
-  <link rel="stylesheet" href="/commun.css">  
-  <style>    
-    body{color:white;}
-    .form {margin:auto;padding:10px;display: table;text-align:left;width:100%;}
-    .ligne {display: table-row;padding:10px;}
-    .cadre {border-top:1px solid azure;}
-    label,.nomR{display: table-cell;margin: 5px;text-align:left;font-size:20px;height:25px;width:70%;}
-    input{display: table-cell;margin: 5px;text-align:left;font-size:20px;height:25px;}
-    .boldT{text-align:left;font-weight:bold;padding:10px;}   
-    .Bparametres{border:inset 10px azure;}
-    .Bgeneraux{border:inset 4px azure;}
-    #BoutonsBas{text-align:center;}    
-    .Zone{width:100%;border 1px solid grey;border-radius:10px;margin-top:10px;background-color:rgba(30,30,30,0.3);} 
-    #onglets2{display:none;} 
-  </style>
-  <script>
-    var BordsInverse=[".Bparametres"];
-    function SendCle(){
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="/commun.css">  
+    <style>    
+      body{color:white;}
+      .form {margin:auto;padding:10px;display: table;text-align:left;width:100%;}
+      .ligne {display: table-row;padding:10px;}
+      .cadre {border-top:1px solid azure;}
+      label,.nomR{display: table-cell;margin: 5px;text-align:left;font-size:20px;height:25px;width:70%;}
+      input{display: table-cell;margin: 5px;text-align:left;font-size:20px;height:25px;}
+      .boldT{text-align:left;font-weight:bold;padding:10px;}   
+      .Bparametres{border:inset 10px azure;}
+      .Bgeneraux{border:inset 4px azure;}
+      #BoutonsBas{text-align:center;}    
+      .Zone{width:100%;border 1px solid grey;border-radius:10px;margin-top:10px;background-color:rgba(30,30,30,0.3);} 
+      #onglets2{display:none;} 
+    </style>
+    <script>
+      var BordsInverse=[".Bparametres"];
+      function SendCle(){
+          document.cookie="CleAcces=" + GID("CleAcces").value.trim() ;
+          
+          GID("attente").style="visibility: visible;";
+          var xhttp = new XMLHttpRequest();
+          xhttp.onreadystatechange = function() { 
+            if (this.readyState == 4 && this.status == 200) {
+              var retour=this.responseText;
+              location.reload();
+            }         
+          };
+          xhttp.open('GET', '/CleUpdate', true);
+          xhttp.send(); 
+      }
+      function init(){
+        SetHautBas();
+        LoadParaRouteur();
+        LoadCouleurs();
         document.cookie="CleAcces=" + GID("CleAcces").value.trim() ;
-        
-        GID("attente").style="visibility: visible;";
-        var xhttp = new XMLHttpRequest();
-        xhttp.onreadystatechange = function() { 
-          if (this.readyState == 4 && this.status == 200) {
-            var retour=this.responseText;
-            location.reload();
-          }         
-        };
-        xhttp.open('GET', '/CleUpdate', true);
-        xhttp.send(); 
-    }
-    function init(){
-      SetHautBas();
-      LoadParaRouteur();
-      LoadCouleurs();
-      document.cookie="CleAcces=" + GID("CleAcces").value.trim() ;
-    }
-    function   AdaptationSource(){}  ;
-    function FinParaRouteur(){};
-  </script>
-  <title>Pass Acces F1ATB</title>
+      }
+      function   AdaptationSource(){}  ;
+      function FinParaRouteur(){};
+    </script>
+    <title>Pass Acces F1ATB</title>
   </head>
   <body onload="init()";>
     <div id="lesOnglets"></div>
     <h4>Mot de passe d'accès</h4>
     <div class="Zone" >
-        <div class="boldT" >Sécurité d'accès aux paramètres et Actions</div>
-        <div class="form"  >    
-          <div class='ligne'>
-            <label for='CleAcces'>Entrez le mot de passe d'accès : </label>
-            <input type='text' name='CleAcces' id='CleAcces'>
-          </div>
+      <div class="boldT" >Sécurité d'accès aux paramètres et Actions</div>
+      <div class="form"  >    
+        <div class='ligne'>
+          <label for='CleAcces'>Entrez le mot de passe d'accès : </label>
+          <input type='text' name='CleAcces' id='CleAcces'>
         </div>
+      </div>
     </div>
-    <div  id='BoutonsBas'>        
-        <br><input  class='bouton' type='button' onclick="SendCle();" value='Envoyer' >
-        <div class="lds-dual-ring" id="attente"></div>
+    <div id='BoutonsBas'>        
+      <br />
+      <input  class='bouton' type='button' onclick="SendCle();" value='Envoyer' >
+      <div class="lds-dual-ring" id="attente"></div>
     </div>
-    <br>
+    <br />
     <div id='pied'></div>
     <script src="/ParaRouteurJS"></script>
     <script src="/CommunCouleurJS"></script>
-   </body></html>
+  </body>
+</html>
 )====";

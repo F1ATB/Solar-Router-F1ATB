@@ -1,4 +1,4 @@
-#define Version "16.04"
+#define Version "16.05-SNAPSHOT"
 #define HOSTNAME "RMS-ESP32-"
 #define CLE_Rom_Init 912567899  //Valeur pour tester si ROM vierge ou pas. Un changement de valeur remet à zéro toutes les données. / Value to test whether blank ROM or not.
 

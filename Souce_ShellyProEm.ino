@@ -105,7 +105,7 @@ void LectureShellyProEm() {
   Shelly_Data = Shelly_Data.substring(p) +"}}";
   if (Shelly_Name == "shellypro3em" && voie == 3) {
     // 3 em Triphasé
-    ShEm_dataBrute = "<strong>" + Shelly_Name + "</strong><br>" + Shelly_Data;
+    ShEm_dataBrute = "<strong>" + Shelly_Name + "</strong><br />" + Shelly_Data;
 
     float pf1, pf2, pf3;
     float volt1, volt2, volt3;
@@ -156,7 +156,7 @@ void LectureShellyProEm() {
     Shelly_Phase = char(voie + 97);
 
     // 3 em Monophasé : Voie != 3 et profile Triphase actif
-    ShEm_dataBrute = "<strong>" + Shelly_Name + " " + "Phase " + Shelly_Phase + "</strong><br>" + Shelly_Data;
+    ShEm_dataBrute = "<strong>" + Shelly_Name + " " + "Phase " + Shelly_Phase + "</strong><br />" + Shelly_Data;
 
     tmp = PrefiltreJson("em:0", ":", Shelly_Data);
 
@@ -192,7 +192,7 @@ void LectureShellyProEm() {
     Pva_valide = true;
   } else if (Shelly_Name == "shellypro3em") {
     // 3 em Monophasé : Voie != 3
-    ShEm_dataBrute = "<strong>" + Shelly_Name + "</strong><br>" + Shelly_Data;
+    ShEm_dataBrute = "<strong>" + Shelly_Name + "</strong><br />" + Shelly_Data;
 
     tmp = PrefiltreJson("em1:" + String(Voie), ":", Shelly_Data);  // Voie mono
     Pw = ValJson("act_power", tmp);
@@ -266,7 +266,7 @@ void LectureShellyProEm() {
       Voie = (Voie + 1) % 2;
     }
 
-    ShEm_dataBrute = "<strong>" + Shelly_Name + "</strong><br>" + Shelly_Data;
+    ShEm_dataBrute = "<strong>" + Shelly_Name + "</strong><br />" + Shelly_Data;
     Shelly_Data = Shelly_Data + ",";
     if (Shelly_Data.indexOf("act_power") > 0) {                      // Donnée valide
       tmp = PrefiltreJson("em1:" + String(Voie), ":", Shelly_Data);  // ADD PERSO

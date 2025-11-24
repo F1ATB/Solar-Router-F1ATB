@@ -80,7 +80,7 @@ void LectureShellyEm() {
   p = Shelly_Data.indexOf("{");
   Shelly_Data = Shelly_Data.substring(p) ;
   if (voie == 3) {  //Triphasé
-    ShEm_dataBrute = "<strong>Triphasé</strong><br>" + Shelly_Data;
+    ShEm_dataBrute = "<strong>Triphasé</strong><br />" + Shelly_Data;
     p = Shelly_Data.indexOf("emeters");
     Shelly_Data = Shelly_Data.substring(p + 10);
     Pw = PfloatMax(ValJson("power", Shelly_Data));  //Phase 1
@@ -132,7 +132,7 @@ void LectureShellyEm() {
       PVAS_M_inst = 0;
     }
   } else if (voie < 3) {  //Monophasé Shelly Em de base
-    ShEm_dataBrute = "<strong>Voie : " + String(Voie) + "</strong><br>" + Shelly_Data;
+    ShEm_dataBrute = "<strong>Voie : " + String(Voie) + "</strong><br />" + Shelly_Data;
     Shelly_Data = Shelly_Data + ",";
     if (Shelly_Data.indexOf("true") > 0) {  // Donnée valide
       Pw = PfloatMax(ValJson("power", Shelly_Data));
@@ -200,7 +200,7 @@ void LectureShellyEm() {
 
   } else {  //Shelly Em Gen3  . On recupere les 2 voies à chaque message
     Voie = voie % 2;
-    ShEm_dataBrute = "<strong>Shelly Em Gen3 Voie : " + String(Voie) + "</strong><br>" + Shelly_Data;
+    ShEm_dataBrute = "<strong>Shelly Em Gen3 Voie : " + String(Voie) + "</strong><br />" + Shelly_Data;
     if (Shelly_Data.indexOf("ssid") > 0) {  // Donnée valide
       Shelly_Data = SubJson("em1:" + String(Voie), "}", Shelly_Data);
       Pw = PfloatMax(ValJson("act_power", Shelly_Data));
