@@ -21,16 +21,16 @@ const char *CouleursHtml = R"====(
   <title>Colors</title>
   </head>
   <body onload="Init();">
-    <div id='lesOnglets'></div>
+    <div id="lesOnglets"></div>
     <h2 >Choix des couleurs</h2>
     <div class="Zone">
         <div class="form"  id="colors"></div>
     </div>
     
     <br>
-    <div class='les_boutons'>
-      <input  class='bouton' type='button' onclick="CouleurDefaut();CoulPage();setCouleur();" value='Couleurs par défaut' >
-        <input  class='bouton' type='button' onclick="SendValues();" value='Sauvegarder' >
+    <div class="les_boutons">
+      <input  class="bouton" type="button" onclick="CouleurDefaut();CoulPage();setCouleur();" value="Couleurs par défaut" >
+        <input  class="bouton" type="button" onclick="SendValues();" value="Sauvegarder" >
     </div>
     <small>Valide après 30s ou un Ctrl+F5 pour vider le cache du navigateur.</small>
     <script>
@@ -96,7 +96,7 @@ const char *CouleursHtml = R"====(
         
     </script>
     <br>
-    <div id='pied'></div>
+    <div id="pied"></div>
     <br>
   <script src="/ParaRouteurJS"></script>
   <script src="/CommunCouleurJS"></script>
@@ -117,7 +117,7 @@ const char *CommunCouleurJS = R"====(
             if (Retour!=""){
               var L=Retour.length;
               var j=0;
-              for (var i=0;i<Koul.length;i++){
+              for (var i=0;i < Koul.length ;i++){
                 if (Koul[i][1] && (j+6)<=L) {Koul[i][1] = Retour.substring(j,j+6); j=j+6; }//Texte
                 if (Koul[i][3] && (j+6)<=L) {Koul[i][3]= Retour.substring(j,j+6); j=j+6; } //Back ground
                 if (Koul[i][5] && (j+6)<=L) {Koul[i][5]= Retour.substring(j,j+6); j=j+6; } //Border
@@ -213,7 +213,7 @@ const char *CommunCouleurJS = R"====(
     Coul.push(["Boutons haut des pages","ccccff",["a:visited","a:link"],"333333",[".Bonglet",".Bonglet2"],"808080",[".Bonglet",".Bonglet2"]]);
     Coul.push(["Champs de saisie","000000",["input"],"ffffff",["input"],"808080",["input"]]);
     Coul_Tab = Coul.length;
-    Coul.push(["Tableaux","000000",[".tableau"],"ddddff",[".tableau"],"cccccc",[".tableau"]]);
+    Coul.push(["Tableaux","000000",[".tableau"],"cccccc",[".tableau"],"888888",[".tableau"]]);
     Coul_W = Coul.length;
     Coul.push(["Puissance Active en W",,,"ff4444",[".W"],,]);
     Coul_VA = Coul.length;

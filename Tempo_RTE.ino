@@ -32,6 +32,8 @@ void Call_RTE_data() {
      couleur_lendemain=false; // on ne connait plus la couleur du lendemain. Cela forcera la lecture sur le site RTE 
      if (LTARF!="" && TempoRTEon == 1 && ModeReseau==0) {  
            StockMessage("Tempo depuis 6h00: " + LTARF + ",demain ? ");
+           RTE_Jour="NON_DEFINI";
+           RTE_Demain="NON_DEFINI";
       }
     }  
 
@@ -100,6 +102,8 @@ void Call_RTE_data() {
             line = "C";
             lendemain = "TEMPO_ROUGE";
           }
+          RTE_Jour=LTARF;
+          RTE_Demain=lendemain;
           STGEt = line;  //Valeur Hexa code du Linky
           StockMessage(DateRTE + " : " + LTARF + " | " + DateRTE2 + " : " + lendemain);
           RTEdata = "";

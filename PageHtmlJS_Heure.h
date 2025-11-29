@@ -19,21 +19,20 @@ const char *HeureHtml = R"====(
   <title>Set hours F1ATB</title>
   </head>
   <body onload="Init();">
-    <div id='lesOnglets'></div>
+    <div id="lesOnglets"></div>
     <h2>Mise à l'heure horloge interne</h2>
-    <h4>Heure actuelle : <span id='date'></span></h4>
+    <h4>Heure actuelle : <span id="date"></span></h4>
     <div class="Zone">
         <div class="form"  >
-          <div class='ligne'>
-            <label for='New_H'>Nouvelle Heure h:mn  </label><input type='text' name='New_H' id='New_H' >
+          <div class="ligne">
+            <label for="New_H">Nouvelle Heure h:mn  </label><input type="text" name="New_H" id="New_H" >
           </div>
         </div>
     </div>
     <div>        
-        <input  class='bouton' type='button' onclick="SendHour();" value='Envoyer' >
+        <input  class="bouton" type="button" onclick="SendHour();" value="Envoyer" >
         <div class="lds-dual-ring" id="attente"></div>
     </div>
-    
     <script>    
         var BordsInverse=[".Bparametres",".Bheure"];
         function Init(){
@@ -74,7 +73,7 @@ const char *HeureHtml = R"====(
         }
     </script>
     <br>
-    <div id='pied'></div>
+    <div id="pied"></div>
     <br>
     <script src="/ParaRouteurJS"></script>
     <script src="/CommunCouleurJS"></script>

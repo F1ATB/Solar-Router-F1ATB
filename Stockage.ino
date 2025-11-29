@@ -13,6 +13,7 @@
 #define adr_lastStockConso 1505  // Short taille 2
 #define adr_ParaActions 1507     //Clé + ensemble parametres peu souvent modifiés
 
+#include <Arduino.h>
 
 void INIT_EEPROM(void) {
   if (!EEPROM.begin(EEPROM_SIZE)) {
