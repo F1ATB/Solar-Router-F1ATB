@@ -8,6 +8,8 @@ const char *ActionsHtml = R"====(
 
 <head>
     <meta charset="UTF-8">
+    <script src="/PinsActionsJS"></script>
+    <script src="/CommunCouleurJS"></script>
     <link rel="stylesheet" href="/commun.css">
 
     <style>
@@ -469,8 +471,7 @@ const char *ActionsHtml = R"====(
     <div id="pied"></div>
     <script src="/ParaRouteurJS"></script>
     <script src="/ActionsJS"></script>
-    <script src="/PinsActionsJS"></script>
-    <script src="/CommunCouleurJS"></script>
+    
 </body>
 
 </html>

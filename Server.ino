@@ -549,6 +549,7 @@ void handleShowAction()
   int NumAction = server.arg("NumAction").toInt();
   server.sendHeader("Connection", "close");
   server.send(200, "text/html", String(round(LastErrorPw[NumAction])) + RS + String(Propor[NumAction]) + RS + String(IntegrErrorPw[NumAction]) + RS + String(DeriveF[NumAction]));
+  LastShowActionMillis=millis();
 }
 void handleUpdateK()
 {

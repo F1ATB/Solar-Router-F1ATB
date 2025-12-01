@@ -1,4 +1,4 @@
-#define Version "16.05"
+#define Version "16.06"
 #define HOSTNAME "RMS-ESP32-"
 #define CLE_Rom_Init 912567899  //Valeur pour tester si ROM vierge ou pas. Un changement de valeur remet à zéro toutes les données. / Value to test whether blank ROM or not.
 
@@ -219,39 +219,22 @@
     Graphique temps reel des calculs du PID
     Sortie infos RTE Tempo du jour et lendemain par MQTT
     Correction bug, Couleurs par défaut
-
+  - V16.06
+    Correction bugs, PVAI_M en CACSI, svg favicon
+    Modification ordre téléchargement JS pour les Pins des Actions
+    Remise en place des anciens coefs PID après des essais sans sauvegarde 
   
   Les détails sont disponibles sur / Details are available here:
   https://f1atb.fr  Section Domotique / Home Automation
 
   
-  F1ATB Novembre 2025
+  F1ATB Décembre 2025
 
   GNU Affero General Public License (AGPL) / AGPL-3.0-or-later
 
-  Arduino IDE 2.3.5
-  Espressif ESP V3.3.2
-  Compilation avec Partition Scheme : custom ou No FS ou minimal SPIFFS
-
-
-  Library used:
-  Utilisation de la bibliothèque WiFi version 3.3.0 dans le dossier: Arduino15\packages\esp32\hardware\esp32\3.3.0\libraries\WiFi 
-  Utilisation de la bibliothèque Networking version 3.3.0 dans le dossier: Arduino15\packages\esp32\hardware\esp32\3.3.0\libraries\Network 
-  Utilisation de la bibliothèque NetworkClientSecure version 3.3.0 dans le dossier: Arduino15\packages\esp32\hardware\esp32\3.3.0\libraries\NetworkClientSecure 
-  Utilisation de la bibliothèque ESPmDNS version 3.3.0 dans le dossier: Arduino15\packages\esp32\hardware\esp32\3.3.0\libraries\ESPmDNS 
-  Utilisation de la bibliothèque WebServer version 3.3.0 dans le dossier: Arduino15\packages\esp32\hardware\esp32\3.3.0\libraries\WebServer 
-  Utilisation de la bibliothèque FS version 3.3.0 dans le dossier: Arduino15\packages\esp32\hardware\esp32\3.3.0\libraries\FS 
-  Utilisation de la bibliothèque ArduinoOTA version 3.3.0 dans le dossier: Arduino15\packages\esp32\hardware\esp32\3.3.0\libraries\ArduinoOTA 
-  Utilisation de la bibliothèque Update version 3.3.0 dans le dossier: Arduino15\packages\esp32\hardware\esp32\3.3.0\libraries\Update 
-  Utilisation de la bibliothèque PubSubClient version 2.8 dans le dossier: Arduino\Sketchbooks\libraries\PubSubClient 
-  Utilisation de la bibliothèque EEPROM version 3.3.0 dans le dossier: Arduino15\packages\esp32\hardware\esp32\3.3.0\libraries\EEPROM 
-  Utilisation de la bibliothèque OneWire version 2.3.8 dans le dossier: Arduino\Sketchbooks\libraries\OneWire 
-  Utilisation de la bibliothèque DallasTemperature version 4.0.3 dans le dossier: Arduino\Sketchbooks\libraries\DallasTemperature 
-  Utilisation de la bibliothèque UrlEncode version 1.0.1 dans le dossier: Arduino\Sketchbooks\libraries\UrlEncode
-  Utilisation de la bibliothèque EthernetESP32 version 1.0.2 dans le dossier: Arduino\Sketchbooks\libraries\EthernetESP32 
-  Utilisation de la bibliothèque SPI version 3.3.0 dans le dossier: Arduino15\packages\esp32\hardware\esp32\3.3.0\libraries\SPI 
-  Utilisation de la bibliothèque LovyanGFX version 1.2.9 dans le dossier: Arduino\Sketchbooks\libraries\LovyanGFX  (!!! Branch develop pour IDF 5.5.0+ : https://github.com/lovyan03/LovyanGFX/tree/develop)
-
+  Arduino IDE 2.3.6
+  Espressif ESP V3.3.3
+  Compilation avec Partition Scheme : custom 
 
 
 */
@@ -587,6 +570,7 @@ unsigned long previousMQTTenvoiMillis;
 unsigned long previousMQTTMillis;
 unsigned long LastPwMQTTMillis = 0;
 unsigned long PeriodeMQTTMillis = 500;
+unsigned long LastShowActionMillis=0;
 
 //Actions et Triac(action 0)
 float RetardF[LesActionsLength];        //Floating value of retard
@@ -1439,6 +1423,12 @@ void loop() {
       }
     }
     InfoActionExterne();
+  }
+  if (LastShowActionMillis!=0){
+    if (millis() - LastShowActionMillis>6000){ //Pas prendre tps en retard 
+      LectureEnROM(); //On remet les coefficint du PID aux valeurs stockés après des essais.
+      LastShowActionMillis=0;
+    }
   }
   //Vérification Ethernet, WIFI et de la puissance
   //*********************************************

@@ -5,6 +5,7 @@ const char *ParaHtml = R"====(
   <!doctype html>
   <html lang="fr"><head><meta charset="UTF-8">
   <link rel="stylesheet" href="commun.css">
+  <script src="/CommunCouleurJS"></script>
   <style>    
     .form {margin:auto;padding:5px;display: table;text-align:left;width:100%;}
     .form2 {margin:2px;padding:2px;display: block;width:100%;}
@@ -301,6 +302,6 @@ const char *ParaHtml = R"====(
     </div>
     <script src="/ParaRouteurJS"></script>
     <script src="/ParaJS"></script>
-    <script src="/CommunCouleurJS"></script>
+    
   </body></html>
 )====";

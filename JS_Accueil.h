@@ -787,7 +787,7 @@ function Init() {
 )====";
 // icône panneaux solaire et soleil (Merci michy)
 const char * Favicon = R"====(
-  < svg xmlns = "http://www.w3.org/2000/svg" width = "64" height = "64" viewBox = "15 20 42 40" >
+  <svg xmlns = "http://www.w3.org/2000/svg" width = "64" height = "64" viewBox = "15 20 42 40" >
 <path d="m16 36h19l16 20h-20z" fill="#92d3f5"></path>
 <circle cx="48" cy="32" fill="#fcea2b" r="8"></circle>
 <g fill="none" stroke="#000" stroke-linecap="round" stroke-linejoin="round" stroke-width="2">

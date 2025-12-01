@@ -8,6 +8,7 @@ const char *PageBrute = R"====(
 <head>
   <meta charset="UTF-8">
   <link rel="stylesheet" href="/commun.css">
+   <script src="/CommunCouleurJS"></script>
   <style>
     .ri {
       text-align: right;
@@ -183,7 +184,7 @@ const char *PageBrute = R"====(
   <div id="pied"></div>
   <script src="/ParaRouteurJS"></script>
   <script src="BruteJS"></script>
-  <script src="/CommunCouleurJS"></script>
+ 
   <br>
 </body>
 
