@@ -183,7 +183,8 @@ const char *PageBrute = R"====(
   </div><br>
   <div id="pied"></div>
   <script src="/ParaRouteurJS"></script>
-  <script src="BruteJS"></script>
+  <script src="BruteJS1"></script>
+  <script src="BruteJS2"></script>
  
   <br>
 </body>

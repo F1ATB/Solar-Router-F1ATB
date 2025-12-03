@@ -1,7 +1,7 @@
 //**********************************************
 // Page principale  Javascript 
 //**********************************************
-const char * MainJS = R"====(
+const char * MainJS1 = R"====(
 var tabPW2sM = [];
 var tabPW2sT = [];
 var tabActOuvre = [];
@@ -258,7 +258,9 @@ function autreRaffiche(C) {
   GH("autreRid" + C, fleche);
   localStorage.setItem("DispAutre" + C, DispAutres[C]);
 }
+)====";
 
+const char * MainJS2 = R"====(
 function Plot(SVG, Tab, couleur1, titre1, couleur2, titre2) {
   var Vmax = 0;
   var Vmin = 0;
@@ -566,6 +568,11 @@ function Plot_ouvertures_2s() {
   GID("SVG_Ouvertures_2s").innerHTML = S;
 
 }
+
+)====";
+
+const char * MainJS3 = R"====(
+
 function EtatActions(Force, NumAction) {
   var xhttp = new XMLHttpRequest();
   xhttp.onreadystatechange = function () {

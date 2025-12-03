@@ -1,7 +1,7 @@
 //***************************************************
 // Page Javascript  de gestion des Paramètres
 //***************************************************
-const char * ParaJS = R"====(
+const char * ParaJS1 = R"====(
 var refTempIP = [];
 var BordsInverse = [".Bparametres", ".Bgeneraux"];
 function Init() {
@@ -177,7 +177,10 @@ function SendValues() {
     xhttp.send();
   }
 }
+)====";
 
+
+const char * ParaJS2 = R"====(
 function SendRAZ() {
   if (confirm("Confirmez la remise à zéro des historiques")) {
     var xhttp = new XMLHttpRequest();

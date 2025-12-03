@@ -470,7 +470,10 @@ const char *ActionsHtml = R"====(
     <div id="message"></div><br>
     <div id="pied"></div>
     <script src="/ParaRouteurJS"></script>
-    <script src="/ActionsJS"></script>
+    <script src="/ActionsJS1"></script>
+    <script src="/ActionsJS2"></script>
+    <script src="/ActionsJS3"></script>
+    <script src="/ActionsJS4"></script>
     
 </body>
 

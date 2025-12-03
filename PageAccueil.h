@@ -297,7 +297,9 @@ const char *MainHtml = R"====(
   <div id="autresRMS"></div>
   <div id="pied"></div>
   <script src="/ParaRouteurJS"></script>
-  <script src="MainJS"></script>
+  <script src="MainJS1"></script>
+  <script src="MainJS2"></script>
+  <script src="MainJS3"></script>
   <script src="/CommunCouleurJS"></script>
   <br>
 </body>

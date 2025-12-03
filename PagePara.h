@@ -301,7 +301,8 @@ const char *ParaHtml = R"====(
 
     </div>
     <script src="/ParaRouteurJS"></script>
-    <script src="/ParaJS"></script>
+    <script src="/ParaJS1"></script>
+    <script src="/ParaJS2"></script>
     
   </body></html>
 )====";

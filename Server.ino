@@ -8,23 +8,30 @@ void Init_Server()
 {
   // Init Web Server on port 80
   server.on("/", handleRoot);
-  server.on("/MainJS", handleMainJS);
+  server.on("/MainJS1", handleMainJS1);
+  server.on("/MainJS2", handleMainJS2);
+  server.on("/MainJS3", handleMainJS3);
   server.on("/Para", handlePara);
-  server.on("/ParaJS", handleParaJS);
+  server.on("/ParaJS1", handleParaJS1);
+  server.on("/ParaJS2", handleParaJS2);
   server.on("/ParaRouteurJS", handleParaRouteurJS);
   server.on("/ParaAjax", handleParaAjax);
   server.on("/ParaRouteurAjax", handleParaRouteurAjax);
   server.on("/ParaUpdate", handleParaUpdate);
   server.on("/CleUpdate", handleCleUpdate);
   server.on("/Actions", handleActions);
-  server.on("/ActionsJS", handleActionsJS);
+  server.on("/ActionsJS1", handleActionsJS1);
+  server.on("/ActionsJS2", handleActionsJS2);
+  server.on("/ActionsJS3", handleActionsJS3);
+  server.on("/ActionsJS4", handleActionsJS4);
   server.on("/PinsActionsJS", handlePinsActionsJS);
   server.on("/ActionsUpdate", handleActionsUpdate);
   server.on("/ActionsAjax", handleActionsAjax);
   server.on("/ShowAction", handleShowAction);
   server.on("/UpdateK", handleUpdateK);
   server.on("/Brute", handleBrute);
-  server.on("/BruteJS", handleBruteJS);
+  server.on("/BruteJS1", handleBruteJS1);
+  server.on("/BruteJS2", handleBruteJS2);
   server.on("/ajax_histo48h", handleAjaxHisto48h);
   server.on("/ajax_histo1an", handleAjaxHisto1an);
   server.on("/ajax_dataRMS", handleAjaxRMS);
@@ -148,7 +155,7 @@ void handleWifi()
 {
   lectureCookie(ConnectAP_Html);
 }
-void handleMainJS()
+void handleMainJS1()
 {                                      // Code Javascript
   String S = "var biSonde=false;\r\n"; // Pour tracer immediatement tableau Mesures
   if (Source_data == "UxIx2" || ((Source_data == "ShellyEm" || Source_data == "ShellyPro") && EnphaseSerial.toInt() != 3))
@@ -156,7 +163,17 @@ void handleMainJS()
     S = "var biSonde=true;\r\n";
   }
   server.sendHeader("Connection", "close");
-  server.send(200, "text/javascript", S + MainJS); // Javascript code
+  server.send(200, "text/javascript", S + MainJS1); // Javascript code
+}
+void handleMainJS2()
+{                                      // Code Javascript
+  CacheEtClose(300);
+  server.send(200, "text/javascript", MainJS2); // Javascript code
+}
+void handleMainJS3()
+{                                      // Code Javascript
+  CacheEtClose(300);
+  server.send(200, "text/javascript", MainJS3); // Javascript code
 }
 
 void handleBrute()
@@ -164,10 +181,15 @@ void handleBrute()
   CacheEtClose(300);
   server.send(200, "text/html", PageBrute);
 }
-void handleBruteJS()
+void handleBruteJS1()
 { // Code Javascript
   CacheEtClose(300);
-  server.send(200, "text/javascript", PageBruteJS); // Javascript code
+  server.send(200, "text/javascript", PageBruteJS1); // Javascript code
+}
+void handleBruteJS2()
+{ // Code Javascript
+  CacheEtClose(300);
+  server.send(200, "text/javascript", PageBruteJS2); // Javascript code
 }
 
 void handleAjaxRMS()
@@ -615,10 +637,25 @@ void handleActions()
 {
   lectureCookie(ActionsHtml);
 }
-void handleActionsJS()
+void handleActionsJS1()
 {
   CacheEtClose(300);
-  server.send(200, "text/javascript", ActionsJS);
+  server.send(200, "text/javascript", ActionsJS1);
+}
+void handleActionsJS2()
+{
+  CacheEtClose(300);
+  server.send(200, "text/javascript", ActionsJS2);
+}
+void handleActionsJS3()
+{
+  CacheEtClose(300);
+  server.send(200, "text/javascript", ActionsJS3);
+}
+void handleActionsJS4()
+{
+  CacheEtClose(300);
+  server.send(200, "text/javascript", ActionsJS4);
 }
 
 void handleActionsUpdate()
@@ -787,10 +824,15 @@ void handleCleUpdate()
   server.sendHeader("Connection", "close");
   server.send(200, "text/plain", "OKcle");
 }
-void handleParaJS()
+void handleParaJS1()
 {
   CacheEtClose(300);
-  server.send(200, "text/javascript", ParaJS);
+  server.send(200, "text/javascript", ParaJS1);
+}
+void handleParaJS2()
+{
+  CacheEtClose(300);
+  server.send(200, "text/javascript", ParaJS2);
 }
 void handleParaRouteurJS()
 {

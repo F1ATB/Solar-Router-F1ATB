@@ -1,4 +1,4 @@
-const char * ActionsJS = R"====(
+const char * ActionsJS1 = R"====(
 var LesActions = [];
 var mouseClick = false;
 var blockEvent = false;
@@ -135,6 +135,7 @@ function TracePlanning(iAct) {
 
 }
 
+
 function TracePeriodes(iAct) {
     var S = "";
     var Sinfo = "";
@@ -202,6 +203,11 @@ function TracePeriodes(iAct) {
     GH("curseurs" + iAct, S);
     GH("infoAction" + iAct, SinfoClick + Sinfo);
 }
+
+)====";
+
+const char * ActionsJS2 = R"====(
+    
 function touchMove(t, ev, iAct) {
     var leftPos = ev.touches[0].clientX - GID(t.id).getBoundingClientRect().left;
     NewPosition(t, leftPos, iAct);
@@ -384,6 +390,10 @@ function infoZclicK(i, iAct) {
         GID(idZ).style.display = "block";
     }
 }
+
+)====";
+
+const char * ActionsJS3 = R"====(
 function infoZclose(idx) {
     var champs = idx.split("info");
     var idx = champs[1].split("Z");
@@ -456,6 +466,8 @@ function NewVal(t) {
         LesActions[idx[0]].Periodes[idx[1]].SelAct = GID(t.id).value;
     }
 }
+
+
 function editTitre(iAct) {
     if (GID("titre" + iAct).innerHTML.indexOf("<input") == -1) {
         GH("titre" + iAct, "<input type='text' value='" + GID("titre" + iAct).innerHTML + "' id='Etitre" + iAct + "'  onblur='TitreValid(" + iAct + ")' >");
@@ -616,7 +628,9 @@ function UpdateK(iAct) {
     }
 
 }
+)====";
 
+const char * ActionsJS4 = R"====(
 function SendValues() {
     GID("attente").style = "visibility: visible;";
     for (var iAct = 0; iAct < LesActions.length; iAct++) {

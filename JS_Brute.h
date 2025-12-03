@@ -3,7 +3,7 @@
 //*********************************************
 
 
-const char *PageBruteJS = R"====(
+const char *PageBruteJS1 = R"====(
        var InitFait=false;
        var IdxMessage=0;
        var MessageLinky='';
@@ -177,7 +177,9 @@ const char *PageBruteJS = R"====(
         LoadData();
         LoadDataESP32();
        }
+)====";
 
+const char *PageBruteJS2 = R"====(
       function LoadData() {
         GID('LED').style='display:block;';
         var xhttp = new XMLHttpRequest();
