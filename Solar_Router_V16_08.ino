@@ -1,4 +1,4 @@
-#define Version "16.07"
+#define Version "16.08"
 #define HOSTNAME "RMS-ESP32-"
 #define CLE_Rom_Init 912567899  //Valeur pour tester si ROM vierge ou pas. Un changement de valeur remet à zéro toutes les données. / Value to test whether blank ROM or not.
 
@@ -225,6 +225,8 @@
     Remise en place des anciens coefs PID après des essais sans sauvegarde 
   - V16.07
     Découpe des gros fichiers Javascript pour eviter pb mémoire serveur
+  - V16.08
+    Correction bug entrée ouverture max
   
   Les détails sont disponibles sur / Details are available here:
   https://f1atb.fr  Section Domotique / Home Automation
@@ -278,7 +280,7 @@
 #include "PageHtmlJS_Heure.h"
 #include "PageHtmlJS_Couleurs.h"
 #include "PageHtmlJS_Export.h"
-#include "pageHtmlJS_Connect.h"
+#include "PageHtmlJS_Connect.h"
 
 //Watchdog de 180 secondes. Le systeme se Reset si pas de dialoque avec le LINKY ou JSY-MK-194T/333 ou Enphase-Envoy pendant 180s
 //Watchdog for 180 seconds. The system resets if no dialogue with the Linky or  JSY-MK-194T/333 or Enphase-Envoy for 180s

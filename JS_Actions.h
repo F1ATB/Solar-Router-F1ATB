@@ -318,7 +318,7 @@ function infoZclicK(i, iAct) {
             } else {
                 S += "<div><small>Seuil Pw : &nbsp;</small><input id='Pw_min_" + idZ + "'  type='number' value='" + Vmin + "' onchange='NewVal(this)' title='Seuil de puissance pour activer ou désactiver le routage.' >W</div>";
                 S += "<div><small>Puissance active en entrée de maison</small></div>";
-                S += "<div><small>Ouvre Max : </small><input id='Pw_max_" + idZ + "'   type='number' value='" + Vmax + "' onchange='NewVal(this) title='Ouverture maximum du  SSR. Valeur typique : 100%'>%</div></div>";
+                S += "<div><small>Ouvre Max : </small><input id='Pw_max_" + idZ + "'   type='number' value='" + Vmax + "' onchange='NewVal(this)' title='Ouverture maximum du  SSR. Valeur typique : 100%'>%</div></div>";
             }
 
         } else {
