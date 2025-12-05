@@ -21,25 +21,24 @@ const char *ConnectAP_Html = R"====(
     <title>Access Point F1ATB</title>
 </head>
 <body onload="init();">
-<div id='lesOnglets'></div>
+<div id="lesOnglets"></div>
 <h1 id="h1T">Routeur Solaire - RMS</h1><h2>Connexion au r&eacute;seau WIFI local</h2>
 <div id="ListeWifi"></div><br><br>
 <div id="scanReseau">
-    <input class='bouton' type='button' onclick="ScanWIFI();" value='Scan réseaux WIFI' >
+    <input class="bouton" type="button" onclick="ScanWIFI();" value="Scan réseaux WIFI" >
 </div>
 <br>
-<div id='form-passe'>
-  <div >Entrez le mot de passe du r&eacute;seau : <span id='nom_reseau'></span></div>
-  <input type='password' name='passe' id='passe' >
+<div id="form-passe">
+  <div >Entrez le mot de passe du r&eacute;seau : <span id="nom_reseau"></span></div>
+  <input type="password" name="passe" id="passe" >
 </div>
 <div id="envoyer" >
-    <input class='bouton' type='button' onclick="Envoyer();" value='Envoyer' >
+    <input class="bouton" type="button" onclick="Envoyer();" value="Envoyer" >
 </div>
 <br>
 <div id="attente2">Attendez l'adresse IP attribuée à l'ESP 32</div>
 <br>
 <div id="pied"></div>
-
 <script>
   var BordsInverse=[".Bparametres",".Bwifi"];
   function ScanWIFI(){

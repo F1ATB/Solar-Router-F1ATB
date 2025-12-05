@@ -12,11 +12,11 @@ const char *OtaHtml = R"====(
     .Bparametres{border:inset 10px azure;}
     .Bota{border:inset 4px azure;}
   </style>
-  <script src='https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js'></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
   <title>Update OTA F1ATB</title>
   </head>
   <body onload="Init();">
-    <div id='lesOnglets'></div>
+    <div id="lesOnglets"></div>
     <h2 >Web OTA</h2>
     <h4>Mise à jour par Wifi ou Ethernet</h4>
     <div class="liste">
@@ -27,23 +27,22 @@ const char *OtaHtml = R"====(
       Version(s) disponible(s) :
     </div>
     <div class="liste">
-      <iframe src="https://f1atb.fr/web_tool/scan_dir_bin.php"  style="width=50% ; height=150px"></iframe>
+      <iframe src="https://f1atb.fr/web_tool/scan_dir_bin.php"  style="width:50% ; height:150px"></iframe>
     </div>
     <div class="liste">
       <ul>
-        <li>1 - <a href='/Export' >Sauvegardez vos paramètres</a> sur le PC si la partie entière de la version change. Pas nécessaire si uniquement la partie décimale.</li>
+        <li>1 - <a href="/Export" >Sauvegardez vos paramètres</a> sur le PC si la partie entière de la version change. Pas nécessaire si uniquement la partie décimale.</li>
         <li>2 - Téléchargez sur votre ordinateur, la version binaire du logiciel du routeur souhaitée <br>(Solar_Router_Vxx.xx.ino.bin) en cliquant dessus</li>
         <li>3 - Cliquez sur "Choisir un fichier" et sélectionnez ce binaire sur votre ordinateur</li>
         <li>4 - Cliquez sur "Mettre à jour"</li>
-        <li>5 - <a href='/Export' >Importez si besoin vos anciens paramètres</a> du PC </li>
+        <li>5 - <a href="/Export" >Importez si besoin vos anciens paramètres</a> du PC </li>
       </ul>
     </div>
-    <form method='POST' action='#' enctype='multipart/form-data' id='upload_form'>
-      <input type='file' name='update' id="fichier">
-      <input class='bouton' type='submit' value='Mettre à jour'>
+    <form method="POST" action="#" enctype="multipart/form-data" id="upload_form">
+      <input type="file" name="update" id="fichier">
+      <input class="bouton" type="submit" value="Mettre à jour">
     </form>
-    <div id='prg'>progression: 0%</div>
-    
+    <div id="prg">progression: 0%</div>
     <script>
           var BordsInverse=[".Bparametres",".Bota"];
           $('form').submit(function(e){
@@ -90,7 +89,7 @@ const char *OtaHtml = R"====(
     </script>
     <br>
     <small>Après une mise à jour un reset de l'ESP32 et un Ctrl+F5 pour vider le cache du navigateur sont recommandés.</small>
-    <div id='pied'></div>
+    <div id="pied"></div>
     <br>
     <script src="/ParaRouteurJS"></script>
     <script src="/CommunCouleurJS"></script>

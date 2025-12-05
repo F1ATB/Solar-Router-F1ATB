@@ -212,11 +212,9 @@ void LectureLinky() {  //Lecture port série du LINKY .
                   pPuissance = 150 + (pSINSTS == 0 ? -1 : 1) * pURMS1 * pIRMS1;  // marge de 150W, en mono SINSTS==0 si PuissanceS_M==0
                 }
                 if (pPuissance < 0) {  // estimation si l'écart est supérieur à 150W
-
                   PuissanceI_M = -pPuissance;  // "-" car on donne la valeur injectée
-                  PVAI_M = PuissanceI_M;       //On egalise Pw et PVA
-              
                 }
+                PVAI_M = PuissanceI_M;       //On egalise Pw et PVA
               }
             }
           }

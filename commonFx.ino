@@ -1,3 +1,4 @@
+#include <Arduino.h>
 void SplitS(String Str, String &Before, String Separ, String &After) {
   int p = Str.indexOf(Separ);
   Before = Str.substring(0, p);
@@ -195,4 +196,25 @@ float PfloatMax(float Pin) {
 
 int PintMax(int Pin) {
   return constrain(Pin, int(-1 * PmaxReseau), int(PmaxReseau));
+}
+// Decodage URL
+String urlDecode(const String &src) {
+  String result;
+  result.reserve(src.length());
+
+  for (int i = 0; i < src.length(); i++) {
+    char c = src[i];
+    if (c == '%') {
+      if (i + 2 < src.length()) {
+        char hex[3] = { src[i+1], src[i+2], 0 };
+        result += (char) strtol(hex, nullptr, 16);
+        i += 2;
+      }
+    } else if (c == '+') {
+      result += ' ';  // Le + représente un espace dans les URL
+    } else {
+      result += c;
+    }
+  }
+  return result;
 }

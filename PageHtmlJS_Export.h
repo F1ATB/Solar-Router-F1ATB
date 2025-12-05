@@ -21,43 +21,42 @@ const char *ExportHtml = R"====(
   <title>Import/Export</title>
   </head>
   <body onload="Init();">
-    <div id='lesOnglets'></div>
+    <div id="lesOnglets"></div>
     <h2 >Import / Export des paramètres</h2>
     <div class="Zone">
-        <div class="boldT">Export / Sauvegarde des paramètres <br><span class='fsize12'>(Permet la sauvegarde des paramètres sur votre PC avant une mise à jour)</span></div>
+        <div class="boldT">Export / Sauvegarde des paramètres <br><span class="fsize12">(Permet la sauvegarde des paramètres sur votre PC avant une mise à jour)</span></div>
         <div class="form"  >
-          <div class='ligne'>
-            <label for='ip_load'>Paramètres IP du routeur : </label><input type='checkbox' name='ip_load' id='ip_load' style='width:25px;' onclick="setConf();" checked>
+          <div class="ligne">
+            <label for="ip_load">Paramètres IP du routeur : </label><input type="checkbox" name="ip_load" id="ip_load" style="width:25px;" onclick="setConf();" checked>
           </div>
-          <div class='ligne'>
-            <label for='para_load'>Autres paramètres (Sources, Noms...) : </label><input type='checkbox' name='para_load' id='para_load' style='width:25px;' onclick="setConf();" checked>
+          <div class="ligne">
+            <label for="para_load">Autres paramètres (Sources, Noms...) : </label><input type="checkbox" name="para_load" id="para_load" style="width:25px;" onclick="setConf();" checked>
           </div>
-          <div class='ligne'>
-            <label for='action_load'>Planning des Actions : </label><input type='checkbox' name='action_load' id='action_load' style='width:25px;' onclick="setConf();" checked>
+          <div class="ligne">
+            <label for="action_load">Planning des Actions : </label><input type="checkbox" name="action_load" id="action_load" style="width:25px;" onclick="setConf();" checked>
           </div>
-          <div class='ligne'>
-            <label for='nom_f_para'>Nom du fichier de sauvegarde ( *.json) : </label><input type='text' name='nom_f_para' id='nom_f_para'  value="parametres.json" onchange="setNomPara();">
+          <div class="ligne">
+            <label for="nom_f_para">Nom du fichier de sauvegarde ( *.json) : </label><input type="text" name="nom_f_para" id="nom_f_para"  value="parametres.json" onchange="setNomPara();">
           </div>
-          <div class='ligne'>
-            <div class='cell'></div><div class='cell'><a href="/export_file" download="parametre.json" id="adr_export"><button class='bouton'>Télécharger paramètres</button></a></div>
+          <div class="ligne">
+            <div class="cell"></div><div class="cell"><a href="/export_file" download="parametre.json" id="adr_export"><button class="bouton">Télécharger paramètres</button></a></div>
           </div>
-
         </div>
     </div>
     <div class="Zone">
         <div class="boldT">Import des paramètres</div>
-        <form method='POST' onsubmit="submit_para(event);" action="#" enctype='multipart/form-data' id='upload_form'>
+        <form method="POST" onsubmit="submit_para(event);" action="#" enctype="multipart/form-data" id="upload_form">
           <div class="form">
-            <div class='ligne'>
-              <div class='cell'><input type='file' name='fichier_para_' id="fichier_para_"  class='bouton' accept='.json'></div>
-              <input type='submit' value='Mettre à jour'  class='bouton'>
+            <div class="ligne">
+              <div class="cell"><input type="file" name="fichier_para_" id="fichier_para_"  class="bouton" accept=".json"></div>
+              <input type="submit" value="Mettre à jour"  class="bouton">
             </div>
             <div class="lds-dual-ring" id="attente"></div>
           </div>
         </form>
-        <span class='fsize12'>Après un Import de paramètres, faites un Reset pour redémarrer avec les nouveaux.</span>
+        <span class="fsize12">Après un Import de paramètres, faites un Reset pour redémarrer avec les nouveaux.</span>
     </div>
-    <input  class='bouton' type='button' onclick='Reset();' value='ESP32 Reset' >
+    <input  class="bouton" type="button" onclick="Reset();" value="ESP32 Reset" >
     <script>
         var BordsInverse=[".Bparametres",".Bexport"]; 
         function Init(){
@@ -100,7 +99,7 @@ const char *ExportHtml = R"====(
         
     </script>
     <br>
-    <div id='pied'></div>
+    <div id="pied"></div>
     <br>
     <script src="/ParaRouteurJS"></script>
     <script src="/CommunCouleurJS"></script>

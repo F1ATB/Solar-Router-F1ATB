@@ -1,4 +1,4 @@
-#define Version "16.04"
+#define Version "16.08"
 #define HOSTNAME "RMS-ESP32-"
 #define CLE_Rom_Init 912567899  //Valeur pour tester si ROM vierge ou pas. Un changement de valeur remet à zéro toutes les données. / Value to test whether blank ROM or not.
 
@@ -214,44 +214,37 @@
   - V16.04
     Modif arrondi des retards
     Mode DemiSinus pris en compte dans MQTT.ino
-
+  - V16.05
+    Modifications mise en page
+    Graphique temps reel des calculs du PID
+    Sortie infos RTE Tempo du jour et lendemain par MQTT
+    Correction bug, Couleurs par défaut
+  - V16.06
+    Correction bugs, PVAI_M en CACSI, svg favicon
+    Modification ordre téléchargement JS pour les Pins des Actions
+    Remise en place des anciens coefs PID après des essais sans sauvegarde 
+  - V16.07
+    Découpe des gros fichiers Javascript pour eviter pb mémoire serveur
+  - V16.08
+    Correction bug entrée ouverture max
   
   Les détails sont disponibles sur / Details are available here:
   https://f1atb.fr  Section Domotique / Home Automation
 
   
-  F1ATB Novembre 2025
+  F1ATB Décembre 2025
 
   GNU Affero General Public License (AGPL) / AGPL-3.0-or-later
 
-  Arduino IDE 2.3.5
-  Espressif ESP V3.3.2
-  Compilation avec Partition Scheme : custom ou No FS ou minimal SPIFFS
-
-
-  Library used:
-  Utilisation de la bibliothèque WiFi version 3.3.0 dans le dossier: Arduino15\packages\esp32\hardware\esp32\3.3.0\libraries\WiFi 
-  Utilisation de la bibliothèque Networking version 3.3.0 dans le dossier: Arduino15\packages\esp32\hardware\esp32\3.3.0\libraries\Network 
-  Utilisation de la bibliothèque NetworkClientSecure version 3.3.0 dans le dossier: Arduino15\packages\esp32\hardware\esp32\3.3.0\libraries\NetworkClientSecure 
-  Utilisation de la bibliothèque ESPmDNS version 3.3.0 dans le dossier: Arduino15\packages\esp32\hardware\esp32\3.3.0\libraries\ESPmDNS 
-  Utilisation de la bibliothèque WebServer version 3.3.0 dans le dossier: Arduino15\packages\esp32\hardware\esp32\3.3.0\libraries\WebServer 
-  Utilisation de la bibliothèque FS version 3.3.0 dans le dossier: Arduino15\packages\esp32\hardware\esp32\3.3.0\libraries\FS 
-  Utilisation de la bibliothèque ArduinoOTA version 3.3.0 dans le dossier: Arduino15\packages\esp32\hardware\esp32\3.3.0\libraries\ArduinoOTA 
-  Utilisation de la bibliothèque Update version 3.3.0 dans le dossier: Arduino15\packages\esp32\hardware\esp32\3.3.0\libraries\Update 
-  Utilisation de la bibliothèque PubSubClient version 2.8 dans le dossier: Arduino\Sketchbooks\libraries\PubSubClient 
-  Utilisation de la bibliothèque EEPROM version 3.3.0 dans le dossier: Arduino15\packages\esp32\hardware\esp32\3.3.0\libraries\EEPROM 
-  Utilisation de la bibliothèque OneWire version 2.3.8 dans le dossier: Arduino\Sketchbooks\libraries\OneWire 
-  Utilisation de la bibliothèque DallasTemperature version 4.0.3 dans le dossier: Arduino\Sketchbooks\libraries\DallasTemperature 
-  Utilisation de la bibliothèque UrlEncode version 1.0.1 dans le dossier: Arduino\Sketchbooks\libraries\UrlEncode
-  Utilisation de la bibliothèque EthernetESP32 version 1.0.2 dans le dossier: Arduino\Sketchbooks\libraries\EthernetESP32 
-  Utilisation de la bibliothèque SPI version 3.3.0 dans le dossier: Arduino15\packages\esp32\hardware\esp32\3.3.0\libraries\SPI 
-  Utilisation de la bibliothèque LovyanGFX version 1.2.9 dans le dossier: Arduino\Sketchbooks\libraries\LovyanGFX  (!!! Branch develop pour IDF 5.5.0+ : https://github.com/lovyan03/LovyanGFX/tree/develop)
-
+  Arduino IDE 2.3.6
+  Espressif ESP V3.3.3
+  Compilation avec Partition Scheme : custom 
 
 
 */
 
 //Librairies
+#include <Arduino.h>
 #include <WiFi.h>
 #include <WiFiClientSecure.h>
 #include <ESPmDNS.h>
@@ -268,18 +261,26 @@
 #include <esp_task_wdt.h>  //Pour deinitialiser le watchdog. Nécessaire pour les gros program en ROM. Mystère non élucidé
 #include <EthernetESP32.h>
 #include <esp_wps.h>  //Librairie WPS pour appairage automatique connexion WiFi //SR19
-
-//Program routines
-#include "pageHtmlBrute.h"
-#include "pageHtmlMain.h"
-#include "pageHtmlConnect.h"
-#include "pageHtmlPara.h"
-#include "pageHtmlActions.h"
-#include "pageHtmlOTA.h"
-#include "pageHtmlExport.h"
-#include "pageHtmlHeure.h"
-#include "pageHtmlCouleurs.h"
 #include "Actions.h"
+
+
+
+// Pages WEB
+#include "PageAccueil.h"
+#include "JS_Accueil.h"
+#include "PageActions.h"
+#include "JS_Actions.h"
+#include "PagePara.h"
+#include "JS_Para.h"
+#include "PageBrute.h"
+#include "JS_Brute.h"
+#include "PageCommun.h"
+#include "JS_Commun.h"
+#include "PageHtmlJS_OTA.h"
+#include "PageHtmlJS_Heure.h"
+#include "PageHtmlJS_Couleurs.h"
+#include "PageHtmlJS_Export.h"
+#include "PageHtmlJS_Connect.h"
 
 //Watchdog de 180 secondes. Le systeme se Reset si pas de dialoque avec le LINKY ou JSY-MK-194T/333 ou Enphase-Envoy pendant 180s
 //Watchdog for 180 seconds. The system resets if no dialogue with the Linky or  JSY-MK-194T/333 or Enphase-Envoy for 180s
@@ -481,6 +482,8 @@ String LTARF = "";  //Option tarifaire RTE
 String STGE = "";   //Status Linky
 String STGEt = "";  //Status Tempo uniquement RTE
 String NGTF = "";   //Calendrier tarifaire
+String RTE_Jour="NON_DEFINI";
+String RTE_Demain="NON_DEFINI";
 String JourLinky = "";
 int16_t Int_HeureLinky = 0;  //Heure interne
 int16_t Int_MinuteLinky = 0;
@@ -571,11 +574,13 @@ unsigned long previousMQTTenvoiMillis;
 unsigned long previousMQTTMillis;
 unsigned long LastPwMQTTMillis = 0;
 unsigned long PeriodeMQTTMillis = 500;
+unsigned long LastShowActionMillis=0;
 
 //Actions et Triac(action 0)
 float RetardF[LesActionsLength];        //Floating value of retard
 float LastErrorPw[LesActionsLength];    //Floating value of previous Pw error
-float IntegrErrorPw[LesActionsLength];  //Inetgral de l'erreur
+float IntegrErrorPw[LesActionsLength];  //Integral de l'erreur
+float Propor[LesActionsLength]; // correction proportionnelle
 float DeriveF[LesActionsLength]; // Derive erreur filtrée
 
 //Variables in RAM for interruptions
@@ -858,6 +863,7 @@ void setup() {
     RetardF[i] = 100.0;
     LastErrorPw[i] = 0;
     IntegrErrorPw[i] = 100.0;
+    Propor[i]=0;
     DeriveF[i]=0;
     OutOn[i] = 1;
     OutOff[i] = 0;
@@ -1422,6 +1428,12 @@ void loop() {
     }
     InfoActionExterne();
   }
+  if (LastShowActionMillis!=0){
+    if (millis() - LastShowActionMillis>6000){ //Pas prendre tps en retard 
+      LectureEnROM(); //On remet les coefficint du PID aux valeurs stockés après des essais.
+      LastShowActionMillis=0;
+    }
+  }
   //Vérification Ethernet, WIFI et de la puissance
   //*********************************************
   if (tps - previousWifiMillis > 30000) {  //Test présence WIFI toutes les 30s et autres
@@ -1539,7 +1551,7 @@ void loop() {
 // *  ACTIONS *
 // ************
 void GestionOverproduction() {  // chaque 200ms (adaptation 5 fois par seconde)
-  float SeuilPw, ErrorPw = 0, Propor = 0, Derive = 0;
+  float SeuilPw, ErrorPw = 0,  Derive = 0;
   float MaxTriacPw;
   float Kp, Ki, Kd;
   float GainCACSI = float(ReacCACSI);
@@ -1595,16 +1607,18 @@ void GestionOverproduction() {  // chaque 200ms (adaptation 5 fois par seconde)
           if (LesActions[i].PID && ModePara==1) {
             Kp = float(LesActions[i].Kp) / 1000.0;  //Coef proportionnel
             Kd = float(LesActions[i].Kd) / 1000.0;  //Coef/derivé
-            Propor = Kp * ErrorPw;
+            Propor[i] = Kp * ErrorPw;
             if (LesActions[i].Ki==0 && LesActions[i].Kp>0) IntegrErrorPw[i]=50.0; //Cas particulier avec régulation uniquement de P
             Derive = Kd * (ErrorPw - LastErrorPw[i]);
             DeriveF[i]=0.2*Derive+0.8*DeriveF[i]; // Filtrage car manque de mesure donne Derive=0
-            RetardF[i] = Propor + IntegrErrorPw[i] + DeriveF[i];  //Mode PID
-            LastErrorPw[i] = ErrorPw;            
+            RetardF[i] = Propor[i] + IntegrErrorPw[i] + DeriveF[i];  //Mode PID                       
           } else {
             // le Triac ou les relais en sinu
             RetardF[i] = IntegrErrorPw[i];     // Gain de boucle de l'asservissement en mode Integral only
+            Propor[i]=0;
+            DeriveF[i]=0; 
           }
+          LastErrorPw[i] = ErrorPw; 
           if (RetardF[i] < 100 - MaxTriacPw) { RetardF[i] = 100 - MaxTriacPw; }
           if (ITmode < 0 && i == 0) RetardF[i] = 100;  //Triac pas possible sur synchro interne
         }
@@ -1618,7 +1632,7 @@ void GestionOverproduction() {  // chaque 200ms (adaptation 5 fois par seconde)
     Retard[i] = round(RetardF[i]);           //Valeure entiere pour piloter le Triac et les relais
     if (RetardVx == i && Actif[i] != 0) {  //Affiche calcul retards port série ou Telnet
       char buffer[50];
-      sprintf(buffer, "Ecart= %4.0fW Retard= %3u P= %4.1f I= %4.1f D= %4.1f", ErrorPw, Retard[i], Propor, IntegrErrorPw[i], DeriveF[i]);
+      sprintf(buffer, "Ecart= %4.0fW Retard= %3u P= %4.1f I= %4.1f D= %4.1f", ErrorPw, Retard[i], Propor[i], IntegrErrorPw[i], DeriveF[i]);
       TelnetPrintln(String(buffer));
     }
     if (Retard[i] == 100) {  // Force en cas d'arret des IT
