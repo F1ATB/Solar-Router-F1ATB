@@ -185,7 +185,7 @@ const char *ParaHtml = R"====(
                 <option value="UxIx2">UxIx2</option><option value="UxIx3">UxIx3</option><option value="Linky">Linky</option>     
                 <option value="Enphase">Enphase-Envoy</option><option value="SmartG">SmartGateways</option><option value="HomeW">HomeWizard</option>
                 <option value="ShellyEm">Shelly Em</option><option value="ShellyPro">Shelly Pro Em</option>
-                <option value="Ext">ESP Externe</option><option value="Pmqtt">MQTT</option></select>
+                <option value="Ext">ESP Externe</option><option value="Pmqtt">MQTT</option><option value="MycilaJsyApp">MycilaJsyApp</option></select>
           </div>
         </div>
         <div class="form"  >

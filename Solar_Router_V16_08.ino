@@ -539,6 +539,9 @@ int LTARFbin = 0;  //Code binaire  des tarifs
 //Paramètres pour Source Externe
 int8_t RMSextIdx = 0;
 
+// Paramètres pour Mycila
+String Mycila_dataBrute = "";
+
 //Actions
 Action LesActions[LesActionsLength];  //Liste des actions
 volatile int NbActions = 0;
@@ -1129,6 +1132,9 @@ void setup() {
     Setup_Enphase();
   }
 
+  if (Source == "MycilaJsyApp") {
+    Setup_MycilaJsyApp();
+  }
 
   if (Source == "Pmqtt") {
     GestionMQTT();
@@ -1279,11 +1285,16 @@ void Task_LectureRMS(void *pvParameters) {
         LastRMS_Millis = millis();
         PeriodeProgMillis = 300 + ralenti;  //On adapte  la vitesse pour ne pas surchargé Wifi
       }
-
+      
       if (Source == "Ext") {
         CallESP32_Externe();
         LastRMS_Millis = millis();
         PeriodeProgMillis = 400 + ralenti;  //Après pour ne pas surchargé Wifi
+      }
+      if (Source == "MycilaJsyApp") {
+        LectureMycila();
+        LastRMS_Millis = millis();
+        PeriodeProgMillis = 150;
       }
       if (Source == "Pmqtt") {
         PeriodeProgMillis = 600;

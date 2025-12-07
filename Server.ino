@@ -319,6 +319,11 @@ void handleAjaxRMS()
     {
       S += GS + ShEm_dataBrute;
     }
+    if (Source_data == "MycilaJsyApp")
+    {
+      S += GS + Mycila_dataBrute;
+    }
+    if (Source_data == "UxIx3")
     if (Source_data == "UxIx3")
     {
       S += GS + MK333_dataBrute;

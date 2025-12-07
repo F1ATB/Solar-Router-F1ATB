@@ -95,6 +95,7 @@ const char *PageBrute = R"====(
     #infoSmartG,
     #infoHomeW,
     #infoShellyEm,
+    #infoMycila,
     #infoPmqtt {
       display: none;
     }
@@ -162,6 +163,10 @@ const char *PageBrute = R"====(
   <div id="infoShellyEm">
     <div>Donn&eacute;es Shelly Em </div>
     <div id="dataShellyEm" class="tableau dataIn"></div>
+  </div>
+  <div id="infoMycila">
+    <div>Donn&eacute;es brutes capteur MycilaJsyApp</div>
+    <div id="dataMycila" class="tableau dataIn"></div>
   </div>
   <div id="infoPmqtt">
     <div>Données puissances recues par MQTT</div>

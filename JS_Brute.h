@@ -297,6 +297,16 @@ const char *PageBruteJS2 = R"====(
               }
                GH('dataShellyEm', S);
             }
+            if (Source_data == "MycilaJsyApp"){
+              GID('infoMycila').style.display="block";
+              groupes[1] = groupes[1].replaceAll('"','');
+              var G1=groupes[1].split(",");
+              var S="";              
+              for (var i=0;i<G1.length;i++){
+                    S +=G1[i]+"<br>";
+              }
+               GH('dataMycila', S);
+            }
             if (Source_data == "Pmqtt"){
               GID('infoPmqtt').style.display="block";
                GH('dataPmqtt', groupes[1]);
