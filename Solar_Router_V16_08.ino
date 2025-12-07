@@ -303,6 +303,8 @@
 #define LesActionsLength 10  //Ne pas toucher -Javascript connais pas
 //Nombre Routeurs réseau Max
 #define LesRouteursMax 8  //Ne pas toucher -Javascript connais pas
+//Timeout init ethernet
+#define EthernetInitTimeout 3000
 //VARIABLES
 const char *ap_default_ssid;        // Mode Access point  IP: 192.168.4.1
 const char *ap_default_psk = NULL;  // Pas de mot de passe en AP,
@@ -358,6 +360,7 @@ int idxMessage = 0;
 int P_cent_EEPROM;
 int cptLEDyellow = 0;
 int cptLEDgreen = 0;
+bool EthernetLink = false;
 
 
 
@@ -922,10 +925,11 @@ void setup() {
   MessageCommandes();
   LireSerial();
   Ethernet.init(driver);
-  if (String(ESP.getChipModel()) == "ESP32-D0WD") {  //certains ESP32U et WT32-ETH01
-    TelnetPrintln("\nAncien modèle d'ESP32 que l'on trouve sur les cartes Ethernet WT32-ETH01 (branchez le câble) et certains ESP32U");
-    if (Ethernet.begin() != 0) {  //C'est une carte WT-ETH01
-      TelnetPrintln("Carte WT32-ETH01 qui Crash en Wifi. On force Ethernet.\n");
+  if (String(ESP.getChipModel()) == "ESP32-D0WD" || ESP32_Type == 0) {  //certains ESP32U et WT32-ETH01 ou carte inconnue
+    if (String(ESP.getChipModel()) == "ESP32-D0WD")
+      TelnetPrintln("\nAncien modèle d'ESP32 que l'on trouve sur les cartes Ethernet WT32-ETH01 (branchez le câble) et certains ESP32U");
+    if (Ethernet.begin(EthernetInitTimeout) != 0) {  //C'est une carte WT-ETH01
+      TelnetPrintln(String(ESP.getChipModel()) == "ESP32-D0WD" ? "Carte WT32-ETH01 qui Crash en Wifi. On force Ethernet.\n" : "Carte WT32-ETH01 détectée. On force Ethernet.\n");
       ESP32_Type = 10;  //On force Ethernet
     }
   }
@@ -978,7 +982,7 @@ void setup() {
       RMS_IP[0] = String2IP(Ethernet.localIP().toString());
     } else {
       TelnetPrintln("Initialisation Ethernet par DHCP:");
-      if (Ethernet.begin()) {
+      if (Ethernet.begin(EthernetInitTimeout)) {
         StockMessage("Adresse IP Ethernet assignée par DHCP : " + Ethernet.localIP().toString());
         RMS_IP[0] = String2IP(Ethernet.localIP().toString());
       } else {
@@ -986,8 +990,10 @@ void setup() {
         delay(1);
       }
     }
-
-  } else {  //ESP32 en WIFI
+    EthernetLink = Ethernet.linkStatus() == LinkON;
+  } 
+  
+  if (!EthernetLink) {  //ESP32 en WIFI
     TelnetPrintln("Lancement du Wifi");
     //Liste Wifi à faire avant connexion à un AP. Necessaire depuis biblio ESP32 3.0.1
     WiFi.mode(WIFI_STA);
@@ -1003,6 +1009,7 @@ void setup() {
 
     WiFi.hostname(hostname);
     ap_default_ssid = (const char *)hostname.c_str();
+    TelnetPrintln("Adresse MAC ESP: " + WiFi.macAddress());
     // Check WiFi connection
     // ... check mode
     if (WiFi.getMode() != WIFI_STA) {
@@ -1023,7 +1030,7 @@ void setup() {
   }
 
   //WIFI
-  if (ESP32_Type < 10) {
+  if (!EthernetLink) {
     if (ModeReseau < 2) {
       TelnetPrintln("ssid:" + ssid);
       TelnetPrintln("password:" + password);

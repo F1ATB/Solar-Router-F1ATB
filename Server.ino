@@ -388,7 +388,7 @@ void handleAjaxESP32()
   String acces = "";
   String Mac = "";
   String adr = "";
-  if (ESP32_Type >= 10)
+  if (EthernetLink)
   {
     acces = " " + RS + " " + RS + " ";
     Mac = Ethernet.macAddress();
@@ -893,7 +893,7 @@ void handleajaxRAZhisto()
 void handleParaRouteurAjax()
 {
   String localIP = WiFi.localIP().toString();
-  if (ESP32_Type == 10)
+  if (EthernetLink)
     localIP = Ethernet.localIP().toString();
   String S = Source + GS + Source_data + GS + localIP + GS + nomRouteur + GS + Version + GS + nomSondeFixe + GS + nomSondeMobile + GS + String(RMSextIP) + GS + String(ModeReseau) + GS + String(ModePara) + GS + String(Horloge) + GS + String(ESP32_Type) + GS;
   for (int i = 0; i < LesRouteursMax; i++)

@@ -91,7 +91,7 @@ bool testMQTTconnected()
       sprintf(StateTopic, "%s%s_state", PrefixMQTTEtat, MQTTdeviceName.c_str());
       byte mac[6]; // the MAC address of your Wifi shield
       String cu = "http://" + WiFi.localIP().toString();
-      if (ESP32_Type < 10)
+      if (!EthernetLink)
       {
         WiFi.macAddress(mac);
       }
