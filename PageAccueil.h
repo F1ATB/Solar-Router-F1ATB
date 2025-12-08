@@ -228,10 +228,11 @@ const char *MainHtml = R"====(
       text-align: left;
       width: 100%;
       height: 0px;
+      position: relative;
     }
 
     .choix {
-      position: relative;
+      position: absolute;
       left: 120px;
       top: -80px;
       font-size: 16px;

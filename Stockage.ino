@@ -186,6 +186,18 @@ void LectureEnROM() {
   address += sizeof(unsigned long);
   dns = EEPROM.readULong(address);
   address += sizeof(unsigned long);
+  CleAccesRef = EEPROM.readString(address);
+  address += CleAccesRef.length() + 1;
+  Couleurs = EEPROM.readString(address);
+  address += Couleurs.length() + 1;
+  ModePara = EEPROM.readByte(address);
+  address += sizeof(byte);
+  ModeReseau = EEPROM.readByte(address);
+  address += sizeof(byte);
+  Horloge = EEPROM.readByte(address);
+  address += sizeof(byte);
+  ESP32_Type = EEPROM.readByte(address);
+  address += sizeof(byte);
   int VersionMajeur = int(VersionStocke / 100);
   String V = Version;
   int Vr = V.toInt();
@@ -194,18 +206,6 @@ void LectureEnROM() {
   TelnetPrint("Version du logiciel( partie entière) :");
   TelnetPrintln(String(Vr));
   if (Vr == VersionMajeur) {  //La partie entière  ne change pas. On lit la suite
-    CleAccesRef = EEPROM.readString(address);
-    address += CleAccesRef.length() + 1;
-    Couleurs = EEPROM.readString(address);
-    address += Couleurs.length() + 1;
-    ModePara = EEPROM.readByte(address);
-    address += sizeof(byte);
-    ModeReseau = EEPROM.readByte(address);
-    address += sizeof(byte);
-    Horloge = EEPROM.readByte(address);
-    address += sizeof(byte);
-    ESP32_Type = EEPROM.readByte(address);
-    address += sizeof(byte);
     LEDgroupe = EEPROM.readByte(address);
     address += sizeof(byte);
     rotation = EEPROM.readByte(address);

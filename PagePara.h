@@ -59,7 +59,7 @@ const char *ParaHtml = R"====(
           </div>
           <div class="ligne" id="ligneFixe">
             <label for="nomSondeFixe" >Nom Données courant seconde sonde : </label>
-            <input type="text" name="nomSondeFixe" id="nomSondeFixe" >
+            <input type="text" name="nomSondeFixe" id="nomSondeFixe" title ="Champ obligatoire si vous avez 2 sondes">
           </div>  
           <div class="ligne">  
             <label for="Horlo">Horloge du routeur</label>

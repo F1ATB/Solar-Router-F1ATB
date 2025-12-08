@@ -1,4 +1,4 @@
-#define Version "16.08"
+#define Version "16.09"
 #define HOSTNAME "RMS-ESP32-"
 #define CLE_Rom_Init 912567899  //Valeur pour tester si ROM vierge ou pas. Un changement de valeur remet à zéro toutes les données. / Value to test whether blank ROM or not.
 
@@ -211,22 +211,29 @@
   - V16.03
     Initialisation intégrateur PID à 100 pour ne pas ouvrir au démarrage
     Affichage adresse IP .local
-  - V16.04
-    Modif arrondi des retards
-    Mode DemiSinus pris en compte dans MQTT.ino
-  - V16.05
-    Modifications mise en page
-    Graphique temps reel des calculs du PID
-    Sortie infos RTE Tempo du jour et lendemain par MQTT
-    Correction bug, Couleurs par défaut
-  - V16.06
-    Correction bugs, PVAI_M en CACSI, svg favicon
-    Modification ordre téléchargement JS pour les Pins des Actions
-    Remise en place des anciens coefs PID après des essais sans sauvegarde 
-  - V16.07
-    Découpe des gros fichiers Javascript pour eviter pb mémoire serveur
-  - V16.08
-    Correction bug entrée ouverture max
+  - Version 16.04     
+    Arrondi des retards modifié.
+    Prise en compte du mode DemiSinus dans MQTT.ino.
+  - Version 16.05
+    Mise en page retravaillée.
+    Ajout d’un graphique temps réel pour les calculs du PID.
+    Intégration des informations RTE Tempo (jour et lendemain) via MQTT.
+    Correction d’un bug sur les couleurs par défaut.
+  - Version 16.06
+    Corrections de bugs :
+    Problème PVAI_M dans CACSI.
+    Icône favicon SVG.
+    Modification de l’ordre de téléchargement des JS pour les pins des Actions.
+    Restauration des anciens coefficients PID après des essais non sauvegardés.
+  - Version 16.07
+    Découpage des gros fichiers JavaScript pour éviter les problèmes de mémoire serveur.
+  - Version 16.08
+    Correction d’un bug sur l’entrée "ouverture max".
+  - Version 16.09
+    Amélioration de la mise en page d’accueil sur smartphone.
+    Masquage des données de la deuxième sonde de puissance si non nommée explicitement.
+    Optimisation des appels AJAX répétitifs en cas d’erreur.
+
   
   Les détails sont disponibles sur / Details are available here:
   https://f1atb.fr  Section Domotique / Home Automation
@@ -963,7 +970,7 @@ void setup() {
   if (ESP32_Type == 10) {  //Ethernet (avant Horloge)
     PrintScroll("Lancement de la liaison Ethernet");
     if (Ethernet.linkStatus() == LinkOFF) {
-      PrintScroll("Câble Ethernet non connecté.");
+   //   PrintScroll("Câble Ethernet non connecté.");  //Fonctionne pas sur WT32
     }
     //Ethernet.hostname(hostname);
     if (dhcpOn == 0) {  //Static IP

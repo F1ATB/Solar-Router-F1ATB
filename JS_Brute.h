@@ -106,7 +106,8 @@ const char *PageBruteJS1 = R"====(
        function LoadDataESP32() {
         var xhttp = new XMLHttpRequest();
         xhttp.onreadystatechange = function() { 
-          if (this.readyState == 4 && this.status == 200) {
+          if (this.readyState == 4 ) {
+            if ( this.status == 200) {
               var dataESP=this.responseText;
               var Messages=dataESP.split(GS);
               var message=Messages[0].split(RS);
@@ -164,8 +165,9 @@ const char *PageBruteJS1 = R"====(
                 }
               }
               S+='</table>';
-              GH('DataESP32', S);             
-             setTimeout('LoadDataESP32();',5000);
+              GH('DataESP32', S); 
+            }            
+            setTimeout('LoadDataESP32();',5000);
           }
           
         };
@@ -184,166 +186,168 @@ const char *PageBruteJS2 = R"====(
         GID('LED').style='display:block;';
         var xhttp = new XMLHttpRequest();
         xhttp.onreadystatechange = function() { 
-          if (this.readyState == 4 && this.status == 200) {
-            GID('LED').style='display:none;';
-            var DuRMS=this.responseText;
-            var groupes=DuRMS.split(GS);
-            var G0=groupes[0].split(RS);
-            GH('date',G0[0]);
-            Source_data=G0[1];
-            if (Source_data == "NotDef"){
-              GID('infoNotDef').style.display="block";
-            }
-            if (Source_data == "UxI"){
-              GID('infoUxI').style.display="block";
-              GH('Ueff',"<span style='color:#" + Koul[Coul_W][3] + ";'>_" +parseInt(G0[2],10) + "<small> V</small></span>");
-              GH('Ieff',"<span style='color:#" + Koul[Coul_VA][3] + ";'> _" + G0[3] + "<small> A</small></span>");
-              GH('cosphi',"<span style='color:#"+Koul[Coul_Graphe][1] +";'> <small>Facteur de puissance : " + G0[4]+ "</small></span>");
-              var volt=groupes[1].split(RS);
-              var amp=groupes[2].split(RS);
-              var cT="#"+Koul[Coul_Graphe][1];
-              var style='background:linear-gradient(#' + Koul[Coul_Graphe][5] +',#' + Koul[Coul_Graphe][3] +',#' + Koul[Coul_Graphe][5] +');border-color:#' +Koul[Coul_Tab][5]+';' ;  
-              var S= "<svg height='400' width='1000'  style='"+style+ "' >";
-              S += "<line x1='0' y1='400' x2='0' y2='0' style='stroke:" + cT +";stroke-width:2' />";
-              S += "<line x1='0' y1='197' x2='1000' y2='197' style='stroke:" + cT +";stroke-width:2' />";
-              var  Vmax = 500;
-              var Imax = 500;
-              for (var i = 0; i < 100; i++) {
-                Vmax = Math.max(Math.abs(volt[i]), Vmax);
-                Imax = Math.max(Math.abs(amp[i]), Imax);
+          if (this.readyState == 4 ) {
+            if ( this.status == 200) {
+              GID('LED').style='display:none;';
+              var DuRMS=this.responseText;
+              var groupes=DuRMS.split(GS);
+              var G0=groupes[0].split(RS);
+              GH('date',G0[0]);
+              Source_data=G0[1];
+              if (Source_data == "NotDef"){
+                GID('infoNotDef').style.display="block";
               }
+              if (Source_data == "UxI"){
+                GID('infoUxI').style.display="block";
+                GH('Ueff',"<span style='color:#" + Koul[Coul_W][3] + ";'>_" +parseInt(G0[2],10) + "<small> V</small></span>");
+                GH('Ieff',"<span style='color:#" + Koul[Coul_VA][3] + ";'> _" + G0[3] + "<small> A</small></span>");
+                GH('cosphi',"<span style='color:#"+Koul[Coul_Graphe][1] +";'> <small>Facteur de puissance : " + G0[4]+ "</small></span>");
+                var volt=groupes[1].split(RS);
+                var amp=groupes[2].split(RS);
+                var cT="#"+Koul[Coul_Graphe][1];
+                var style='background:linear-gradient(#' + Koul[Coul_Graphe][5] +',#' + Koul[Coul_Graphe][3] +',#' + Koul[Coul_Graphe][5] +');border-color:#' +Koul[Coul_Tab][5]+';' ;  
+                var S= "<svg height='400' width='1000'  style='"+style+ "' >";
+                S += "<line x1='0' y1='400' x2='0' y2='0' style='stroke:" + cT +";stroke-width:2' />";
+                S += "<line x1='0' y1='197' x2='1000' y2='197' style='stroke:" + cT +";stroke-width:2' />";
+                var  Vmax = 500;
+                var Imax = 500;
+                for (var i = 0; i < 100; i++) {
+                  Vmax = Math.max(Math.abs(volt[i]), Vmax);
+                  Imax = Math.max(Math.abs(amp[i]), Imax);
+                }
 
-              S += "<polyline points='";
-              for (var i = 0; i < 100; i++) {
-                var Y = 197 - 185 * volt[i] / Vmax;
-                var X = 10 * i;
-                S += X + ',' + Y + ' ';
+                S += "<polyline points='";
+                for (var i = 0; i < 100; i++) {
+                  var Y = 197 - 185 * volt[i] / Vmax;
+                  var X = 10 * i;
+                  S += X + ',' + Y + ' ';
+                }
+                S += "' style='fill:none;stroke:#" + Koul[Coul_W][3] + ";stroke-width:6' />";
+                S += "<polyline points='";
+                for (var i = 0; i < 100; i++) {
+                  var Y = 197 - 185 * amp[i] / Imax;
+                  var X = 10 * i;
+                  S += X + ',' + Y + ' ';
+                }
+                S += "' style='fill:none;stroke:#" + Koul[Coul_VA][3] + ";stroke-width:6' />";
+                S += "</svg>";
+                GH('SVG',S);
               }
-              S += "' style='fill:none;stroke:#" + Koul[Coul_W][3] + ";stroke-width:6' />";
-              S += "<polyline points='";
-              for (var i = 0; i < 100; i++) {
-                var Y = 197 - 185 * amp[i] / Imax;
-                var X = 10 * i;
-                S += X + ',' + Y + ' ';
+              if (Source_data == "UxIx2"){
+                GID('infoUxIx2').style.display="block";
+                var G1=groupes[1].split(RS);
+                if(!InitFait){
+                    InitFait=true;
+                    creerTableauUxIx2();
+                    GH("nomSondeFixe",nomSondeFixe);
+                    GH("nomSondeMobile",nomSondeMobile); 
+                }
+                for (var j=0;j<M.length;j++){
+                      if( M[j][3] == 'Wh' ) {
+                        GH(M[j][0], LaVal(G1[j])); 
+                      } else {
+                        GH(M[j][0], G1[j]); 
+                      }    
+                }
               }
-              S += "' style='fill:none;stroke:#" + Koul[Coul_VA][3] + ";stroke-width:6' />";
-              S += "</svg>";
-              GH('SVG',S);
-            }
-            if (Source_data == "UxIx2"){
-              GID('infoUxIx2').style.display="block";
-              var G1=groupes[1].split(RS);
-              if(!InitFait){
-                  InitFait=true;
-                  creerTableauUxIx2();
-                  GH("nomSondeFixe",nomSondeFixe);
-                  GH("nomSondeMobile",nomSondeMobile); 
+              if (Source_data == "Enphase"){
+                GID('infoEnphase').style.display="block";
+                var G1=groupes[1].split(RS);
+                if(!InitFait){
+                    InitFait=true;
+                    creerTableauEnphase();
+                    GH("nomSondeMobile",nomSondeMobile); 
+                }
+                for (var j=0;j<E.length;j++){
+                      if( E[j][3] == 'Wh' ) {
+                        GH(E[j][0], LaVal(G1[j])); 
+                      } else {
+                        GH(E[j][0], G1[j]); 
+                      }    
+                }
               }
-              for (var j=0;j<M.length;j++){
-                    if( M[j][3] == 'Wh' ) {
-                      GH(M[j][0], LaVal(G1[j])); 
-                    } else {
-                      GH(M[j][0], G1[j]); 
-                    }    
+              if (Source_data == "SmartG"){
+                GID('infoSmartG').style.display="block";
+                groupes[1] = groupes[1].replaceAll('"','');
+                var G1=groupes[1].split(",");
+                var S="";              
+                for (var i=0;i<G1.length;i++){
+                      S +=G1[i]+"<br>";
+                }
+                GH('dataSmartG', S);
               }
-            }
-            if (Source_data == "Enphase"){
-              GID('infoEnphase').style.display="block";
-              var G1=groupes[1].split(RS);
-              if(!InitFait){
-                  InitFait=true;
-                  creerTableauEnphase();
-                  GH("nomSondeMobile",nomSondeMobile); 
+              if (Source_data == "HomeW"){
+                GID('infoHomeW').style.display="block";
+                groupes[1] = groupes[1].replaceAll('"','');
+                var G1=groupes[1].split(",");
+                var S="";              
+                for (var i=0;i<G1.length;i++){
+                      S +=G1[i]+"<br>";
+                }
+                GH('dataHomeW', S);
               }
-              for (var j=0;j<E.length;j++){
-                    if( E[j][3] == 'Wh' ) {
-                      GH(E[j][0], LaVal(G1[j])); 
-                    } else {
-                      GH(E[j][0], G1[j]); 
-                    }    
+              if (Source_data == "UxIx3"){
+                GID('infoUxIx3').style.display="block";
+                GH('dataUxIx3', groupes[1]);
               }
-            }
-            if (Source_data == "SmartG"){
-              GID('infoSmartG').style.display="block";
-              groupes[1] = groupes[1].replaceAll('"','');
-              var G1=groupes[1].split(",");
-              var S="";              
-              for (var i=0;i<G1.length;i++){
-                    S +=G1[i]+"<br>";
+              if (Source_data == "ShellyEm" || Source_data == "ShellyPro"){
+                GID('infoShellyEm').style.display="block";
+                groupes[1] = groupes[1].replaceAll('"','');
+                var G1=groupes[1].split(",");
+                var S="";              
+                for (var i=0;i<G1.length;i++){
+                      S +=G1[i]+"<br>";
+                }
+                GH('dataShellyEm', S);
               }
-               GH('dataSmartG', S);
-            }
-            if (Source_data == "HomeW"){
-              GID('infoHomeW').style.display="block";
-              groupes[1] = groupes[1].replaceAll('"','');
-              var G1=groupes[1].split(",");
-              var S="";              
-              for (var i=0;i<G1.length;i++){
-                    S +=G1[i]+"<br>";
+              if (Source_data == "Pmqtt"){
+                GID('infoPmqtt').style.display="block";
+                GH('dataPmqtt', groupes[1]);
               }
-               GH('dataHomeW', S);
-            }
-            if (Source_data == "UxIx3"){
-              GID('infoUxIx3').style.display="block";
-               GH('dataUxIx3', groupes[1]);
-            }
-            if (Source_data == "ShellyEm" || Source_data == "ShellyPro"){
-              GID('infoShellyEm').style.display="block";
-              groupes[1] = groupes[1].replaceAll('"','');
-              var G1=groupes[1].split(",");
-              var S="";              
-              for (var i=0;i<G1.length;i++){
-                    S +=G1[i]+"<br>";
-              }
-               GH('dataShellyEm', S);
-            }
-            if (Source_data == "Pmqtt"){
-              GID('infoPmqtt').style.display="block";
-               GH('dataPmqtt', groupes[1]);
-            }
-            if (Source_data == "Linky"){
-              GID('infoLinky').style.display="block";
-              if(!InitFait){
-                  InitFait=true;
-                  creerTableauLinky();
-              }
-              MessageLinky +=groupes[1];
-              var blocs=MessageLinky.split(String.fromCharCode(2));
-              var lg=blocs.length;
-              if (lg>2){
-                  MessageLinky=String.fromCharCode(2)+blocs[lg-1];               
-                  GH('DataLinky', '<pre>'+blocs[lg-2]+'</pre>');
-                  var lignes=blocs[lg-2].split(String.fromCharCode(10));
-                  for (var i=0;i<lignes.length;i++){
-                    var colonnes=lignes[i].split(String.fromCharCode(9));
-                    if (colonnes[0]=='DATE'){
-                      GH('dateLinky', LaDate(colonnes[1]));
-                    }
-                    for (var j=0;j<L.length;j++){
-                      if (colonnes[0]==L[j][0]){
-                        if (!L[j][2] || parseInt(colonnes[1])>0){
-                          GID('L'+L[j][0]).style.display="table-row";
-                          switch (L[j][4]){
-                            case 0:
-                              GH(L[j][0], LaVal(colonnes[1]));
-                              break;
-                            case 1:
-                              GH('h'+L[j][0],  LaDate(colonnes[1]));
-                              GH(L[j][0], LaVal(colonnes[2]));
-                              break;
-                            case 2: //Texte
-                              GH('h'+L[j][0], colonnes[1]);
-                              break;
+              if (Source_data == "Linky"){
+                GID('infoLinky').style.display="block";
+                if(!InitFait){
+                    InitFait=true;
+                    creerTableauLinky();
+                }
+                MessageLinky +=groupes[1];
+                var blocs=MessageLinky.split(String.fromCharCode(2));
+                var lg=blocs.length;
+                if (lg>2){
+                    MessageLinky=String.fromCharCode(2)+blocs[lg-1];               
+                    GH('DataLinky', '<pre>'+blocs[lg-2]+'</pre>');
+                    var lignes=blocs[lg-2].split(String.fromCharCode(10));
+                    for (var i=0;i<lignes.length;i++){
+                      var colonnes=lignes[i].split(String.fromCharCode(9));
+                      if (colonnes[0]=='DATE'){
+                        GH('dateLinky', LaDate(colonnes[1]));
+                      }
+                      for (var j=0;j<L.length;j++){
+                        if (colonnes[0]==L[j][0]){
+                          if (!L[j][2] || parseInt(colonnes[1])>0){
+                            GID('L'+L[j][0]).style.display="table-row";
+                            switch (L[j][4]){
+                              case 0:
+                                GH(L[j][0], LaVal(colonnes[1]));
+                                break;
+                              case 1:
+                                GH('h'+L[j][0],  LaDate(colonnes[1]));
+                                GH(L[j][0], LaVal(colonnes[2]));
+                                break;
+                              case 2: //Texte
+                                GH('h'+L[j][0], colonnes[1]);
+                                break;
+                            }
                           }
                         }
                       }
                     }
-                  }
-                  GID('LED').style='display:none;';
+                    GID('LED').style='display:none;';
+                }
+                IdxMessage=groupes[2];
               }
-              IdxMessage=groupes[2];
+              //setCouleur();
             }
-            //setCouleur();
             setTimeout('LoadData();',2000);
           }  
         }

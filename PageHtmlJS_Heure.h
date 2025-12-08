@@ -47,12 +47,14 @@ const char *HeureHtml = R"====(
         function LoadData() {
           var xhttp = new XMLHttpRequest();
           xhttp.onreadystatechange = function() { 
-            if (this.readyState == 4 && this.status == 200) {
+            if (this.readyState == 4 ) {
+              if (this.status == 200) {
                 var DuRMS=this.responseText;
                 var groupes=DuRMS.split(GS);
                 var G0=groupes[0].split(RS);
                 GID('date').innerHTML = G0[1]; 
-                setTimeout('LoadData();',2000);
+              }
+              setTimeout('LoadData();',2000);
             }
           };
           xhttp.open('GET', '/ajax_data', true);

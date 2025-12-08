@@ -27,91 +27,90 @@ function LoadData() {
   GID('LED').style = 'display:block;';
   var xhttp = new XMLHttpRequest();
   xhttp.onreadystatechange = function () {
-    if (this.readyState == 4 && this.status == 200) {
-      var DuRMS = this.responseText;
-      var groupes = DuRMS.split(GS);
-      var G0 = groupes[0].split(RS);
-      var G1 = groupes[1].split(RS);
-      var G2 = groupes[2].split(RS);
-      GID('date').innerHTML = G0[1];
-      Source_data = G0[2];
-      if (!initUxIx2) {
-        initUxIx2 = true;
-        //if (groupes.length == 4 && nomSondeFixe != "") { // Cas pour les sources externes UxIx2 et Shelly monophasé Si deuxième canal nommé
-        //   biSonde = true;
-        // }
-      }
-      
-
-      GID('PwS_M').innerHTML = LaVal(G1[0]); //Maison
-      GID('PwI_M').innerHTML = LaVal(G1[1]); //Maison
-      GID('PVAS_M').innerHTML = LaVal(G1[2]); //Maison
-      GID('PVAI_M').innerHTML = LaVal(G1[3]); //Maison
-      GID('EAJS_M').innerHTML = LaVal(G1[4]);
-      GID('EAJI_M').innerHTML = LaVal(G1[5]);
-      GID('EAS_M').innerHTML = LaVal(G1[6]);
-      GID('EAI_M').innerHTML = LaVal(G1[7]);
-      PuisMaxS_M = Math.max(PuisMaxS_M, parseInt(G1[0]));
-      PuisMaxI_M = Math.max(PuisMaxI_M, parseInt(G1[1]));
-      GID('PMS_M').innerHTML = LaVal(PuisMaxS_M);
-      GID('PMI_M').innerHTML = LaVal(PuisMaxI_M);
-
-      LastPW_M = parseFloat(G1[0] - G1[1]);
-      LastPVA_M = parseFloat(G1[2] - G1[3]);
-
-
-      var Tarif = ["NON_DEFINI", "PLEINE", "CREUSE", "BLEU", "BLANC", "ROUGE"];
-      var couleur = ["#" + Koul[Coul_Tab][3], "#f00", "#0f0", "#00bfff", "#fff", "#f00"];
-      var tarif = ["", "H.<br>pleine", "H.<br>creuse", "Tempo<br>Bleu", "Tempo<br>Blanc", "Tempo<br>Rouge"];
-      var idx = 0;
-      for (i = 0; i < 6; i++) {
-        if (G0[3].indexOf(Tarif[i]) >= 0) { //LTARF dans Link
-          idx = i;
+    if (this.readyState == 4 ) {
+      if (this.status == 200) {
+        var DuRMS = this.responseText;
+        var groupes = DuRMS.split(GS);
+        var G0 = groupes[0].split(RS);
+        var G1 = groupes[1].split(RS);
+        var G2 = groupes[2].split(RS);
+        GID('date').innerHTML = G0[1];
+        Source_data = G0[2];
+        if (!initUxIx2) {
+          initUxIx2 = true;
+          if (groupes.length == 4 && nomSondeFixe != "") { // Cas pour les sources externes UxIx2 et Shelly monophasé Si deuxième canal nommé
+            biSonde = true;
+          }  
         }
-      }
-      GID('couleurTarif_jour').style.backgroundColor = couleur[idx];
-      GID('couleurTarif_jour').innerHTML = tarif[idx];
-      var tempo = parseInt(G0[4], 16); //Tempo lendemain et jour STGEt
-      tempo = Math.floor(tempo / 4); //Tempo lendemain uniquement
-      idx = -2;
-      var txtJ = "";
-      if (tempo > 0) {
-        idx = tempo;
-        txtJ = "Tempo<br>J+1";
-      }
-      GID('couleurTarif_J1').style.backgroundColor = couleur[idx + 2];
-      GID('couleurTarif_J1').innerHTML = txtJ;
-      Pva_valide = (G0[6] == 1) ? true : false;
+        
+        
 
-      if (groupes.length == 4 && nomSondeFixe != "") { // La source_data des données est de type UxIx2 ou on est en shelly monophas avec un deuxièeme canal
-        GID('PwS_T').innerHTML = LaVal(G2[0]); //Triac
-        GID('PwI_T').innerHTML = LaVal(G2[1]); //Triac
-        GID('PVAS_T').innerHTML = LaVal(G2[2]); //Triac
-        GID('PVAI_T').innerHTML = LaVal(G2[3]); //Triac
-        GID('EAJS_T').innerHTML = LaVal(G2[4]);
-        GID('EAJI_T').innerHTML = LaVal(G2[5]);
-        GID('EAS_T').innerHTML = LaVal(G2[6]);
-        GID('EAI_T').innerHTML = LaVal(G2[7]);
-        PuisMaxS_T = Math.max(PuisMaxS_T, parseInt(G2[0]));
-        PuisMaxI_T = Math.max(PuisMaxI_T, parseInt(G2[1]));
-        GID('PMS_T').innerHTML = LaVal(PuisMaxS_T);
-        GID('PMI_T').innerHTML = LaVal(PuisMaxI_T);
+        GID('PwS_M').innerHTML = LaVal(G1[0]); //Maison
+        GID('PwI_M').innerHTML = LaVal(G1[1]); //Maison
+        GID('PVAS_M').innerHTML = LaVal(G1[2]); //Maison
+        GID('PVAI_M').innerHTML = LaVal(G1[3]); //Maison
+        GID('EAJS_M').innerHTML = LaVal(G1[4]);
+        GID('EAJI_M').innerHTML = LaVal(G1[5]);
+        GID('EAS_M').innerHTML = LaVal(G1[6]);
+        GID('EAI_M').innerHTML = LaVal(G1[7]);
+        PuisMaxS_M = Math.max(PuisMaxS_M, parseInt(G1[0]));
+        PuisMaxI_M = Math.max(PuisMaxI_M, parseInt(G1[1]));
+        GID('PMS_M').innerHTML = LaVal(PuisMaxS_M);
+        GID('PMI_M').innerHTML = LaVal(PuisMaxI_M);
 
-        LastPW_T = parseFloat(G2[0] - G2[1]);
-        LastPVA_T = parseFloat(G2[2] - G2[3]);
+        LastPW_M = parseFloat(G1[0] - G1[1]);
+        LastPVA_M = parseFloat(G1[2] - G1[3]);
 
 
-        //  biSonde = true;
-      }
-      AdaptationSource();
-      if (!Pva_valide) {
-        const collection = document.getElementsByClassName('VA');
-        for (let i = 0; i < collection.length; i++) {
-          collection[i].style.display = "none";
+        var Tarif = ["NON_DEFINI", "PLEINE", "CREUSE", "BLEU", "BLANC", "ROUGE"];
+        var couleur = ["#" + Koul[Coul_Tab][3], "#f00", "#0f0", "#00bfff", "#fff", "#f00"];
+        var tarif = ["", "H.<br>pleine", "H.<br>creuse", "Tempo<br>Bleu", "Tempo<br>Blanc", "Tempo<br>Rouge"];
+        var idx = 0;
+        for (i = 0; i < 6; i++) {
+          if (G0[3].indexOf(Tarif[i]) >= 0) { //LTARF dans Link
+            idx = i;
+          }
         }
-      }
-      GID('LED').style = 'display:none;';
+        GID('couleurTarif_jour').style.backgroundColor = couleur[idx];
+        GID('couleurTarif_jour').innerHTML = tarif[idx];
+        var tempo = parseInt(G0[4], 16); //Tempo lendemain et jour STGEt
+        tempo = Math.floor(tempo / 4); //Tempo lendemain uniquement
+        idx = -2;
+        var txtJ = "";
+        if (tempo > 0) {
+          idx = tempo;
+          txtJ = "Tempo<br>J+1";
+        }
+        GID('couleurTarif_J1').style.backgroundColor = couleur[idx + 2];
+        GID('couleurTarif_J1').innerHTML = txtJ;
+        Pva_valide = (G0[6] == 1) ? true : false;
 
+        if (groupes.length == 4 && nomSondeFixe != "") { // La source_data des données est de type UxIx2 ou on est en shelly monophas avec un deuxièeme canal
+          GID('PwS_T').innerHTML = LaVal(G2[0]); //Triac
+          GID('PwI_T').innerHTML = LaVal(G2[1]); //Triac
+          GID('PVAS_T').innerHTML = LaVal(G2[2]); //Triac
+          GID('PVAI_T').innerHTML = LaVal(G2[3]); //Triac
+          GID('EAJS_T').innerHTML = LaVal(G2[4]);
+          GID('EAJI_T').innerHTML = LaVal(G2[5]);
+          GID('EAS_T').innerHTML = LaVal(G2[6]);
+          GID('EAI_T').innerHTML = LaVal(G2[7]);
+          PuisMaxS_T = Math.max(PuisMaxS_T, parseInt(G2[0]));
+          PuisMaxI_T = Math.max(PuisMaxI_T, parseInt(G2[1]));
+          GID('PMS_T').innerHTML = LaVal(PuisMaxS_T);
+          GID('PMI_T').innerHTML = LaVal(PuisMaxI_T);
+
+          LastPW_T = parseFloat(G2[0] - G2[1]);
+          LastPVA_T = parseFloat(G2[2] - G2[3]);
+        }
+        AdaptationSource();
+        if (!Pva_valide) {
+          const collection = document.getElementsByClassName('VA');
+          for (let i = 0; i < collection.length; i++) {
+            collection[i].style.display = "none";
+          }
+        }
+        GID('LED').style = 'display:none;';
+      }
       setTimeout('LoadData();', 2000);
     }
 
@@ -154,36 +153,38 @@ function LoadHisto10mn() {
 function LoadHisto48h() {
   var xhttp = new XMLHttpRequest();
   xhttp.onreadystatechange = function () {
-    if (this.readyState == 4 && this.status == 200) {
-      var retour = this.responseText;
-      var groupes = retour.split(GS);
-      var Pmaxi = groupes[0].split(RS);
-      PuisMaxS_M = Pmaxi[0];
-      PuisMaxI_M = Pmaxi[1];
-      PuisMaxS_T = Pmaxi[2];
-      PuisMaxI_T = Pmaxi[3];
-      var tabPWM = groupes[1].split(',');
-      tabPWM.pop();
-      Plot('SVG_PW48hM', tabPWM, Koul[Coul_W][3], 'Puissance Active ' + nomSondeMobile + ' sur 48h en W', '', '');
-      if (biSonde) {
-        var tabPWT = groupes[2].split(',');
-        tabPWT.pop();
-        GID('SVG_PW48hT').style.display = "block";
-        Plot('SVG_PW48hT', tabPWT, Koul[Coul_W][3], 'Puissance Active ' + nomSondeFixe + ' sur 48h en W', '', '');
-      }
-      groupes.shift(); groupes.shift(); groupes.shift();
-      var lesTemp = groupes[0].split("|");
-      for (var c = 0; c < 4; c++) {
-        var tabTemperature = lesTemp[c].split(',');
-        if (parseFloat(tabTemperature[tabTemperature.length - 1]) > -100) {
-          tabTemperature.pop();
-          GID('SVG_Temp48h' + c).style.display = "block";
-          Plot('SVG_Temp48h' + c, tabTemperature, Koul[Coul_Temp + c][3], nomTemperature[c] + ' sur 48h ', '', '');
+    if (this.readyState == 4 ) {
+      if ( this.status == 200) {
+        var retour = this.responseText;
+        var groupes = retour.split(GS);
+        var Pmaxi = groupes[0].split(RS);
+        PuisMaxS_M = Pmaxi[0];
+        PuisMaxI_M = Pmaxi[1];
+        PuisMaxS_T = Pmaxi[2];
+        PuisMaxI_T = Pmaxi[3];
+        var tabPWM = groupes[1].split(',');
+        tabPWM.pop();
+        Plot('SVG_PW48hM', tabPWM, Koul[Coul_W][3], 'Puissance Active ' + nomSondeMobile + ' sur 48h en W', '', '');
+        if (biSonde) {
+          var tabPWT = groupes[2].split(',');
+          tabPWT.pop();
+          GID('SVG_PW48hT').style.display = "block";
+          Plot('SVG_PW48hT', tabPWT, Koul[Coul_W][3], 'Puissance Active ' + nomSondeFixe + ' sur 48h en W', '', '');
         }
-      }
-      groupes.shift();
-      if (groupes.length > 0) {
-        Plot_ouvertures(groupes);
+        groupes.shift(); groupes.shift(); groupes.shift();
+        var lesTemp = groupes[0].split("|");
+        for (var c = 0; c < 4; c++) {
+          var tabTemperature = lesTemp[c].split(',');
+          if (parseFloat(tabTemperature[tabTemperature.length - 1]) > -100) {
+            tabTemperature.pop();
+            GID('SVG_Temp48h' + c).style.display = "block";
+            Plot('SVG_Temp48h' + c, tabTemperature, Koul[Coul_Temp + c][3], nomTemperature[c] + ' sur 48h ', '', '');
+          }
+        }
+        groupes.shift();
+        if (groupes.length > 0) {
+          Plot_ouvertures(groupes);
+        }
       }
       setTimeout('LoadHisto48h();', 300000);
     }
@@ -576,49 +577,51 @@ const char * MainJS3 = R"====(
 function EtatActions(Force, NumAction) {
   var xhttp = new XMLHttpRequest();
   xhttp.onreadystatechange = function () {
-    if (this.readyState == 4 && this.status == 200) {
-      var retour = this.responseText;
-      var message = retour.split(GS);
-      var LesTemp = message[0].split("|");
-      Source_data = message[1];
-      var T = "";
-      for (var c = 0; c < 4; c++) {
-        if (LesTemp[c] > -100) {
-          var Temper = parseFloat(LesTemp[c]).toFixed(1);
-          T += "<div class='item_temp_nom ce'>" + nomTemperature[c] + "</div><div class='item_temp_val ce'>" + Temper + "°C</div>";
-        }
-      }
-      var S = "";
-      if (message[3] > 0) { //Nb Actions 
-        ActionForce.splice(0, ActionForce.length);
-        for (var i = 0; i < message[3]; i++) {
-          var data = message[i + 4].split(RS);
-          ActionForce[i] = data[3];
-          var ouvre = 0;
-          S += "<div class='item_val ce'>" + data[1] + "</div>";
-          if (data[2] == "On" || data[2] == "Off") {
-            S += "<div class='item_val ce'>" + data[2] + "</div>";
-            if (data[2] == "On") ouvre = 100;
-          } else {
-            var W = 1 + 1.99 * data[2];
-            S += "<div class='item_val ce'><div class='jaugeBack item_val'><div class='jauge' style='width:" + W + "px'></div><div class='ce w100'>" + data[2] + "%</div></div></div>";
-            ouvre = parseInt(data[2]);
+    if (this.readyState == 4 ) {
+      if ( this.status == 200) {
+        var retour = this.responseText;
+        var message = retour.split(GS);
+        var LesTemp = message[0].split("|");
+        Source_data = message[1];
+        var T = "";
+        for (var c = 0; c < 4; c++) {
+          if (LesTemp[c] > -100) {
+            var Temper = parseFloat(LesTemp[c]).toFixed(1);
+            T += "<div class='item_temp_nom ce'>" + nomTemperature[c] + "</div><div class='item_temp_val ce'>" + Temper + "°C</div>";
           }
-          LastActOuvre[parseInt(data[0])] = ouvre;
-          S += "<div class='ce item_val'>" + Hdeci2Hmn(data[4]) + "</div>";
-          var stOn = (ActionForce[i] > 0) ? "style='background-color:#f66;'" : "";
-          var stOff = (ActionForce[i] < 0) ? "style='background-color:#f66;'" : "";
-          var min = (ActionForce[i] == 0) ? "&nbsp;&nbsp;" : Math.abs(ActionForce[i]) + " min";
-          S += "<div class='item_F ce'><input type='button' onclick='Force(" + data[0] + ",1);' value='On' " + stOn + "></div><div class='item_F ce'><small>" + min + "</small></div><div class='item_F ce'><input type='button' onclick='Force(" + data[0] + ",-1);' value='Off' " + stOff + "></div>";
         }
-      }
-      S = S + T;
-      if (S != "") {
-        S = "<div class='item_Act ce'>Etat Action(s)</div><div class='item_H ce'>H<div class='fsize10'>ouverture équivalente</div></div><div class='item_Force ce'> Forçage</div>" + S;
-        GH("etatActions", S);
-        ("th", "#" + Koul[Coul_Tab][5]);
-        setBoColorQuery("td", "#" + Koul[Coul_Tab][5]);
-        GID("etatActions").style.display = "grid";
+        var S = "";
+        if (message[3] > 0) { //Nb Actions 
+          ActionForce.splice(0, ActionForce.length);
+          for (var i = 0; i < message[3]; i++) {
+            var data = message[i + 4].split(RS);
+            ActionForce[i] = data[3];
+            var ouvre = 0;
+            S += "<div class='item_val ce'>" + data[1] + "</div>";
+            if (data[2] == "On" || data[2] == "Off") {
+              S += "<div class='item_val ce'>" + data[2] + "</div>";
+              if (data[2] == "On") ouvre = 100;
+            } else {
+              var W = 1 + 1.99 * data[2];
+              S += "<div class='item_val ce'><div class='jaugeBack item_val'><div class='jauge' style='width:" + W + "px'></div><div class='ce w100'>" + data[2] + "%</div></div></div>";
+              ouvre = parseInt(data[2]);
+            }
+            LastActOuvre[parseInt(data[0])] = ouvre;
+            S += "<div class='ce item_val'>" + Hdeci2Hmn(data[4]) + "</div>";
+            var stOn = (ActionForce[i] > 0) ? "style='background-color:#f66;'" : "";
+            var stOff = (ActionForce[i] < 0) ? "style='background-color:#f66;'" : "";
+            var min = (ActionForce[i] == 0) ? "&nbsp;&nbsp;" : Math.abs(ActionForce[i]) + " min";
+            S += "<div class='item_F ce'><input type='button' onclick='Force(" + data[0] + ",1);' value='On' " + stOn + "></div><div class='item_F ce'><small>" + min + "</small></div><div class='item_F ce'><input type='button' onclick='Force(" + data[0] + ",-1);' value='Off' " + stOff + "></div>";
+          }
+        }
+        S = S + T;
+        if (S != "") {
+          S = "<div class='item_Act ce'>Etat Action(s)</div><div class='item_H ce'>H<div class='fsize10'>ouverture équivalente</div></div><div class='item_Force ce'> Forçage</div>" + S;
+          GH("etatActions", S);
+          ("th", "#" + Koul[Coul_Tab][5]);
+          setBoColorQuery("td", "#" + Koul[Coul_Tab][5]);
+          GID("etatActions").style.display = "grid";
+        }
       }
       myActionTimeout = setTimeout('EtatActions(0,0);', 3500);
     }
@@ -663,7 +666,7 @@ function Force(NumAction, Force) {
 
 function AdaptationSource() {
 
-  if (biSonde && Source != "ShellyEm" && Source != "ShellyPro") { //Il n'y a pas d'injecté normalement
+  if (biSonde && Source_data != "ShellyEm" && Source_data != "ShellyPro") { //Il n'y a pas d'injecté normalement
     GID('produite').innerHTML = '';
     GID('PwI_T').innerHTML = '';
     GID('PVAI_T').innerHTML = '';

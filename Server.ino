@@ -158,7 +158,7 @@ void handleWifi()
 void handleMainJS1()
 {                                      // Code Javascript
   String S = "var biSonde=false;\r\n"; // Pour tracer immediatement tableau Mesures
-  if (Source_data == "UxIx2" || ((Source_data == "ShellyEm" || Source_data == "ShellyPro") && EnphaseSerial.toInt() != 3))
+  if (nomSondeFixe!="" && (Source_data == "UxIx2" || ((Source_data == "ShellyEm" || Source_data == "ShellyPro") && EnphaseSerial.toInt() != 3)))
   {
     S = "var biSonde=true;\r\n";
   }
