@@ -4,125 +4,175 @@
 
 
 const char *PageBruteJS1 = R"====(
-       var InitFait=false;
-       var IdxMessage=0;
-       var MessageLinky='';
-       var BordsInverse=[".Bbrut"];
-       const M=[]; //Pour UxIx2
-       M.push(['Tension_M','Tension efficace','V','V']);
-       M.push(['Intensite_M','Courant efficace','A','A']);
-       M.push(['PuissanceS_M','Puissance <small>(Pw)</small>','W','W']);
-       M.push(['PowerFactor_M','Facteur de puissance','','phi']);
-       M.push(['Energie_M_Soutiree','Energie active soutirée','Wh','Wh']);
-       M.push(['Energie_M_Injectee','Energie active injectée','Wh','Wh']);
-       M.push(['Tension_T','Tension efficace','V','V']);
-       M.push(['Intensite_T','Courant efficace','A','A']);
-       M.push(['PuissanceS_T','Puissance <small>(Pw)</small>','W','W']);
-       M.push(['PowerFactor_T','Facteur de puissance','','phi']);
-       M.push(['Energie_T_Soutiree','Energie active consommée','Wh','Wh']);
-       M.push(['Energie_T_Injectee','Energie active produite','Wh','Wh']); 
-       M.push(['Frequence','Fréquence','Hz','Hz']);
-       const E=[]; //Pour Enphase
-       E.push(['Tension_M','Tension efficace','V','V']);
-       E.push(['Intensite_M','Courant efficace','A','A']);
-       E.push(['PuissanceS_M','Puissance réseau public <small>(Pw)</small>','W','W']);
-       E.push(['PowerFactor_M','Facteur de puissance','','phi']);
-       E.push(['Energie_M_Soutiree','Energie active soutirée','Wh','Wh']);
-       E.push(['Energie_M_Injectee','Energie active injectée','Wh','Wh']);
-       E.push(['PactProd','Puissance produite <small>(Pw)</small>','W','W']);
-       E.push(['PactConso_M','Puissance consommée <small>(Pw)</small>','W','W']);
-       E.push(['SessionId','Session Id</small>','','Enph']);
-       E.push(['Token_Enphase','Token','','Enph']);
-       
-       const L=[];
-       L.push(['EAST','Energie active soutir&eacute;e',false,'Wh',0]);
-       L.push(['EASF01','Energie active soutir&eacute;e Fournisseur,<br>index 01',true,'Wh',0]);
-       L.push(['EASF02','Energie active soutir&eacute;e Fournisseur,<br>index 02',true,'Wh',0]);
-       L.push(['EASF03','Energie active soutir&eacute;e Fournisseur,<br>index 03',true,'Wh',0]);
-       L.push(['EASF04','Energie active soutir&eacute;e Fournisseur,<br>index 04',true,'Wh',0]);
-       L.push(['EASF05','Energie active soutir&eacute;e Fournisseur,<br>index 05',true,'Wh',0]);
-       L.push(['EASF06','Energie active soutir&eacute;e Fournisseur,<br>index 06',true,'Wh',0]);
-       L.push(['EASF07','Energie active soutir&eacute;e Fournisseur,<br>index 07',true,'Wh',0]);
-       L.push(['EASF08','Energie active soutir&eacute;e Fournisseur,<br>index 08',true,'Wh',0]);
-       L.push(['EASF09','Energie active soutir&eacute;e Fournisseur,<br>index 09',true,'Wh',0]);
-       L.push(['EASF10','Energie active soutir&eacute;e Fournisseur,<br>index 10',true,'Wh',0]);
-       L.push(['EAIT','Energie active inject&eacute;e',false,'Wh',0]);
-       L.push(['IRMS1','Courant efficace, phase 1',true,'A',0]);
-       L.push(['IRMS2','Courant efficace, phase 2',true,'A',0]);
-       L.push(['IRMS3','Courant efficace, phase 3',true,'A',0]);
-       L.push(['URMS1','Tension efficace, phase 1',true,'V',0]);
-       L.push(['URMS2','Tension efficace, phase 2',true,'V',0]);
-       L.push(['URMS3','Tension efficace, phase 3',true,'V',0]);
-       L.push(['SINSTS','Puissance app. Instantan&eacute;e soutir&eacute;e',false,'VA',0]);
-       L.push(['SINSTS1','Puissance app. Instantan&eacute;e soutir&eacute;e phase 1',true,'VA',0]);
-       L.push(['SINSTS2','Puissance app. Instantan&eacute;e soutir&eacute;e phase 2',true,'VA',0]);
-       L.push(['SINSTS3','Puissance app. Instantan&eacute;e soutir&eacute;e phase 3',true,'VA',0]);
-       L.push(['SMAXSN','Puissance app. max. soutir&eacute;e n',false,'VA',1]);
-       L.push(['SMAXSN1','Puissance app. max. soutir&eacute;e n phase 1',true,'VA',1]);
-       L.push(['SMAXSN2','Puissance app. max. soutir&eacute;e n phase 2',true,'VA',1]);
-       L.push(['SMAXSN3','Puissance app. max. soutir&eacute;e n phase 3',true,'VA',1]);
-       L.push(['SMAXSN-1','Puissance app. max. soutir&eacute;e n-1',false,'VA',1]);
-       L.push(['SMAXSN1-1','Puissance app. max. soutir&eacute;e n-1 phase 1',true,'VA',1]);
-       L.push(['SMAXSN2-1','Puissance app. max. soutir&eacute;e n-1 phase 2',true,'VA',1]);
-       L.push(['SMAXSN3-1','Puissance app. max. soutir&eacute;e n-1 phase 3',true,'VA',1]);
-       L.push(['SINSTI','Puissance app. Instantan&eacute;e inject&eacute;e',false,'VA',0]);
-       L.push(['SMAXIN','Puissance app. max inject&eacute;e n',false,'VA',1]);
-       L.push(['SMAXIN-1','Puissance app. max inject&eacute;e n-1',false,'VA',1]);
-       L.push(['LTARF','Option Tarifaire',false,'',2]);
+      // ============================================================================
+// Variables globales
+// ============================================================================
 
-       function creerTableauUxIx2(){
-        var S='<table>';
-        for (var i=0;i<M.length;i++){
-          if (i==0){
-            S+='<tr  class="titre"><td class="titre" id="nomSondeMobile">Maison</td><td ></td><td></td></tr>';
-          }
-          if (i==6){
-            S+='<tr  class="titre"><td class="titre" id="nomSondeFixe">Triac</td><td ></td><td></td></tr>';
-          }
-          S+='<tr  class="'+M[i][3]+'"><td>'+M[i][1]+'</td><td id="'+M[i][0]+'" class="ri"></td><td>'+M[i][2]+'</td></tr>';
-        }
-        S+='</table>';
-       GH('tableau', S);
-       }
-       function creerTableauEnphase(){
-        var S='<table>';
-        for (var i=0;i<E.length;i++){
-          if (i==0){
-            S+='<tr  class="titre"><td class="titre" id="nomSondeMobile">Maison</td><td ></td><td></td></tr>';
-          }
-          S+='<tr  class="'+E[i][3]+'"><td>'+E[i][1]+'</td><td id="'+E[i][0]+'" class="ri"></td><td>'+E[i][2]+'</td></tr>';
-        }
-        S+='</table>';
-       GH('tableauEnphase', S);
-       }
-       function creerTableauLinky(){
-        var S='<table>';
-        for (var i=0;i<L.length;i++){
-          S+='<tr id="L'+L[i][0]+'" style="display:none;" class="'+L[i][3]+'"><td>'+L[i][1]+'</td><td id="'+L[i][0]+'" class="ri"></td><td>'+L[i][3]+'</td><td id="h'+L[i][0]+'" class="ri"></td></tr>';
-        }
-        S+='</table>';
-        GH('tableauLinky', S);
-       }
-       function LoadDataESP32() {
-        var xhttp = new XMLHttpRequest();
-        xhttp.onreadystatechange = function() { 
-          if (this.readyState == 4 ) {
-            if ( this.status == 200) {
-              var dataESP=this.responseText;
-              var Messages=dataESP.split(GS);
-              var message=Messages[0].split(RS);
-              var S='<table>';
-              var H=parseInt(message[0]);
-              H=H + (message[0]-H)*0.6;
-              H=H.toFixed(2);
-              H=H.replace(".", "h ")+"mn";
-              var LaSource=Source;
-              if (LaSource=='Ext') LaSource="Externe ("+Source_data+")<br>" +int2ip(RMSextIP);
-              var typeESP32=["Non défini","Wroom seul","Carte 1 relais","Carte 4 relais","Ecran320*240","","","","","","ESP32-ETH01"];
-              S+='<tr><td>ESP32 On depuis :</td><td>'+H+'</td></tr>';
-              S+='<tr><td>ESP32 modèle :</td><td>'+typeESP32[message[1]]+'</td></tr>';
-              S+='<tr><td>Source des mesures :</td><td>'+LaSource+'</td></tr>';
-              if (ModeReseau<2){
+let InitFait = false;
+let IdxMessage = 0;
+let MessageLinky = "";
+const BordsInverse = [".Bbrut"];
+
+// ============================================================================
+// Tableaux des mesures UxIx2
+// ============================================================================
+const M = [
+  ["Tension_M", "Tension efficace", "V", "V"],
+  ["Intensite_M", "Courant efficace", "A", "A"],
+  ["PuissanceS_M", "Puissance <small>(Pw)</small>", "W", "W"],
+  ["PowerFactor_M", "Facteur de puissance", "", "phi"],
+  ["Energie_M_Soutiree", "Energie active soutirée", "Wh", "Wh"],
+  ["Energie_M_Injectee", "Energie active injectée", "Wh", "Wh"],
+  ["Tension_T", "Tension efficace", "V", "V"],
+  ["Intensite_T", "Courant efficace", "A", "A"],
+  ["PuissanceS_T", "Puissance <small>(Pw)</small>", "W", "W"],
+  ["PowerFactor_T", "Facteur de puissance", "", "phi"],
+  ["Energie_T_Soutiree", "Energie active consommée", "Wh", "Wh"],
+  ["Energie_T_Injectee", "Energie active produite", "Wh", "Wh"],
+  ["Frequence", "Fréquence", "Hz", "Hz"]
+];
+
+// ============================================================================
+// Tableaux Enphase
+// ============================================================================
+const E = [
+  ["Tension_M", "Tension efficace", "V", "V"],
+  ["Intensite_M", "Courant efficace", "A", "A"],
+  ["PuissanceS_M", "Puissance réseau public <small>(Pw)</small>", "W", "W"],
+  ["PowerFactor_M", "Facteur de puissance", "", "phi"],
+  ["Energie_M_Soutiree", "Energie active soutirée", "Wh", "Wh"],
+  ["Energie_M_Injectee", "Energie active injectée", "Wh", "Wh"],
+  ["PactProd", "Puissance produite <small>(Pw)</small>", "W", "W"],
+  ["PactConso_M", "Puissance consommée <small>(Pw)</small>", "W", "W"],
+  ["SessionId", "Session Id", "", "Enph"],
+  ["Token_Enphase", "Token", "", "Enph"]
+];
+
+// ============================================================================
+// Tableau Linky
+// ============================================================================
+const L = [
+  ["EAST", "Energie active soutirée", false, "Wh", 0],
+  ["EASF01", "Energie active soutirée Fournisseur,<br>index 01", true, "Wh", 0],
+  ["EASF02", "Energie active soutirée Fournisseur,<br>index 02", true, "Wh", 0],
+  ["EASF03", "Energie active soutirée Fournisseur,<br>index 03", true, "Wh", 0],
+  ["EASF04", "Energie active soutirée Fournisseur,<br>index 04", true, "Wh", 0],
+  ["EASF05", "Energie active soutirée Fournisseur,<br>index 05", true, "Wh", 0],
+  ["EASF06", "Energie active soutirée Fournisseur,<br>index 06", true, "Wh", 0],
+  ["EASF07", "Energie active soutirée Fournisseur,<br>index 07", true, "Wh", 0],
+  ["EASF08", "Energie active soutirée Fournisseur,<br>index 08", true, "Wh", 0],
+  ["EASF09", "Energie active soutirée Fournisseur,<br>index 09", true, "Wh", 0],
+  ["EASF10", "Energie active soutirée Fournisseur,<br>index 10", true, "Wh", 0],
+  ["EAIT", "Energie active injectée", false, "Wh", 0],
+  ["IRMS1", "Courant efficace, phase 1", true, "A", 0],
+  ["IRMS2", "Courant efficace, phase 2", true, "A", 0],
+  ["IRMS3", "Courant efficace, phase 3", true, "A", 0],
+  ["URMS1", "Tension efficace, phase 1", true, "V", 0],
+  ["URMS2", "Tension efficace, phase 2", true, "V", 0],
+  ["URMS3", "Tension efficace, phase 3", true, "V", 0],
+  ["SINSTS", "Puissance app. instantanée soutirée", false, "VA", 0],
+  ["SINSTS1", "Puissance app. instantanée soutirée phase 1", true, "VA", 0],
+  ["SINSTS2", "Puissance app. instantanée soutirée phase 2", true, "VA", 0],
+  ["SINSTS3", "Puissance app. instantanée soutirée phase 3", true, "VA", 0],
+  ["SMAXSN", "Puissance app. max. soutirée n", false, "VA", 1],
+  ["SMAXSN1", "Puissance app. max. soutirée n phase 1", true, "VA", 1],
+  ["SMAXSN2", "Puissance app. max. soutirée n phase 2", true, "VA", 1],
+  ["SMAXSN3", "Puissance app. max. soutirée n phase 3", true, "VA", 1],
+  ["SMAXSN-1", "Puissance app. max. soutirée n-1", false, "VA", 1],
+  ["SMAXSN1-1", "Puissance app. max. soutirée n-1 phase 1", true, "VA", 1],
+  ["SMAXSN2-1", "Puissance app. max. soutirée n-1 phase 2", true, "VA", 1],
+  ["SMAXSN3-1", "Puissance app. max. soutirée n-1 phase 3", true, "VA", 1],
+  ["SINSTI", "Puissance app. instantanée injectée", false, "VA", 0],
+  ["SMAXIN", "Puissance app. max injectée n", false, "VA", 1],
+  ["SMAXIN-1", "Puissance app. max injectée n-1", false, "VA", 1],
+  ["LTARF", "Option Tarifaire", false, "", 2]
+];
+
+// ============================================================================
+// Création des tableaux HTML
+// ============================================================================
+
+function creerTableauUxIx2() {
+  let S = "<table>";
+  for (let i = 0; i < M.length; i++) {
+    if (i === 0) {
+      S += `<tr class="titre"><td id="nomSondeMobile">Maison</td><td></td><td></td></tr>`;
+    }
+    if (i === 6) {
+      S += `<tr class="titre"><td id="nomSondeFixe">Triac</td><td></td><td></td></tr>`;
+    }
+    S += `<tr class="${M[i][3]}"><td>${M[i][1]}</td><td id="${M[i][0]}" class="ri"></td><td>${M[i][2]}</td></tr>`;
+  }
+  S += "</table>";
+  GH("tableau", S);
+}
+
+function creerTableauEnphase() {
+  let S = "<table>";
+  for (let i = 0; i < E.length; i++) {
+    if (i === 0) {
+      S += `<tr class="titre"><td id="nomSondeMobile">Maison</td><td></td><td></td></tr>`;
+    }
+    S += `<tr class="${E[i][3]}"><td>${E[i][1]}</td><td id="${E[i][0]}" class="ri"></td><td>${E[i][2]}</td></tr>`;
+  }
+  S += "</table>";
+  GH("tableauEnphase", S);
+}
+
+function creerTableauLinky() {
+  let S = "<table>";
+  for (let i = 0; i < L.length; i++) {
+    S += `<tr id="L${L[i][0]}" style="display:none;" class="${L[i][3]}">
+            <td>${L[i][1]}</td>
+            <td id="${L[i][0]}" class="ri"></td>
+            <td>${L[i][3]}</td>
+            <td id="h${L[i][0]}" class="ri"></td>
+          </tr>`;
+  }
+  S += "</table>";
+  GH("tableauLinky", S);
+}
+
+// ============================================================================
+// Récupération données ESP32
+// ============================================================================
+
+function LoadDataESP32() {
+  const xhttp = new XMLHttpRequest();
+
+  xhttp.onreadystatechange = function () {
+    if (this.readyState === 4) {
+      if (this.status === 200) {
+        const dataESP = this.responseText;
+        const Messages = dataESP.split(GS);
+        const message = Messages[0].split(RS);
+
+        let S = "<table>";
+
+        let H = parseFloat(message[0]);
+        H = (H + (message[0] - H) * 0.6).toFixed(2);
+        H = H.replace(".", "h ") + "mn";
+        let LaSource=F.Source;
+        if (LaSource=='Ext') LaSource="Externe ("+V.Source_data+")<br>" +int2ip(F.RMSextIP);
+
+        const typeESP32 = [
+          "Non défini",
+          "Wroom seul",
+          "Carte 1 relais",
+          "Carte 4 relais",
+          "Ecran320*240",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "ESP32-ETH01"
+        ];
+
+        S+='<tr><td>ESP32 On depuis :</td><td>'+H+'</td></tr>';
+        S+='<tr><td>ESP32 modèle :</td><td>'+typeESP32[message[1]]+'</td></tr>';
+        S+='<tr><td>Source des mesures :</td><td>'+LaSource+'</td></tr>';
+              if (F.ModeReseau<2){
                 if (message[1]<10){ //WIFI
                   S+='<tr><td>Niveau WiFi :</td><td>'+message[2]+' dBm</td></tr>';
                   S+="<tr><td>Point d'acc&egrave;s WiFi :</td><td>"+message[3]+'</td></tr>';
@@ -130,7 +180,7 @@ const char *PageBruteJS1 = R"====(
                   S+='<tr><td>Canal WiFi :</td><td>'+message[4]+'</td></tr>';
                 }
                 S+='<tr><td>Adresse MAC ESP32 :</td><td>'+message[5]+'</td></tr>'; 
-                var LesIP=message[7].split(US);               
+                let LesIP=message[7].split(US);               
                 S+='<tr><td>Adresse IP<small>V4</small> ESP32 :</td><td><a href="http://'+LesIP[0]+'">'+LesIP[0]+'</a></td></tr>';
                 S+='<tr><td>Adresse IP .local ESP32 :</td><td><a href="http://'+LesIP[1]+'.local">'+LesIP[1]+'.local</a></td></tr>';
                 if (LesIP[2] !=""){
@@ -148,223 +198,313 @@ const char *PageBruteJS1 = R"====(
               S+='<tr><td>Mémoire RAM libre minimum :</td><td>'+message[14]+' octet</td></tr>';
               S+="<tr><td>Nombre d'interruptions en 15ms du Gradateur (signal Zc) : Filtrés/Brutes :</td><td>"+message[15]+'</td></tr>';
               S+='<tr><td>Synchronisation au Secteur ou asynchrone horloge ESP32</td><td>'+message[16]+'</td></tr>';
-              var Stemp=message[17];
+              let Stemp=message[17];
               if (message[17]>0) Stemp +='<span class="fsize10">' + message[18] +'</span>';
               S+="<tr><td>Nombre de capteurs de température DS18B20 :</td><td>"+Stemp+'</td></tr>';
               S +='<tr><td style="text-align:center;"><strong>Messages</strong></td><td></td></tr>';
-              var message1=Messages[1].split(RS);
-              for (var i=1;i<=10;i++){
+              let message1=Messages[1].split(RS);
+              for (let i=1;i<=10;i++){
                 S +='<tr><td>'+message1[i]+'</td><td></td></tr>';
               }
-              var message2=Messages[2].split(RS);
+              let message2=Messages[2].split(RS);
               if(message2.length>1){
                 S +='<tr><td style="text-align:center;"><strong>Note échanges entre routeurs</strong></td><td></td></tr>';
-                for (var i=0;i<message2.length-1;i++){
-                    var Note=message2[i].split(ES);
+                for (let i=0;i<message2.length-1;i++){
+                    let Note=message2[i].split(ES);
                     S +='<tr><td>'+Note[0]+'</td><td>' +Note[1] +'</td></tr>';
                 }
               }
               S+='</table>';
-              GH('DataESP32', S); 
-            }            
-            setTimeout('LoadDataESP32();',5000);
-          }
-          
-        };
-        xhttp.open('GET', '/ajax_dataESP32', true);
-        xhttp.send();
-       }
-       function FinParaRouteur(){
-        LoadCouleurs();
-        LoadData();
-        LoadDataESP32();
-       }
+
+        GH("DataESP32", S);
+      }
+
+      setTimeout(LoadDataESP32, 5000);
+    }
+  };
+
+  xhttp.open("GET", "/ajax_dataESP32", true);
+  xhttp.send();
+}
+
+// ============================================================================
+// Fin initialisation
+// ============================================================================
+function SetParaFixe() {
+  LoadParaVar();
+}
+function SetParaVar() {
+  Set_Couleurs();
+  LoadData();
+  LoadDataESP32();
+}
 )====";
 
 const char *PageBruteJS2 = R"====(
-      function LoadData() {
-        GID('LED').style='display:block;';
-        var xhttp = new XMLHttpRequest();
-        xhttp.onreadystatechange = function() { 
-          if (this.readyState == 4 ) {
-            if ( this.status == 200) {
-              GID('LED').style='display:none;';
-              var DuRMS=this.responseText;
-              var groupes=DuRMS.split(GS);
-              var G0=groupes[0].split(RS);
-              GH('date',G0[0]);
-              Source_data=G0[1];
-              if (Source_data == "NotDef"){
-                GID('infoNotDef').style.display="block";
-              }
-              if (Source_data == "UxI"){
-                GID('infoUxI').style.display="block";
-                GH('Ueff',"<span style='color:#" + Koul[Coul_W][3] + ";'>_" +parseInt(G0[2],10) + "<small> V</small></span>");
-                GH('Ieff',"<span style='color:#" + Koul[Coul_VA][3] + ";'> _" + G0[3] + "<small> A</small></span>");
-                GH('cosphi',"<span style='color:#"+Koul[Coul_Graphe][1] +";'> <small>Facteur de puissance : " + G0[4]+ "</small></span>");
-                var volt=groupes[1].split(RS);
-                var amp=groupes[2].split(RS);
-                var cT="#"+Koul[Coul_Graphe][1];
-                var style='background:linear-gradient(#' + Koul[Coul_Graphe][5] +',#' + Koul[Coul_Graphe][3] +',#' + Koul[Coul_Graphe][5] +');border-color:#' +Koul[Coul_Tab][5]+';' ;  
-                var S= "<svg height='400' width='1000'  style='"+style+ "' >";
-                S += "<line x1='0' y1='400' x2='0' y2='0' style='stroke:" + cT +";stroke-width:2' />";
-                S += "<line x1='0' y1='197' x2='1000' y2='197' style='stroke:" + cT +";stroke-width:2' />";
-                var  Vmax = 500;
-                var Imax = 500;
-                for (var i = 0; i < 100; i++) {
-                  Vmax = Math.max(Math.abs(volt[i]), Vmax);
-                  Imax = Math.max(Math.abs(amp[i]), Imax);
+// ============================================================================
+// Récupération des données principales
+// ============================================================================
+
+
+const REFRESH_INTERVAL = 2000; // 2 secondes
+
+async function LoadData() {
+    // Affiche l'indicateur de chargement
+      GID("LED").style.display = "block";
+    
+
+    try {
+        const url = `/ajax_dataRMS?idx=${IdxMessage}`;
+        const response = await fetch(url);
+
+        // 1. Gérer les erreurs HTTP (e.g., 404, 500)
+        if (!response.ok) {
+            throw new Error(`Erreur HTTP: ${response.status} - ${response.statusText}`);
+        }
+
+        const DuRMS = await response.text();
+
+        // Masque l'indicateur de chargement
+        
+        GID("LED").style.display = "none";
+      
+
+        // --- Début du traitement des données (Logique complexe) ---
+        
+        // S'assurer que GS et RS sont définis et que DuRMS est une chaîne
+        if (typeof GS === 'undefined' || typeof RS === 'undefined') {
+             console.error("Variables de séparation (GS, RS) non définies.");
+             return; 
+        }
+
+        const groupes = DuRMS.split(GS);
+        const G0 = groupes[0].split(RS);
+        
+        // S'assurer que GH est défini
+        if (typeof GH !== 'function') {
+             console.error("Fonction GH non définie.");
+             return; 
+        }
+
+        GH('date', G0[0]);
+        const Source_data = G0[1];
+
+        // Remplacement des blocs 'if' par un 'switch' pour une meilleure lisibilité
+        switch (Source_data) {
+            case "NotDef":
+                GID('infoNotDef').style.display = "block";
+                break;
+
+            case "UxI":
+                GID('infoUxI').style.display = "block";
+                
+                // Assurez-vous que Koul est défini et a la bonne structure
+                const colorW = Koul[Coul_W][3];
+                const colorVA = Koul[Coul_VA][3];
+                const colorGraphe = Koul[Coul_Graphe][1];
+
+                GH('Ueff', `<span style='color:#${colorW};'>_${parseInt(G0[2], 10)}<small> V</small></span>`);
+                GH('Ieff', `<span style='color:#${colorVA};'> _${G0[3]}<small> A</small></span>`);
+                GH('cosphi', `<span style='color:#${colorGraphe};'> <small>Facteur de puissance : ${G0[4]}</small></span>`);
+
+                // Traitement des données pour le graphique SVG
+                const volt = groupes[1].split(RS).map(v => parseFloat(v)); // Conversion en nombres
+                const amp = groupes[2].split(RS).map(a => parseFloat(a)); // Conversion en nombres
+
+                // Constantes de style
+                const cT = `#${Koul[Coul_Graphe][1]}`;
+                const style = `background:linear-gradient(#${Koul[Coul_Graphe][5]},#${Koul[Coul_Graphe][3]},#${Koul[Coul_Graphe][5]});border-color:#${Koul[Coul_Tab][5]};`;
+                
+                let Vmax = 500;
+                let Imax = 500;
+                
+                // Recherche des valeurs max pour la mise à l'échelle
+                for (let i = 0; i < 100; i++) {
+                    Vmax = Math.max(Math.abs(volt[i] || 0), Vmax); // Ajout de || 0 pour gérer les valeurs manquantes
+                    Imax = Math.max(Math.abs(amp[i] || 0), Imax);   // Ajout de || 0 pour gérer les valeurs manquantes
                 }
 
-                S += "<polyline points='";
-                for (var i = 0; i < 100; i++) {
-                  var Y = 197 - 185 * volt[i] / Vmax;
-                  var X = 10 * i;
-                  S += X + ',' + Y + ' ';
+                // Construction du SVG (Utilisation de template string)
+                let S = `<svg height='400' width='1000' style='${style}' >`;
+                S += `<line x1='0' y1='400' x2='0' y2='0' style='stroke:${cT};stroke-width:2' />`;
+                S += `<line x1='0' y1='197' x2='1000' y2='197' style='stroke:${cT};stroke-width:2' />`;
+
+                // Polyline pour la tension (volt)
+                let pointsVolt = '';
+                for (let i = 0; i < 100; i++) {
+                    // Assurez-vous que volt[i] est un nombre valide
+                    const val = volt[i] !== undefined && !isNaN(volt[i]) ? volt[i] : 0; 
+                    const Y = 197 - 185 * val / Vmax;
+                    const X = 10 * i;
+                    pointsVolt += `${X},${Y} `;
                 }
-                S += "' style='fill:none;stroke:#" + Koul[Coul_W][3] + ";stroke-width:6' />";
-                S += "<polyline points='";
-                for (var i = 0; i < 100; i++) {
-                  var Y = 197 - 185 * amp[i] / Imax;
-                  var X = 10 * i;
-                  S += X + ',' + Y + ' ';
+                S += `<polyline points='${pointsVolt.trim()}' style='fill:none;stroke:#${Koul[Coul_W][3]};stroke-width:6' />`;
+
+                // Polyline pour le courant (amp)
+                let pointsAmp = '';
+                for (let i = 0; i < 100; i++) {
+                    // Assurez-vous que amp[i] est un nombre valide
+                    const val = amp[i] !== undefined && !isNaN(amp[i]) ? amp[i] : 0;
+                    const Y = 197 - 185 * val / Imax;
+                    const X = 10 * i;
+                    pointsAmp += `${X},${Y} `;
                 }
-                S += "' style='fill:none;stroke:#" + Koul[Coul_VA][3] + ";stroke-width:6' />";
-                S += "</svg>";
-                GH('SVG',S);
-              }
-              if (Source_data == "UxIx2"){
-                GID('infoUxIx2').style.display="block";
-                var G1=groupes[1].split(RS);
-                if(!InitFait){
-                    InitFait=true;
-                    creerTableauUxIx2();
-                    GH("nomSondeFixe",nomSondeFixe);
-                    GH("nomSondeMobile",nomSondeMobile); 
+                S += `<polyline points='${pointsAmp.trim()}' style='fill:none;stroke:#${Koul[Coul_VA][3]};stroke-width:6' />`;
+
+                S += `</svg>`;
+                GH('SVG', S);
+                break;
+
+            case "UxIx2":
+                GID('infoUxIx2').style.display = "block";
+                const G1_UxIx2 = groupes[1].split(RS);
+                if (!InitFait) {
+                    InitFait = true;
+                    if (typeof creerTableauUxIx2 === 'function') creerTableauUxIx2();
+                    GH("nomSondeFixe", F.nomSondeFixe);
+                    GH("nomSondeMobile", F.nomSondeMobile);
                 }
-                for (var j=0;j<M.length;j++){
-                      if( M[j][3] == 'Wh' ) {
-                        GH(M[j][0], LaVal(G1[j])); 
-                      } else {
-                        GH(M[j][0], G1[j]); 
-                      }    
-                }
-              }
-              if (Source_data == "Enphase"){
-                GID('infoEnphase').style.display="block";
-                var G1=groupes[1].split(RS);
-                if(!InitFait){
-                    InitFait=true;
-                    creerTableauEnphase();
-                    GH("nomSondeMobile",nomSondeMobile); 
-                }
-                for (var j=0;j<E.length;j++){
-                      if( E[j][3] == 'Wh' ) {
-                        GH(E[j][0], LaVal(G1[j])); 
-                      } else {
-                        GH(E[j][0], G1[j]); 
-                      }    
-                }
-              }
-              if (Source_data == "SmartG"){
-                GID('infoSmartG').style.display="block";
-                groupes[1] = groupes[1].replaceAll('"','');
-                var G1=groupes[1].split(",");
-                var S="";              
-                for (var i=0;i<G1.length;i++){
-                      S +=G1[i]+"<br>";
-                }
-                GH('dataSmartG', S);
-              }
-              if (Source_data == "HomeW"){
-                GID('infoHomeW').style.display="block";
-                groupes[1] = groupes[1].replaceAll('"','');
-                var G1=groupes[1].split(",");
-                var S="";              
-                for (var i=0;i<G1.length;i++){
-                      S +=G1[i]+"<br>";
-                }
-                GH('dataHomeW', S);
-              }
-              if (Source_data == "UxIx3"){
-                GID('infoUxIx3').style.display="block";
-                GH('dataUxIx3', groupes[1]);
-              }
-              if (Source_data == "ShellyEm" || Source_data == "ShellyPro"){
-                GID('infoShellyEm').style.display="block";
-                groupes[1] = groupes[1].replaceAll('"','');
-                var G1=groupes[1].split(",");
-                var S="";              
-                for (var i=0;i<G1.length;i++){
-                      S +=G1[i]+"<br>";
-                }
-                GH('dataShellyEm', S);
-              }
-              if (Source_data == "Pmqtt"){
-                GID('infoPmqtt').style.display="block";
-                GH('dataPmqtt', groupes[1]);
-              }
-              if (Source_data == "Linky"){
-                GID('infoLinky').style.display="block";
-                if(!InitFait){
-                    InitFait=true;
-                    creerTableauLinky();
-                }
-                MessageLinky +=groupes[1];
-                var blocs=MessageLinky.split(String.fromCharCode(2));
-                var lg=blocs.length;
-                if (lg>2){
-                    MessageLinky=String.fromCharCode(2)+blocs[lg-1];               
-                    GH('DataLinky', '<pre>'+blocs[lg-2]+'</pre>');
-                    var lignes=blocs[lg-2].split(String.fromCharCode(10));
-                    for (var i=0;i<lignes.length;i++){
-                      var colonnes=lignes[i].split(String.fromCharCode(9));
-                      if (colonnes[0]=='DATE'){
-                        GH('dateLinky', LaDate(colonnes[1]));
-                      }
-                      for (var j=0;j<L.length;j++){
-                        if (colonnes[0]==L[j][0]){
-                          if (!L[j][2] || parseInt(colonnes[1])>0){
-                            GID('L'+L[j][0]).style.display="table-row";
-                            switch (L[j][4]){
-                              case 0:
-                                GH(L[j][0], LaVal(colonnes[1]));
-                                break;
-                              case 1:
-                                GH('h'+L[j][0],  LaDate(colonnes[1]));
-                                GH(L[j][0], LaVal(colonnes[2]));
-                                break;
-                              case 2: //Texte
-                                GH('h'+L[j][0], colonnes[1]);
-                                break;
-                            }
-                          }
-                        }
-                      }
+                for (let j = 0; j < M.length; j++) {
+                    if (M[j][3] === 'Wh' && typeof LaVal === 'function') {
+                        GH(M[j][0], LaVal(G1_UxIx2[j]));
+                    } else {
+                        GH(M[j][0], G1_UxIx2[j]);
                     }
-                    GID('LED').style='display:none;';
                 }
-                IdxMessage=groupes[2];
-              }
-              //setCouleur();
-            }
-            setTimeout('LoadData();',2000);
-          }  
+                break;
+
+            case "Enphase":
+                GID('infoEnphase').style.display = "block";
+                const G1_Enphase = groupes[1].split(RS);
+                if (!InitFait) {
+                    InitFait = true;
+                    if (typeof creerTableauEnphase === 'function') creerTableauEnphase();
+                    GH("nomSondeMobile", F.nomSondeMobile);
+                }
+                for (let j = 0; j < E.length; j++) {
+                    if (E[j][3] === 'Wh' && typeof LaVal === 'function') {
+                        GH(E[j][0], LaVal(G1_Enphase[j]));
+                    } else {
+                        GH(E[j][0], G1_Enphase[j]);
+                    }
+                }
+                break;
+
+            case "SmartG":
+            case "HomeW":
+            case "ShellyEm":
+            case "ShellyPro":
+                // Regroupement des cas similaires
+                const infoId = `info${Source_data.replace('Em', 'ShellyEm').replace('Pro', 'ShellyEm')}`;
+                const dataId = `data${Source_data.replace('Em', 'ShellyEm').replace('Pro', 'ShellyEm')}`;
+                GID(infoId).style.display = "block";
+                
+                // Utilisation de replaceAll uniquement si la méthode existe
+                const cleanGroup1 = groupes[1].replace(/"/g, ''); 
+                
+                const G1_list = cleanGroup1.split(",");
+                let S_list = "";
+                for (let i = 0; i < G1_list.length; i++) {
+                    S_list += G1_list[i] + "<br>";
+                }
+                GH(dataId, S_list);
+                break;
+
+            case "UxIx3":
+            case "Pmqtt":
+                // Regroupement des cas similaires
+                GID(`info${Source_data}`).style.display = "block";
+                GH(`data${Source_data}`, groupes[1]);
+                break;
+
+            case "Linky":
+                GID('infoLinky').style.display = "block";
+                if (!InitFait) {
+                    InitFait = true;
+                    if (typeof creerTableauLinky === 'function') creerTableauLinky();
+                }
+                
+                // Le message Linky peut être très fragmenté, donc on ajoute le nouveau morceau
+                MessageLinky += groupes[1];
+                
+                // Le séparateur de bloc de message Linky est le caractère STX (ASCII 2)
+                const blocs = MessageLinky.split(String.fromCharCode(2));
+                const lg = blocs.length;
+                
+                if (lg > 2) {
+                    // Si on a au moins un bloc complet + le début du suivant
+                    MessageLinky = String.fromCharCode(2) + blocs[lg - 1]; // Garde le début du dernier bloc pour la prochaine fois
+                    const dataBlock = blocs[lg - 2];
+                    
+                    GH('DataLinky', '<pre>' + dataBlock + '</pre>');
+                    
+                    // Le séparateur de ligne est LF (ASCII 10)
+                    const lignes = dataBlock.split(String.fromCharCode(10)); 
+                    
+                    for (let i = 0; i < lignes.length; i++) {
+                        // Le séparateur de colonne est TAB (ASCII 9)
+                        const colonnes = lignes[i].split(String.fromCharCode(9)); 
+                        
+                        if (colonnes[0] === 'DATE' && typeof LaDate === 'function') {
+                            GH('dateLinky', LaDate(colonnes[1]));
+                        }
+                        
+                        // Traitement des données Linky à partir du tableau L
+                        for (let j = 0; j < L.length; j++) {
+                            if (colonnes[0] === L[j][0]) {
+                                // Vérifie si la donnée est affichable (pas masquée OU valeur > 0)
+                                const isVisible = !L[j][2] || parseInt(colonnes[1]) > 0;
+                                
+                                if (isVisible) {
+                                    GID('L' + L[j][0]).style.display = "table-row";
+                                    
+                                    switch (L[j][4]) {
+                                        case 0: // Valeur simple (ex: index)
+                                            GH(L[j][0], typeof LaVal === 'function' ? LaVal(colonnes[1]) : colonnes[1]);
+                                            break;
+                                        case 1: // Valeur avec horodatage (ex: PMAX)
+                                            GH('h' + L[j][0], typeof LaDate === 'function' ? LaDate(colonnes[1]) : colonnes[1]);
+                                            GH(L[j][0], typeof LaVal === 'function' ? LaVal(colonnes[2]) : colonnes[2]);
+                                            break;
+                                        case 2: // Texte
+                                            GH('h' + L[j][0], colonnes[1]);
+                                            break;
+                                    }
+                                }
+                                break; // Sortir de la boucle L.length
+                            }
+                        }
+                    }
+                    GID('LED').style.display = 'none'; // Re-masquer l'indicateur après traitement Linky
+                }
+                
+                // Mettre à jour l'index de message pour la prochaine requête
+                IdxMessage = groupes[2];
+                break;
+                
+            default:
+                // Si la Source_data est inconnue, ne rien faire
+                console.log(`Source de données inconnue : ${Source_data}`);
+                break;
         }
-        xhttp.open('GET', '/ajax_dataRMS?idx='+IdxMessage, true);
-        xhttp.send();
-      }
+
+    } catch (error) {
+        console.error("Erreur lors du chargement des données:", error);
+      
+        GID("LED").style.display = "none";
+        
+    } finally {
+        // Planifier le prochain appel après un délai, qu'il y ait eu succès ou échec
+        setTimeout(() => LoadData(), REFRESH_INTERVAL);
+    }
+}
       
       function LaDate(d){
           return d.substr(0,1)+' '+d.substr(5,2)+'/'+d.substr(3,2)+'/'+d.substr(1,2)+' '+d.substr(7,2)+'h '+d.substr(9,2)+'mn '+d.substr(11,2)+'s';
       }
-      function LaVal(d){
-          d=parseInt(d);
-          d='           '+d.toString();
-          return d.substr(-9,3)+' '+d.substr(-6,3)+' '+d.substr(-3,3);
-      }
+      
       function AdaptationSource(){
-        if(Source=="Ext"){
+        if(F.Source=="Ext"){
           GID("donneeDistante").style.display="block";
         }
         

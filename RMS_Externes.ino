@@ -2,7 +2,7 @@
 // * Client d'autres ESP32 en charge de mesurer les températures ou donner l'état des routages *
 // *********************************************************************************************
 void Liste_des_Noms() {  // Les noms des routeurs partenaires
-  for (int i = 0; i < LesRouteursMax; i++) {
+  for (int i = 0; i < LES_ROUTEURS_MAX; i++) {
     if (RMS_IP[i] > 0) {
       Liste_NomsEtats(i);
     }

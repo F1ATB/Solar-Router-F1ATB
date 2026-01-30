@@ -7,7 +7,8 @@
 
 void Setup_JSY333() {
   MySerial.setRxBufferSize(SER_BUF_SIZE);
-  MySerial.begin(9600, SERIAL_8N1, RXD2, TXD2);  //PORT DE CONNEXION AVEC LE CAPTEUR JSY-MK-333
+  if (Serial2V==0) Serial2V=9600; //On force la valeur par défaut
+  MySerial.begin(Serial2V, SERIAL_8N1, RXD2, TXD2);  //PORT DE CONNEXION AVEC LE CAPTEUR JSY-MK-333
 }
 
 void Requete_JSY333() {
@@ -28,8 +29,7 @@ void Requete_JSY333() {
 }
 
 void Lecture_JSY333() {
-  float Tension_M1, Tension_M2, Tension_M3;
-  float Intensite_M1, Intensite_M2, Intensite_M3;
+
   float PVA_M_inst1, PVA_M_inst2, PVA_M_inst3;
   float PW_inst1, PW_inst2, PW_inst3;
 
@@ -50,13 +50,13 @@ void Lecture_JSY333() {
     delta_temps = (unsigned long)(millis() - Temps_precedent);  // temps écoulé depuis le dernier appel
     Temps_precedent = millis();                                 // on conserve la valeur du temps actuel pour le calcul précédent
 
-    Tension_M1 = ((Lecture333[3] * 256 + Lecture333[4])) / 100.0;
-    Tension_M2 = ((Lecture333[5] * 256 + Lecture333[6])) / 100.0;
-    Tension_M3 = ((Lecture333[7] * 256 + Lecture333[8])) / 100.0;
+    Tension_M1 = ((Lecture333[3] << 8) + Lecture333[4]) / 100;
+    Tension_M2 = ((Lecture333[5] << 8) + Lecture333[6]) / 100;
+    Tension_M3 = ((Lecture333[7] << 8) + Lecture333[8]) / 100;
 
-    Intensite_M1 = ((Lecture333[9] * 256 + Lecture333[10])) / 100.0;
-    Intensite_M2 = ((Lecture333[11] * 256 + Lecture333[12])) / 100.0;
-    Intensite_M3 = ((Lecture333[13] * 256 + Lecture333[14])) / 100.0;
+    Intensite_M1 = float(((Lecture333[9] << 8) + Lecture333[10])) / 100;
+    Intensite_M2 = float(((Lecture333[11] << 8) + Lecture333[12])) / 100;
+    Intensite_M3 = float(((Lecture333[13] << 8) + Lecture333[14])) / 100;
 
     sens1 = (Lecture333[104]) & 0x01;
     sens2 = (Lecture333[104] >> 1) & 0x01;
@@ -69,21 +69,27 @@ void Lecture_JSY333() {
     injection = (Lecture333[104] >> 3) & 0x01;  //si sens est true, injection
 
     // Lecture des Puissances actives de chacune des phases
-    PW_inst1 = Lecture333[15] * 256 + Lecture333[16];
-    PW_inst2 = Lecture333[17] * 256 + Lecture333[18];
-    PW_inst3 = Lecture333[19] * 256 + Lecture333[20];
+    PW_inst1 = float((Lecture333[15] << 8) + Lecture333[16]);
+    PW_inst2 = float((Lecture333[17] << 8) + Lecture333[18]);
+    PW_inst3 = float((Lecture333[19] << 8) + Lecture333[20]);
+    PW_M1=PW_inst1;
+    if (sens1) { PW_M1 = -PW_M1; }
+    PW_M2=PW_inst2;
+    if (sens2) { PW_M2 = -PW_M2; }
+    PW_M3=PW_inst3;
+    if (sens3) { PW_M3 = -PW_M3; }
 
     //Lecture des puissances apparentes de chacune des phases, qu'on signe comme le Linky
-    PVA_M_inst1 = (Lecture333[35] * 256) + Lecture333[36];
+    PVA_M_inst1 = float((Lecture333[35] << 8) + Lecture333[36]);
     if (sens1) { PVA_M_inst1 = -PVA_M_inst1; }
-    PVA_M_inst2 = (Lecture333[37] * 256) + Lecture333[38];
+    PVA_M_inst2 = float((Lecture333[37] << 8) + Lecture333[38]);
     if (sens2) { PVA_M_inst2 = -PVA_M_inst2; }
-    PVA_M_inst3 = (Lecture333[39] * 256) + Lecture333[40];
+    PVA_M_inst3 = float((Lecture333[39] << 8) + Lecture333[40]);
     if (sens3) { PVA_M_inst3 = -PVA_M_inst3; }
 
     if (injection) {
       PuissanceS_M_inst = 0;
-      PuissanceI_M_inst = ((float)((float)(Lecture333[21] * 16777216) + (float)(Lecture333[22] * 65536) + (float)(Lecture333[23] * 256) + (float)Lecture333[24]));
+      PuissanceI_M_inst = float((Lecture333[21] << 24) + (Lecture333[22] << 16) + (Lecture333[23] << 8) + Lecture333[24]);
       PVAS_M_inst = 0;
       PVAI_M_inst = abs(PVA_M_inst1 + PVA_M_inst2 + PVA_M_inst3);  // car la somme des puissances apparentes "signées" est négative puisqu'en "injection" au global
 
@@ -92,7 +98,7 @@ void Lecture_JSY333() {
 
     } else {  // soutirage
       PuissanceI_M_inst = 0;
-      PuissanceS_M_inst = ((float)((float)(Lecture333[21] * 16777216) + (float)(Lecture333[22] * 65536) + (float)(Lecture333[23] * 256) + (float)Lecture333[24]));
+      PuissanceS_M_inst = float((Lecture333[21] << 24) + (Lecture333[22] << 16) + (Lecture333[23] << 8) + Lecture333[24]);
       PVAI_M_inst = 0;
       PVAS_M_inst = PVA_M_inst1 + PVA_M_inst2 + PVA_M_inst3;
 

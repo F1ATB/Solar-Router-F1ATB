@@ -5,7 +5,8 @@
 
 void Setup_UxIx2() {
   MySerial.setRxBufferSize(SER_BUF_SIZE);
-  MySerial.begin(4800, SERIAL_8N1, RXD2, TXD2);  //PORT DE CONNEXION AVEC LE CAPTEUR JSY-MK-194
+  if (Serial2V==0) Serial2V=4800; //On force la valeur par défaut
+  MySerial.begin(Serial2V, SERIAL_8N1, RXD2, TXD2);  //PORT DE CONNEXION AVEC LE CAPTEUR JSY-MK-194
 }
 void LectureUxIx2() {  //Ecriture et Lecture port série du JSY-MK-194  .
 

@@ -43,17 +43,17 @@ const char *ConnectAP_Html = R"====(
   var BordsInverse=[".Bparametres",".Bwifi"];
   function ScanWIFI(){
     GH("ListeWifi", "Patientez 2s");
-    var xhttp = new XMLHttpRequest();
+    let xhttp = new XMLHttpRequest();
         xhttp.onreadystatechange = function() { 
           if (this.readyState == 4 && this.status == 200) {
-             var LesWifi=this.responseText;
-             var Wifi=LesWifi.split(GS); 
-             var S="Sélectionnez un réseau Wifi<br><span class='fsize12'>Une nouvelle adresse IP sera probablement attribuée par la box gérant le réseau</span>";
+             let LesWifi=this.responseText;
+             let Wifi=LesWifi.split(GS); 
+             let S="Sélectionnez un réseau Wifi<br><span class='fsize12'>Une nouvelle adresse IP sera probablement attribuée par la box gérant le réseau</span>";
              S +="<div class='tableWifi'>";
              S +="<div class='l1' style='font-weight: bold;'><div class='dB'>SSID</div><div class='dB'>Niveau</div><div class='dB'> Adresse MAC</div><div class='dB'> Canal</div><div class='dB'> </div></div>";
-             for (var i=0;i<Wifi.length-1;i++) {
-                var wifi=Wifi[i].split(RS); 
-                var j=i%2;
+             for (let i=0;i<Wifi.length-1;i++) {
+                let wifi=Wifi[i].split(RS); 
+                let j=i%2;
                 S +="<div class='l"+ j +"'>";
                 S +="<label for='W" + i+"'>" + wifi[0] +" </label>";
                 S +="<div class='dB'>" +wifi[1] +" dBm </div><div class='dB'> " + wifi[2] +"</div><div class='dB'> "  +wifi[3] +"</div> <input type='radio' name='Wifi' value='" +  wifi[0] +"' onclick='ChoixWifi(this.value);'>";
@@ -72,11 +72,11 @@ const char *ConnectAP_Html = R"====(
         GID("attente2").style.display = "none";
   }
   function Envoyer(){
-    var xhttp = new XMLHttpRequest();
+    let xhttp = new XMLHttpRequest();
         xhttp.onreadystatechange = function() { 
           if (this.readyState == 4 && this.status == 200) {
-             var Resp=this.responseText;
-             var Txt=Resp.split(RS); 
+             let Resp=this.responseText;
+             let Txt=Resp.split(RS); 
              GH("ListeWifi", Txt[1]);
              GID("attente2").style.display = "none";
              GID("form-passe").style.display = "none";
@@ -86,7 +86,7 @@ const char *ConnectAP_Html = R"====(
              }
           }         
         };
-        var adr ="/AP_SetWifi?ssid="+encodeURIComponent(ssid)+"&passe=" + encodeURIComponent(GID("passe").value);
+        let adr ="/AP_SetWifi?ssid="+encodeURIComponent(F.ssid)+"&passe=" + encodeURIComponent(GID("passe").value);
         xhttp.open('GET', adr, true);
         xhttp.send();
         GID("form-passe").style.display = "none";
@@ -96,29 +96,29 @@ const char *ConnectAP_Html = R"====(
         }
         GID("attente2").style.display = "block";
   }
-  ssid="";
+  
   function ChoixWifi(V){
-      ssid = V;
-      GH("nom_reseau",ssid);
+      F.ssid = V;
+      GH("nom_reseau",F.ssid);
       GID("envoyer").style.display = "inline-block";
       GID("form-passe").style.display = "inline-block";
   }
   function init(){
           SetHautBas(); 
-          LoadParaRouteur();         
+          LoadParaFixe();         
           GID("lesOnglets").style.display = "block";
           GID("onglets2").style.display = "block";
           GID("pied").style.display = "flex";
           GID("h1T").style.display = "none";
-          LoadCouleurs();
+          
   }
-  function AdaptationSource(){ }
-  function FinParaRouteur(){
-    GID("Bheure").style.display= (Horloge>1) ? "inline-block": "none";
-    GID("Bwifi").style.display= (ESP32_Type<10) ? "inline-block": "none";
+  
+  function SetParaFixe(){
+    GID("Bwifi").style.display= (F.ESP32_Type<10) ? "inline-block": "none";
+    Set_Couleurs();
   }
 </script>
-<script src="/ParaRouteurJS"></script>
+<script src="/ParaCommunJS"></script>
 <script src="/CommunCouleurJS"></script>
 </body></html>
 )====";

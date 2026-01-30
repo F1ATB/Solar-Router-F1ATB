@@ -76,15 +76,15 @@ const char *ParaCleHtml = R"====(
     }
   </style>
   <script>
-    var BordsInverse = [".Bparametres"];
+    let BordsInverse = [".Bparametres"];
     function SendCle() {
       document.cookie = "CleAcces=" + GID("CleAcces").value.trim();
 
       GID("attente").style = "visibility: visible;";
-      var xhttp = new XMLHttpRequest();
+      let xhttp = new XMLHttpRequest();
       xhttp.onreadystatechange = function () {
         if (this.readyState == 4 && this.status == 200) {
-          var retour = this.responseText;
+          let retour = this.responseText;
           location.reload();
         }
       };
@@ -93,12 +93,12 @@ const char *ParaCleHtml = R"====(
     }
     function init() {
       SetHautBas();
-      LoadParaRouteur();
-      LoadCouleurs();
+      LoadParaVar();
+      Set_Couleurs();
       document.cookie = "CleAcces=" + GID("CleAcces").value.trim();
     }
     function AdaptationSource() { };
-    function FinParaRouteur() { };
+    function SetParaVar() { };
   </script>
   <title>Passe Accès Routeur</title>
 </head>
@@ -121,7 +121,7 @@ const char *ParaCleHtml = R"====(
   </div>
   <br>
   <div id="pied"></div>
-  <script src="/ParaRouteurJS"></script>
+  <script src="/ParaCommunJS"></script>
   <script src="/CommunCouleurJS"></script>
 </body>
 
@@ -133,10 +133,9 @@ a:link {color:#aaf;text-decoration: none;}
 a:visited {color:#ccf;text-decoration: none;}
 .onglets{margin-top:4px;left:0px;font-size:130%;}
 #onglets2{margin-top:10px;left:0px;font-size:80%;display:none;}
-.Bonglet{margin-left:20px;border:outset 4px
-grey;background-color:#333;border-radius:6px;padding-left:20px;padding-right:20px;display:inline-block;}
-.Bonglet2{margin-left:20px;border:outset 2px
-grey;background-color:#333;border-radius:4px;padding-left:20px;padding-right:20px;display:inline-block;}
+.Bonglet{margin-left:20px;border:outset 4px grey;background-color:#333;border-radius:6px;padding-left:20px;padding-right:20px;display:inline-block;}
+.Bonglet2{margin-left:20px;border:outset 2px grey;background-color:#333;border-radius:4px;padding-left:20px;padding-right:20px;display:inline-block;}
+.Bheure{display:inline-block;}
 #pied{display:flex;justify-content:space-between;font-size:14px;}
 .fsize12{font-size:12px;height:16px;}
 .fsize10{font-size:10px;height:14px;}
@@ -154,3 +153,5 @@ infinite;}
 .bouton,input[type=file]::file-selector-button{margin: 5px;text-align:left;font-size:20px;height:28px;border:3px grey
 outset;border-radius:7px;cursor:pointer;}
 )====";
+
+const char *CouleurDefaut = R"====(ffffff77b5fe000033ccccff333333808080000000ffffff808080000000cccccc888888ff444400ffffffff66ffaa88aaffaaaaffeeeeeebbffffff66666633333300ff00aaff0000ffaaaaffaaff883333ffaa6688ffaaff11)====";

@@ -75,23 +75,10 @@ void CallESP32_Externe() {
       switch (i) {
         case 0:
           if (Horloge == 5) {  //Mise à l'heure par ESP externe
-            int16_t H = 0, M = 0;
-            String HM="0"+data_[i];
-            int p = HM.indexOf(":");
-            
-            H = HM.substring(p - 2, p).toInt() % 24;
-            M = HM.substring(p + 1, p + 3).toInt() % 60;
-         
-            if (H != 0 && M != 0) {             
-              if (H>Int_Heure) {
-                Int_Seconde=0;
-                Int_Minute=0;
-              }
-              Int_Heure = H;
-              if (M>Int_Minute) Int_Seconde=0;
-              Int_Minute = M;
-              HeureValide = true;
-            }
+            int p = data_[i].indexOf(" ");
+            String New_H=data_[i].substring(p);
+            String New_J=data_[i].substring(0, p);
+            MiseAheure(New_H, New_J);
           }
           break;
         case 1:
@@ -168,14 +155,14 @@ void CallESP32_Externe() {
 void IndexSource() {
   RMSextIdx = 0;
   if (RMSextIP > 0 && Source == "Ext") {
-    for (int8_t i = 1; i < LesRouteursMax; i++) {
+    for (int8_t i = 1; i < LES_ROUTEURS_MAX; i++) {
       if (RMS_IP[i] == RMSextIP) {
         RMSextIdx = i;
       }
     }
 
     if (RMSextIdx == 0) {
-      for (int8_t i = 1; i < LesRouteursMax; i++) {
+      for (int8_t i = 1; i < LES_ROUTEURS_MAX; i++) {
         if (RMS_IP[i] == 0) {
           RMS_IP[i] = RMSextIP;
           RMSextIdx = i;

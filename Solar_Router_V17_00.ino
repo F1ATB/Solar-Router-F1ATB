@@ -1,4 +1,4 @@
-#define Version "16.09"
+#define Version "17.00"
 #define HOSTNAME "RMS-ESP32-"
 #define CLE_Rom_Init 912567899  //Valeur pour tester si ROM vierge ou pas. Un changement de valeur remet à zéro toutes les données. / Value to test whether blank ROM or not.
 
@@ -194,7 +194,7 @@
     Affichage adresse IPV6
   - V15.11
     Création du mode Demi-Sinus 
-    Forcage des Actions en page d'Accueil inactif si mot de passe non valide
+    Forçage des Actions en page d'Accueil inactif si mot de passe non valide
     ValJson Test pour différencier SG et HW
     Retour à 200ms la période d'appel des Shelly pour éviter une saturation
   - V15.12
@@ -233,18 +233,33 @@
     Amélioration de la mise en page d’accueil sur smartphone.
     Masquage des données de la deuxième sonde de puissance si non nommée explicitement.
     Optimisation des appels AJAX répétitifs en cas d’erreur.
+  - Version 16.10
+    Recadrage mesures curseur sur page d'accueil
+    Correction bug choix Pmqtt
+  - Version 17.00
+    Changement de la table de partitions pour ajouter une partition dédiée au stockage de fichiers de données. ATTENTION OTA pas possible depuis les anciennes versions.
+    State Class measurement pour les puissances envoyés vers HA
+    Nettoyage du code. Merci à Michel, Piamp, ChatGPT et Gemini
+    Sélection de la vitesse en bauds pour UxIx2 ou UxIx3
+    Réglage de l'ouverture  du Triac ou du SSR en mode ON et en mode Forcé
+    Redémarrage ESP32 si en mode AP (émission WiFi) depuis plus de 5mn sans l'avoir demandé 
+    Choix du hostname pour un accès hostname.local
+    Choix du fuseau horaire et en option un serveur NTP
+    Icone pour affichage sur Chrome/Android
+    Choix de la disposition des graphiques en page d'accueil
+    Choix des écrans 2.4 ou 2.8 pouces en résistif ou capacitif
 
   
   Les détails sont disponibles sur / Details are available here:
   https://f1atb.fr  Section Domotique / Home Automation
 
   
-  F1ATB Décembre 2025
+  F1ATB Janvier 2026
 
   GNU Affero General Public License (AGPL) / AGPL-3.0-or-later
 
-  Arduino IDE 2.3.6
-  Espressif ESP V3.3.3
+  Arduino IDE 2.3.7
+  Espressif ESP V3.3.5
   Compilation avec Partition Scheme : custom 
 
 
@@ -269,7 +284,12 @@
 #include <EthernetESP32.h>
 #include <esp_wps.h>  //Librairie WPS pour appairage automatique connexion WiFi //SR19
 #include "Actions.h"
-
+#include "FS.h"
+#include "LittleFS.h"
+#include <ArduinoJson.h>
+#include "esp_partition.h"
+#include "esp_flash.h"
+#include "CST820.h"
 
 
 // Pages WEB
@@ -307,9 +327,10 @@
 
 
 //Nombre Actions Max
-#define LesActionsLength 10  //Ne pas toucher -Javascript connais pas
+#define LES_ACTIONS_LENGTH 10  //Ne pas toucher -Javascript connais pas
 //Nombre Routeurs réseau Max
-#define LesRouteursMax 8  //Ne pas toucher -Javascript connais pas
+#define LES_ROUTEURS_MAX 8  //Ne pas toucher -Javascript connais pas
+
 //VARIABLES
 const char *ap_default_ssid;        // Mode Access point  IP: 192.168.4.1
 const char *ap_default_psk = NULL;  // Pas de mot de passe en AP,
@@ -326,13 +347,19 @@ String Source_data = "NotDef";
 String SerialIn = "";
 String hostname = "";
 byte dhcpOn = 1;
-byte ModePara = 0;                                                     //0 = Minimal, 1= Expert
-byte ModeReseau = 0;                                                   //0 = Internet, 1= LAN only, 2 =AP pas de réseau
-byte Horloge = 0;                                                      //0=Internet, 1=Linky, 2=Interne, 3=IT 10ms/triac, 4=IT 20ms
-byte ESP32_Type = 0;                                                   //0=Inconnu,1=Wroom seul,2=Wroom 1 relais,3=Wroom 4 relais,product4=Wroom+Ecran320*240,10=ESP32-ETH01
-byte LEDgroupe = 0;                                                    //0:pas de LED,1à9 pour les LED. 10 et 11 pour les écrans  OLED
-byte LEDyellow[] = { 0, 18, 4, 2, 0, 0, 0, 0, 0, 0, 18, 4, 18, 4 };    //Ou SDA pour OLED
-byte LEDgreen[] = { 0, 19, 16, 4, 0, 0, 0, 0, 0, 0, 19, 32, 19, 32 };  //ou SCL pour OLED
+byte ModePara = 0;                                                      //0 = Minimal, 1= Expert
+byte ModeReseau = 0;                                                    //0 = Internet, 1= LAN only, 2 =AP pas de réseau
+byte ESP32_Type = 0;                                                    //0=Inconnu,1=Wroom seul,2=Wroom 1 relais,3=Wroom 4 relais,
+                                                                        //4 = Ecran 320*240 ILI9341/BL21 2.8pouces
+                                                                        //5 = Ecran 320*240 ST7789/BL21  2.8pouces
+                                                                        //6 = Ecran 320*240 ILI9341/BL27 2.4pouces
+                                                                        //7 = Ecran 320*240 ST7789/BL27  2.4pouces
+                                                                        //8 = Ecran 320*240 ST7789/BL27  2.4pouces capacitif
+                                                                        //9 = Ecran 320*240 ST7789/BL27  2.8pouces capacitif
+                                                                        //10 = ESP32-ETH01
+byte LEDgroupe = 0;                                                     //0:pas de LED,1à9 pour les LED. 10 et 11 pour les écrans  OLED
+byte LEDyellow[] = { 0, 18, 4, 2, 4, 0, 0, 0, 0, 0, 18, 4, 18, 4 };     //Ou SDA pour OLED
+byte LEDgreen[] = { 0, 19, 16, 4, 17, 0, 0, 0, 0, 0, 19, 32, 19, 32 };  //ou SCL pour OLED
 unsigned long Gateway = 0;
 unsigned long masque = 4294967040;
 unsigned long dns = 0;
@@ -348,9 +375,11 @@ String MQTTdeviceName = "routeur_rms";
 String TopicP = "PuissanceMaison";
 byte subMQTT = 0;
 String nomRouteur = "Routeur - RMS";
-String nomSondeFixe = "Données seconde sonde";
 String nomSondeMobile = "Données Maison";
-String Couleurs = "";  // Couleurs pages web
+String nomSondeFixe = "Données seconde sonde";
+String nomSfixePpos = "Conso.";    //Puissance positive
+String nomSfixePneg = "Produite";  //Puissance négative
+String Couleurs = "";              // Couleurs pages web
 byte WifiSleep = 1;
 bool wifi_connectedIPV6G = false;
 String STX = String((char)2);  // Start transmission
@@ -366,12 +395,44 @@ int P_cent_EEPROM;
 int cptLEDyellow = 0;
 int cptLEDgreen = 0;
 
+//**************
+//   Horloge
+//**************
+String DATE = "";
+String DateCeJour = "";  //Plus utilisé depuis V13
+String DateAMJ;
+bool HeureValide = false;
+int16_t HeureCouranteDeci = 0;
+int16_t idxPromDuJour = 0;
+int16_t Int_Heure = 0;  //Heure interne
+int16_t Int_Minute = 0;
+int16_t Int_Seconde = 0;
+byte Horloge = 0;  //0=Internet, 1=Linky, 2=Interne, 3=IT 10ms/triac, 4=IT 20ms, 5 externe                                                                                          // 0=Internet, 1=Linky, 2=Interne, 3=IT 10ms/triac, 4=IT 20ms
+byte idxFuseau = 0;
+String ntpServer = "";
+bool LastRecordConf = false;
 
+// ***************************
+// Stockage des données en ROM
+// ***************************
+//Plan stockage
+#define EEPROM_SIZE 4090
+#define adr_HistoAn 0          //taille 2* 370*4=1480
+#define adr_E_T_soutire0 1480  // 1 long. Taille 4 Triac
+#define adr_E_T_injecte0 1484
+#define adr_E_M_soutire0 1488    // 1 long. Taille 4 Maison
+#define adr_E_M_injecte0 1492    // 1 long. Taille 4
+#define adr_DateCeJour 1496      // String 8+1
+#define adr_lastStockConso 1505  // Short taille 2
+#define adr_ParaActions 1507     //Clé + ensemble parametres peu souvent modifiés
+#define NbJour 370               //Nb jour historique stocké
 
 //Paramètres écran
 byte rotation = 3;
 uint16_t Calibre[] = { 0, 0, 0, 0, 0, 0, 0, 0 };
 unsigned long DurEcran = 30000;
+byte clickPresence = 0;
+int8_t NumPageBoot = 0;
 
 
 //Paramètres électriques
@@ -407,14 +468,14 @@ int16_t tabPw_Maison_2s[300];   //Puissance Active: toutes les 2s
 int16_t tabPw_Triac_2s[300];    //Puissance Triac: toutes les 2s
 int16_t tabPva_Maison_2s[300];  //Puissance Active: toutes les 2s
 int16_t tabPva_Triac_2s[300];
-int8_t tab_histo_ouverture[LesActionsLength][600];
-int8_t tab_histo_2s_ouverture[LesActionsLength][300];
+int8_t tab_histo_ouverture[LES_ACTIONS_LENGTH][600];
+int8_t tab_histo_2s_ouverture[LES_ACTIONS_LENGTH][300];
 int16_t IdxStock2s = 0;
 int16_t IdxStockPW = 0;
 float PmaxReseau = 36000;  //Puissance Max pour eviter des débordements
 bool LissageLong = false;
 bool Pva_valide = false;
-int OffsetP=0; //Decalage puissance pour essais
+int OffsetP = 0;  //Decalage puissance pour essais
 
 //Tableaux pour Multi-sinus. (optimisation Michy)
 uint8_t tabPulseSinusTotal[101] = { 2,
@@ -469,6 +530,9 @@ String MK333_dataBrute = "";
 float Energie_jour_Soutiree = 0;
 float Energie_jour_Injectee = 0;
 long Temps_precedent = 0;  // mesure précise du temps entre deux appels au JSY-MK-333
+float Tension_M1, Tension_M2, Tension_M3;
+float Intensite_M1, Intensite_M2, Intensite_M3;
+float PW_M1, PW_M2, PW_M3;
 
 //Parameters for Linky
 bool LFon = false;
@@ -489,12 +553,8 @@ String LTARF = "";  //Option tarifaire RTE
 String STGE = "";   //Status Linky
 String STGEt = "";  //Status Tempo uniquement RTE
 String NGTF = "";   //Calendrier tarifaire
-String RTE_Jour="NON_DEFINI";
-String RTE_Demain="NON_DEFINI";
-String JourLinky = "";
-int16_t Int_HeureLinky = 0;  //Heure interne
-int16_t Int_MinuteLinky = 0;
-int16_t Int_SecondeLinky = 0;
+String RTE_Jour = "NON_DEFINI";
+String RTE_Demain = "NON_DEFINI";
 long EASF01 = 0;
 long EASF02 = 0;
 long EASF03 = 0;
@@ -547,7 +607,7 @@ int LTARFbin = 0;  //Code binaire  des tarifs
 int8_t RMSextIdx = 0;
 
 //Actions
-Action LesActions[LesActionsLength];  //Liste des actions
+Action LesActions[LES_ACTIONS_LENGTH];  //Liste des actions
 volatile int NbActions = 0;
 byte ReacCACSI = 1;
 unsigned int Fpwm = 500;  // Frequence signaux PWM en Hz
@@ -569,7 +629,7 @@ unsigned long previousTempMillis;
 unsigned long previousLoop;
 unsigned long previousETX;
 unsigned long PeriodeProgMillis = 1000;
-unsigned long T_On_seconde = 0;
+uint64_t T_On_seconde = 0;
 float previousLoopMin = 1000;
 float previousLoopMax = 0;
 float previousLoopMoy = 0;
@@ -581,14 +641,14 @@ unsigned long previousMQTTenvoiMillis;
 unsigned long previousMQTTMillis;
 unsigned long LastPwMQTTMillis = 0;
 unsigned long PeriodeMQTTMillis = 500;
-unsigned long LastShowActionMillis=0;
+unsigned long LastShowActionMillis = 0;
 
 //Actions et Triac(action 0)
-float RetardF[LesActionsLength];        //Floating value of retard
-float LastErrorPw[LesActionsLength];    //Floating value of previous Pw error
-float IntegrErrorPw[LesActionsLength];  //Integral de l'erreur
-float Propor[LesActionsLength]; // correction proportionnelle
-float DeriveF[LesActionsLength]; // Derive erreur filtrée
+float RetardF[LES_ACTIONS_LENGTH];        //Floating value of retard
+float LastErrorPw[LES_ACTIONS_LENGTH];    //Floating value of previous Pw error
+float IntegrErrorPw[LES_ACTIONS_LENGTH];  //Integral de l'erreur
+float Propor[LES_ACTIONS_LENGTH];         // correction proportionnelle
+float DeriveF[LES_ACTIONS_LENGTH];        // Derive erreur filtrée
 
 //Variables in RAM for interruptions
 volatile unsigned long lastIT = 0;
@@ -604,14 +664,14 @@ hw_timer_t *timer10ms = NULL;
 volatile int16_t testPulse = 0;
 volatile int16_t testTrame = 0;
 
-volatile int Retard[LesActionsLength];
-volatile int Actif[LesActionsLength];
-volatile int PulseOn[LesActionsLength];
-volatile int PulseTotal[LesActionsLength];
-volatile int PulseComptage[LesActionsLength];
-volatile int Gpio[LesActionsLength];
-volatile int OutOn[LesActionsLength];
-volatile int OutOff[LesActionsLength];
+volatile int Retard[LES_ACTIONS_LENGTH];
+volatile int Actif[LES_ACTIONS_LENGTH];
+volatile int PulseOn[LES_ACTIONS_LENGTH];
+volatile int PulseTotal[LES_ACTIONS_LENGTH];
+volatile int PulseComptage[LES_ACTIONS_LENGTH];
+volatile int Gpio[LES_ACTIONS_LENGTH];
+volatile int OutOn[LES_ACTIONS_LENGTH];
+volatile int OutOff[LES_ACTIONS_LENGTH];
 
 
 
@@ -619,28 +679,17 @@ volatile int OutOff[LesActionsLength];
 HardwareSerial MySerial(2);
 byte pSerial = 0;             //Choix Pin port serie
 int8_t RXD2 = -1, TXD2 = -1;  //Port serie
-int8_t RX2_[] = { -1, 16, 26, 18, 5 };
-int8_t TX2_[] = { -1, 17, 27, 19, 17 };
+int8_t RX2_[] = { -1, 16, 26, 18, 5, 21 ,22};
+int8_t TX2_[] = { -1, 17, 27, 19, 17, 22 ,17};
+unsigned int Serial2V = 0;  //Vitesse en bauds
 
-// Heure et Date
-#define MAX_SIZE_T 80
-const char *ntpServer1 = "fr.pool.ntp.org";
-const char *ntpServer2 = "time.nist.gov";
-String DATE = "";
-String DateCeJour = "";  //Plus utilisé depuis V13
-bool HeureValide = false;
-int16_t HeureCouranteDeci = 0;
-int16_t idxPromDuJour = 0;
-int16_t Int_Heure = 0;  //Heure interne
-int16_t Int_Minute = 0;
-int16_t Int_Seconde = 0;
-unsigned short Int_Last_10Millis = 0;
+
 
 
 //Température Capteur DS18B20
 byte pTemp = 0;
-byte pinTemp[] = { 0, 13, 27, 33 };
-OneWire oneWire(17);  //Numero de pin bidon pour le constructor en attendant affectation reel à placer au debut du setup
+byte pinTemp[] = { 0, 13, 27, 33, 21 };
+OneWire oneWire;  //Numero de pin sera affecté  au debut du setup
 DallasTemperature ds18b20(&oneWire);
 float temperature[4];  // 4 canaux max de températurre
 int offsetTemp[4];     //erreur *100
@@ -681,10 +730,10 @@ bool dispAct = false;  //Affiche  Ouverture Actions sur serial et Telnet
 int RetardVx = -1;     // Affiche calcul retard voie X
 
 // Routeurs du réseau
-unsigned long RMS_IP[LesRouteursMax];  //RMS_IP[0] = adresse IP de cet ESP32
-String RMS_NomEtat[LesRouteursMax];
-int8_t RMS_Note[LesRouteursMax];
-int8_t RMS_NbCx[LesRouteursMax];
+unsigned long RMS_IP[LES_ROUTEURS_MAX];  //RMS_IP[0] = adresse IP de cet ESP32
+String RMS_NomEtat[LES_ROUTEURS_MAX];
+int8_t RMS_Note[LES_ROUTEURS_MAX];
+int8_t RMS_NbCx[LES_ROUTEURS_MAX];
 int RMS_Noms_idx = 0;
 int RMS_Datas_idx = 0;
 
@@ -698,30 +747,9 @@ esp_err_t ESP32_ERROR;
 bool PuissanceRecue = false;
 int PuissanceValide = 5;
 
-//Interruptions, Current Zero Crossing from Triac device and Internal Timer
-//*************************************************************************
-void IRAM_ATTR onTimer10ms() {  //Interruption interne toutes 10ms
-  ITmode = ITmode - 1;
-  if (ITmode < -5) ITmode = -5;
-  if (ITmode < 0) GestionIT_10ms();  //IT non synchrone avec le secteur . Horloge interne
-}
-
-
-// Interruption du Triac Signal Zc, toutes les 10ms si Triac, toutes les 20ms si systeme redressement secteur
-void IRAM_ATTR currentNull() {
-  IT10ms = IT10ms + 1;
-
-  if ((millis() - lastIT) > 2) {  // to avoid glitch detection during 2ms
-    ITmode = ITmode + 3;
-    if (ITmode > 5) ITmode = 5;
-    IT10ms_in = IT10ms_in + 1;
-    lastIT = millis();
-    if (ITmode > 0) GestionIT_10ms();  //IT synchrone avec le secteur signal Zc toutes les 10ms
-  }
-}
-
-
-void GestionIT_10ms() {
+//Gestion Interruption sur pulse interne ou du Triac
+//****************************************************
+void IRAM_ATTR GestionIT_10ms() {
   CptIT = CptIT + StepIT;
   Phase230V = !Phase230V;
   for (int i = 0; i < NbActions; i++) {
@@ -752,6 +780,7 @@ void GestionIT_10ms() {
         break;
       default:              // Multi Sinus ou Train de sinus
         if (Gpio[i] > 0) {  //Gpio valide
+          if (PulseComptage[i] >= PulseTotal[i]) PulseComptage[i] = 0;
           if (PulseComptage[i] < PulseOn[i]) {
             digitalWrite(Gpio[i], OutOn[i]);
           } else {
@@ -766,6 +795,29 @@ void GestionIT_10ms() {
     }
   }
 }
+
+//Interruptions, Current Zero Crossing from Triac device and Internal Timer
+//*************************************************************************
+void IRAM_ATTR onTimer10ms() {  //Interruption interne toutes 10ms
+  ITmode = ITmode - 1;
+  if (ITmode < -5) ITmode = -5;
+  if (ITmode < 0) GestionIT_10ms();  //IT non synchrone avec le secteur . Horloge interne
+}
+
+
+// Interruption du Triac Signal Zc, toutes les 10ms si Triac, toutes les 20ms si systeme redressement secteur
+void IRAM_ATTR currentNull() {
+  IT10ms = IT10ms + 1;
+
+  if ((millis() - lastIT) > 2) {  // to avoid glitch detection during 2ms
+    ITmode = ITmode + 3;
+    if (ITmode > 5) ITmode = 5;
+    IT10ms_in = IT10ms_in + 1;
+    lastIT = millis();
+    if (ITmode > 0) GestionIT_10ms();  //IT synchrone avec le secteur signal Zc toutes les 10ms
+  }
+}
+
 
 
 
@@ -833,6 +885,7 @@ void WiFiEvent(WiFiEvent_t event) {                                             
   }                           //SR19
 }
 
+
 // SETUP
 //*******
 void setup() {
@@ -842,10 +895,9 @@ void setup() {
 
   //Ports Série ESP
   Serial.begin(115200);
+  delay(500);
 
-
-  TelnetPrintln("Booting");
-
+  StockMessage("Booting Routeur F1ATB");
   //Watchdog initialisation
   esp_task_wdt_deinit();
   // Initialisation de la structure de configuration pour la WDT
@@ -856,12 +908,32 @@ void setup() {
   };
   // Initialisation de la WDT avec la structure de configuration
   ESP32_ERROR = esp_task_wdt_init(&wdt_config);
-  TelnetPrintln("Dernier Reset : " + String(esp_err_to_name(ESP32_ERROR)));
+  StockMessage("Dernier Reset : " + String(esp_err_to_name(ESP32_ERROR)));
   esp_task_wdt_add(NULL);  //add current thread to WDT watch
   esp_task_wdt_reset();
   delay(1);  //VERY VERY IMPORTANT for Watchdog Reset
 
-  for (int i = 0; i < LesActionsLength; i++) {
+
+
+
+  if (!LittleFS.begin(true)) {  // `true` = format si erreur
+    Serial.println("Erreur de montage fichiers LittleFS");
+    StockMessage("Erreur de montage fichiers LittleFS");  //Permet d'avoir le statut par Telnet plus tard
+  } else {
+    Serial.println("Système fichiers LittleFS monté");
+  }
+  delay(1000);
+
+  //Hostname par defaut
+  hostname = String(HOSTNAME);
+  uint32_t chipId = 0;
+  for (int i = 0; i < 17; i = i + 8) {
+    chipId |= ((ESP.getEfuseMac() >> (40 - i)) & 0xff) << i;
+  }
+  hostname += String(chipId);  //Add chip ID to hostname
+
+
+  for (int i = 0; i < LES_ACTIONS_LENGTH; i++) {
     LesActions[i] = Action(i);  //Creation objets
     PulseOn[i] = 0;             //1/2 sinus
     PulseTotal[i] = 100;
@@ -870,12 +942,13 @@ void setup() {
     RetardF[i] = 100.0;
     LastErrorPw[i] = 0;
     IntegrErrorPw[i] = 100.0;
-    Propor[i]=0;
-    DeriveF[i]=0;
+    Propor[i] = 0;
+    DeriveF[i] = 0;
     OutOn[i] = 1;
     OutOff[i] = 0;
     Gpio[i] = -1;
   }
+
 
 
   //Tableau Longueur Pulse et Longueur Trame pour Multi-Sinus de 0 à 100%
@@ -901,7 +974,7 @@ void setup() {
       }
     }
   }
-  for (int i = 0; i < LesRouteursMax; i++) {
+  for (int i = 0; i < LES_ROUTEURS_MAX; i++) {
     RMS_IP[i] = 0;  //IP du reseau
     RMS_Note[i] = 0;
     RMS_NbCx[i] = 0;
@@ -914,16 +987,19 @@ void setup() {
   INIT_EEPROM();
 
 
-  //Lecture Clé pour identifier si la ROM a déjà été initialisée
-  Cle_ROM = CLE_Rom_Init;
+
+  Cle_ROM = CLE_Rom_Init;  //Lecture Clé pour identifier si la ROM a déjà été initialisée
   unsigned long Rcle = LectureCle();
   TelnetPrintln("cle : " + String(Rcle));
+
   if (Rcle == Cle_ROM) {  // Programme déjà executé
-    LectureEnROM();
-    LectureConsoMatinJour();
+    LectureEnROM();       //Valeurs paramètres ancien stockage avant V16.10
   } else {
     RAZ_Histo_Conso();
   }
+  ReadFichierParametres();  //On remplace par les paramètres du fichier  qui sera éventuellement crée avec les données en ROM
+  LectureConsoMatinJour();
+
   TelnetPrintln("Chip Model: " + String(ESP.getChipModel()));
   delay(100);
   MessageCommandes();
@@ -942,7 +1018,7 @@ void setup() {
   InitGPIOs();
   TelnetPrintln("ESP32_Type:" + String(ESP32_Type));
   delay(500);
-  if (ESP32_Type == 4) Ecran_Init();
+  if (ESP32_Type >= 4 && ESP32_Type <= 9) Ecran_Init(ESP32_Type);
 
   IP2String(RMS_IP[0]);
   // Set youRMS_IP[0]c IP address
@@ -959,18 +1035,13 @@ void setup() {
   IP2String(dns);
   IPAddress primaryDNS(arrIP[3], arrIP[2], arrIP[1], arrIP[0]);  //optional
   IPAddress secondaryDNS(8, 8, 4, 4);
-  hostname = String(HOSTNAME);
-  uint32_t chipId = 0;
-  for (int i = 0; i < 17; i = i + 8) {
-    chipId |= ((ESP.getEfuseMac() >> (40 - i)) & 0xff) << i;
-  }
-  hostname += String(chipId);  //Add chip ID to hostname
-  TelnetPrintln(hostname);     //optional
+
+  TelnetPrintln(hostname);  //optional
   bool bestWifi = false;
   if (ESP32_Type == 10) {  //Ethernet (avant Horloge)
     PrintScroll("Lancement de la liaison Ethernet");
     if (Ethernet.linkStatus() == LinkOFF) {
-   //   PrintScroll("Câble Ethernet non connecté.");  //Fonctionne pas sur WT32
+      //   PrintScroll("Câble Ethernet non connecté.");  //Fonctionne pas sur WT32
     }
     //Ethernet.hostname(hostname);
     if (dhcpOn == 0) {  //Static IP
@@ -996,14 +1067,18 @@ void setup() {
 
   } else {  //ESP32 en WIFI
     TelnetPrintln("Lancement du Wifi");
+    delay(500);
     //Liste Wifi à faire avant connexion à un AP. Necessaire depuis biblio ESP32 3.0.1
     WiFi.mode(WIFI_STA);
     WiFi.disconnect();
     WiFi.setSortMethod(WIFI_CONNECT_AP_BY_SIGNAL);
     WiFi.setScanMethod(WIFI_ALL_CHANNEL_SCAN);
+    TelnetPrintln("Scan du Wifi");
+    delay(500);
     bestWifi = Liste_WIFI();
     TelnetPrint("Version : ");
     TelnetPrintln(Version);
+    delay(200);
     LireSerial();
     // Configure WIFI
     // **************
@@ -1019,15 +1094,9 @@ void setup() {
   }
 
   LireSerial();
-  if (Horloge == 0) {  //heure par Internet}
-    //Heure / Hour . A Mettre en priorité avant WIFI (exemple ESP32 Simple Time)
-    //External timer to obtain the Hour and reset Watt Hour every day at 0h
-    sntp_set_sync_interval(10800000);  //Synchro toutes les 3h
-    sntp_set_time_sync_notification_cb(time_sync_notification);
-    //sntp_servermode_dhcp(1);   Déprecié
-    esp_sntp_servermode_dhcp(true);                                                        //Option
-    configTzTime("CET-1CEST-2,M3.5.0/02:00:00,M10.5.0/03:00:00", ntpServer1, ntpServer2);  //Voir Time-Zone:
-  }
+  InitHeure();
+
+
 
   //WIFI
   if (ESP32_Type < 10) {
@@ -1061,6 +1130,7 @@ void setup() {
         TelnetPrintln("");
       }
     }
+
     if (WiFi.status() == WL_CONNECTED && ModeReseau < 2) {
       RMS_IP[0] = String2IP(WiFi.localIP().toString());
       StockMessage("Connecté par WiFi, addresse IP : " + WiFi.localIP().toString() + " or <a href='http://" + hostname + ".local' >" + hostname + ".local</a>");
@@ -1085,15 +1155,15 @@ void setup() {
           RMS_IP[0] = String2IP(WiFi.localIP().toString());             //SR19
           // Go into software AP and STA modes.                                                                                                                                //SR19
           StockMessage("Connecté par WiFi via WPS, IP : " + WiFi.localIP().toString() + " nom d'hôte : <a href='http://" + hostname + ".local' >" + hostname + ".local</a>"                                                                      //SR19
-                                                                                                                                                              " Copiez/collez le nom d'hôte dans votre navigateur. ESP32 en mode AP et STA.");  //SR19
-          LireSerial();                                                                                                                                                                                                                         //SR19
-          WiFi.softAP(ap_default_ssid, ap_default_psk);                                                                                                                                                                                         //on entre en mode AP pour enregistrer et lancer le RMS                                                                //SR19
-        } else {                                                                                                                                                                                                                                //SR19
-          StockMessage("Echec de connexion WiFi via WPS. ESP32 en mode AP et STA.");                                                                                                                                                            //SR19
+                                                                                                                                                               " Copiez/collez le nom d'hôte dans votre navigateur. ESP32 en mode AP et STA.");  //SR19
+          LireSerial();                                                                                                                                                                                                                          //SR19
+          WiFi.softAP(ap_default_ssid, ap_default_psk);                                                                                                                                                                                          //on entre en mode AP pour enregistrer et lancer le RMS                                                                //SR19
+        } else {                                                                                                                                                                                                                                 //SR19
+          StockMessage("Echec de connexion WiFi via WPS. ESP32 en mode AP et STA.");                                                                                                                                                             //SR19
           // Go into software AP and STA modes.                                                                                                                                //SR19
           LireSerial();                                  //SR19
           WiFi.softAP(ap_default_ssid, ap_default_psk);  //SR19
-          infoSerie();                                   //SR19
+          infoSerieAP();                                 //SR19
         }                                                //SR19
       } else {
         StockMessage("Pas de connexion WIFI. ESP32 en mode AP et STA.");
@@ -1104,11 +1174,17 @@ void setup() {
         delay(10);
         LireSerial();
         WiFi.softAP(ap_default_ssid, ap_default_psk);
-        infoSerie();
+        infoSerieAP();
       }
       WiFi.scanDelete();  //SR19
     }
   }
+
+  if (ESP32_Type >= 4 && ESP32_Type <= 9) {
+    TraceMessages();  //Ecran
+    delay(2000);
+  }
+
 
   // Lancer serveur Telnet
   telnetServer.begin();
@@ -1337,6 +1413,11 @@ void loop() {
     telnetClient = telnetServer.accept();  //.available(); // deprecié
     TelnetPrintln("Nouveau client : " + nomRouteur + " connecté !");
     telnetClient.println("Bienvenue !");
+    int j = idxMessage;
+    for (int i = 0; i < 10; i++) {
+      TelnetPrintln(MessageH[j]);
+      j = (j + 1) % 10;
+    }
     MessageCommandes();
   }
 
@@ -1423,22 +1504,23 @@ void loop() {
   }
   if (tps - previousTempMillis > 15001) {
     previousTempMillis = tps;
+
     //Temperature
     LectureTemperature();
     //Rafraichissement des noms et des états des actions externes
-    for (int i = 0; i < LesRouteursMax; i++) {
-      RMS_Noms_idx = (RMS_Noms_idx + 1) % LesRouteursMax;
+    for (int i = 0; i < LES_ROUTEURS_MAX; i++) {
+      RMS_Noms_idx = (RMS_Noms_idx + 1) % LES_ROUTEURS_MAX;
       if (RMS_IP[RMS_Noms_idx] > 0) {
         Liste_NomsEtats(RMS_Noms_idx);
-        i = LesRouteursMax;
+        i = LES_ROUTEURS_MAX;
       }
     }
     InfoActionExterne();
   }
-  if (LastShowActionMillis!=0){
-    if (millis() - LastShowActionMillis>6000){ //Pas prendre tps en retard 
-      LectureEnROM(); //On remet les coefficint du PID aux valeurs stockés après des essais.
-      LastShowActionMillis=0;
+  if (LastShowActionMillis != 0) {
+    if (millis() - LastShowActionMillis > 6000) {  //Pas prendre tps en retard
+      LectureEnROM();                              //On remet les coefficint du PID aux valeurs stockés après des essais.
+      LastShowActionMillis = 0;
     }
   }
   //Vérification Ethernet, WIFI et de la puissance
@@ -1449,10 +1531,11 @@ void loop() {
       wifi_connectedIPV6G = true;
     }
     previousWifiMillis = tps;
+
     JourHeureChange();
     TelnetPrintln("\nDate : " + DATE);
     if (ESP32_Type < 10) {  //ESP32 en WIFI
-      if (WiFi.getMode() == WIFI_STA || (ModeReseau < 2 && WiFi.getMode() == WIFI_AP_STA)) {
+      if (WiFi.getMode() == WIFI_STA) {
         if (WiFi.waitForConnectResult(10000) != WL_CONNECTED) {
           StockMessage("WIFI Connection Failed! #" + String(WIFIbug));
           WIFIbug++;
@@ -1470,20 +1553,16 @@ void loop() {
         if (WIFIbug > ComSurv) {  //Timeout sans WIFI =Reset
           TelnetPrintln("Timeout sans WIFI ==> Reset");
           delay(5000);
-          ESP.restart();
+          ReseT("Timeout sans WIFI ==> Reset");
         }
-
-      } else {
-        if (ModeReseau < 2) {  //Normalement connecté au réseau
-          WIFIbug++;
-          if (WIFIbug > ComSurv) {  // TimeOut en mode AP Reset
-            TelnetPrintln("TimeOut en mode AP ==> Reset");
-            delay(5000);
-            ESP.restart();
-          }
-        }
-        infoSerie();
       }
+      if (ModeReseau < 2 && WiFi.getMode() == WIFI_AP_STA) {
+        if (millis() > 300000) {  //Ne doit pas rester en WIFI_AP_STA plus de 5mn
+          ReseT("TimeOut en mode AP_STA ==> Reset");
+        }
+        infoSerieAP();
+      }
+
     } else {  //ESP32 Ethernet
       PrintScroll("IP :" + Ethernet.localIP().toString());
       if (Ethernet.linkStatus() == LinkOFF) {
@@ -1495,7 +1574,7 @@ void loop() {
       if (EthernetBug > ComSurv) {  // TimeOut sans réseau
         TelnetPrintln("TimeOut sans réseau Ethernet => Reset ");
         delay(5000);
-        ESP.restart();
+        ReseT("TimeOut sans réseau Ethernet => Reset ");
       }
     }
     //Verification puissance reçue
@@ -1512,7 +1591,7 @@ void loop() {
     } else {
       TelnetPrintln("Puissances non reçues => Reset ");
       delay(5000);
-      ESP.restart();
+      ReseT("Puissances non reçues => Reset ");
     }
     TelnetPrintln("Puissance reçue : " + OK);
     TelnetPrintln("Charge Lecture RMS (coeur 0) en ms - Min : " + String(int(previousTimeRMSMin)) + " Moy : " + String(int(previousTimeRMSMoy)) + "  Max : " + String(int(previousTimeRMSMax)));
@@ -1548,7 +1627,7 @@ void loop() {
 
 
   //Ecran
-  if (ESP32_Type == 4) Ecran_Loop();
+  if (ESP32_Type >= 4 && ESP32_Type <= 9) Ecran_Loop();
   //Port Série
   LireSerial();
   delay(1);
@@ -1558,11 +1637,10 @@ void loop() {
 // *  ACTIONS *
 // ************
 void GestionOverproduction() {  // chaque 200ms (adaptation 5 fois par seconde)
-  float SeuilPw, ErrorPw = 0,  Derive = 0;
+  float SeuilPw, ErrorPw = 0, Derive = 0;
   float MaxTriacPw;
   float Kp, Ki, Kd;
   float GainCACSI = float(ReacCACSI);
-  int Type_En_Cours = 0;
   int LeCanalTemp;
   float laTemperature;
   bool forceOff;
@@ -1573,12 +1651,13 @@ void GestionOverproduction() {  // chaque 200ms (adaptation 5 fois par seconde)
   //Cas du Triac. Action 0
 
 
-  float Puissance = float(PuissanceS_M - PuissanceI_M );
+  float Puissance = float(PuissanceS_M - PuissanceI_M);
   if (NbActions == 0) LissageLong = true;  //Cas d'un capteur seul et actions déporté sur autre ESP
   for (int i = 0; i < NbActions; i++) {
     Actif[i] = LesActions[i].Actif;                                                                                //0=Inactif,1=Decoupe ou On/Off, 2=Multi, 3= Train , 4=PWM, 5=Demi-Sinus
     if (Actif[i] == MODE_MULTISINUS || Actif[i] == MODE_TRAINSINUS || Actif[i] == MODE_DEMISINUS) lissage = true;  //En RAM
     forceOff = false;
+
     LeCanalTemp = LesActions[i].CanalTempEnCours(HeureCouranteDeci);
     float laTemperature = -120;
     if (LeCanalTemp >= 0) {
@@ -1588,17 +1667,17 @@ void GestionOverproduction() {  // chaque 200ms (adaptation 5 fois par seconde)
         forceOff = true;
       }
     }
+    Action::ParaPeriode P = LesActions[i].ParaEnCours(HeureCouranteDeci, laTemperature, LTARFbin, Retard[i]);  //Type: 0=NO,1=OFF,2=ON,3=PW,4=Triac
     if (forceOff) {
-      Type_En_Cours = 1;  //  on arrete
-    } else {
-      Type_En_Cours = LesActions[i].TypeEnCours(HeureCouranteDeci, laTemperature, LTARFbin, Retard[i]);  //0=NO,1=OFF,2=ON,3=PW,4=Triac
+      P.Type = 1;  //  on arrete
     }
-    if (Actif[i] != MODE_INACTIF && Type_En_Cours > 1) {  // On ne traite plus le NO
-      if (Type_En_Cours == 2) {
-        RetardF[i] = 0;
-      } else {  // 3 ou 4
-        SeuilPw = float(LesActions[i].Valmin(HeureCouranteDeci));
-        MaxTriacPw = float(LesActions[i].Valmax(HeureCouranteDeci));
+    if (Actif[i] != MODE_INACTIF && P.Type > 1) {  // On ne traite plus le NO
+      SeuilPw = float(P.Vmin);
+      MaxTriacPw = float(P.Vmax);
+      if (P.Type == 2) {                  //ON
+        RetardF[i] = 100.0 - MaxTriacPw;  //On avec ouverture limitée en forcé prioritaire ou suivant la période
+      } else {                            // régulation 3 (PW) ou 4 (Triac)
+
         //Coef Integral ou réactivité
         if (Puissance < SeuilPw && ReacCACSI > 1 && ReacCACSI < 100) Ki = Ki * GainCACSI;  //On boost si besoin l'écart (*2, 4 ou 8)
         if (Actif[i] == MODE_DECOUPE_ONOFF && i > 0) {                                     //Les relais en On/Off
@@ -1608,24 +1687,24 @@ void GestionOverproduction() {  // chaque 200ms (adaptation 5 fois par seconde)
           ErrorPw = Puissance - SeuilPw;
           //Integration de l'erreur
           Ki = float(LesActions[i].Ki) / 10000.0;
-          IntegrErrorPw[i] += 0.0001;  //On ferme très légèrement si pas de message reçu. Sécurité          
+          IntegrErrorPw[i] += 0.0001;  //On ferme très légèrement si pas de message reçu. Sécurité
           IntegrErrorPw[i] += ErrorPw * Ki;
           IntegrErrorPw[i] = constrain(IntegrErrorPw[i], 0.0, 100.0);  //Ne pas accumuler des valeurs enormes
-          if (LesActions[i].PID && ModePara==1) {
+          if (LesActions[i].PID && ModePara == 1) {
             Kp = float(LesActions[i].Kp) / 1000.0;  //Coef proportionnel
             Kd = float(LesActions[i].Kd) / 1000.0;  //Coef/derivé
             Propor[i] = Kp * ErrorPw;
-            if (LesActions[i].Ki==0 && LesActions[i].Kp>0) IntegrErrorPw[i]=50.0; //Cas particulier avec régulation uniquement de P
+            if (LesActions[i].Ki == 0 && LesActions[i].Kp > 0) IntegrErrorPw[i] = 50.0;  //Cas particulier avec régulation uniquement de P
             Derive = Kd * (ErrorPw - LastErrorPw[i]);
-            DeriveF[i]=0.2*Derive+0.8*DeriveF[i]; // Filtrage car manque de mesure donne Derive=0
-            RetardF[i] = Propor[i] + IntegrErrorPw[i] + DeriveF[i];  //Mode PID                       
+            DeriveF[i] = 0.2 * Derive + 0.8 * DeriveF[i];            // Filtrage car manque de mesure donne Derive=0
+            RetardF[i] = Propor[i] + IntegrErrorPw[i] + DeriveF[i];  //Mode PID
           } else {
-            // le Triac ou les relais en sinu
-            RetardF[i] = IntegrErrorPw[i];     // Gain de boucle de l'asservissement en mode Integral only
-            Propor[i]=0;
-            DeriveF[i]=0; 
+            // le Triac ou les relais en sinus
+            RetardF[i] = IntegrErrorPw[i];  // Gain de boucle de l'asservissement en mode Integral only
+            Propor[i] = 0;
+            DeriveF[i] = 0;
           }
-          LastErrorPw[i] = ErrorPw; 
+          LastErrorPw[i] = ErrorPw;
           if (RetardF[i] < 100 - MaxTriacPw) { RetardF[i] = 100 - MaxTriacPw; }
           if (ITmode < 0 && i == 0) RetardF[i] = 100;  //Triac pas possible sur synchro interne
         }
@@ -1634,9 +1713,9 @@ void GestionOverproduction() {  // chaque 200ms (adaptation 5 fois par seconde)
       }
     } else {
       RetardF[i] = 100.0;
-      IntegrErrorPw[i]=100.0;
+      IntegrErrorPw[i] = 100.0;
     }
-    Retard[i] = round(RetardF[i]);           //Valeure entiere pour piloter le Triac et les relais
+    Retard[i] = round(RetardF[i]);         //Valeure entiere pour piloter le Triac et les relais
     if (RetardVx == i && Actif[i] != 0) {  //Affiche calcul retards port série ou Telnet
       char buffer[50];
       sprintf(buffer, "Ecart= %4.0fW Retard= %3u P= %4.1f I= %4.1f D= %4.1f", ErrorPw, Retard[i], Propor[i], IntegrErrorPw[i], DeriveF[i]);
@@ -1725,13 +1804,13 @@ void InitGPIOs() {
   Init_LED_OLED();
 
   if (pSerial > 0) {
-    if (ESP32_Type == 2) pSerial = 2;  //Obligatoire carte 1 relais
-    if (ESP32_Type == 4) pSerial = 3;  //Obligatoire carte écran
-    RXD2 = RX2_[pSerial];              //Port serie
+    if (ESP32_Type == 2) pSerial = 2;                     //Obligatoire carte 1 relais
+    RXD2 = RX2_[pSerial];                                 //Port serie
     TXD2 = TX2_[pSerial];
   }
+  if (ESP32_Type >= 4 && ESP32_Type <= 9 && clickPresence == 1) pinMode(35, INPUT);  //Motion detector en 35
   if (pTemp > 0) {
-    TelnetPrint("InirTemp:");
+    TelnetPrint("Init Temp:");
     TelnetPrintln(String(pinTemp[pTemp]));
     oneWire.begin(pinTemp[pTemp]);
     ds18b20.begin();
@@ -1744,9 +1823,9 @@ void InitGPIOs() {
   AnalogIn2 = Analog2[pUxI];
 }
 
-void infoSerie() {
+void infoSerieAP() {
   TelnetPrintln("Access Point Mode : " + hostname);
-  TelnetPrint("IP address: ");
+  TelnetPrint("IP address AP: ");
   TelnetPrintln(WiFi.softAPIP().toString());
   TelnetPrintln("\nPar le port série vous pouvez définir le WIFI à utiliser par l'ESP32 en tapant les 3 commandes ci-dessous en remplaçant xxx par la bonne valeur :");
   TelnetPrintln("ssid:xxx");
@@ -1793,16 +1872,4 @@ void H_Ouvre_Equivalent(unsigned long dt) {
       }
     }
   }
-}
-
-// **************
-// * Heure DATE * -
-// **************
-void time_sync_notification(struct timeval *tv) {
-  TelnetPrintln("\nNotification de l'heure ( time synchronization event ) ");
-  HeureValide = true;
-  TelnetPrint("Sync time in ms : ");
-  TelnetPrintln(String(sntp_get_sync_interval()));
-  JourHeureChange();
-  StockMessage("Réception de l'heure Internet");
 }

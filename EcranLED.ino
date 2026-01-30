@@ -55,7 +55,7 @@ void Gestion_LEDs() {
 
   if (LEDgroupe > 0 && LEDgroupe < 10) {
     int L = 0, H = 1;  //LED classique
-    if (LEDgroupe == 2) {
+    if (LEDgroupe == 2 || LEDgroupe == 4) { //Inversé pour LED sur carte graphique GPIOs 4,16,17
       L = 1;
       H = 0;
     }
@@ -99,12 +99,7 @@ void PrintScroll(String m) {
     oled.println(Ascii(m));
     oled.setTextScroll(false);
   }
-  if (ESP32_Type == 4 && NumPage == 3) {  //Ecran LCD présent
-    lcd.setTextSize(1);
-    lcd.setTextScroll(true);
-    lcd.println(Ascii(m));
-    lcd.setTextScroll(false);
-  }
+  
 }
 void PrintCentreO(String S, int X, int Y, float Sz) {
   if (X < 0) X = oled.width() / 2;

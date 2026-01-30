@@ -47,8 +47,8 @@ const char *OtaHtml = R"====(
           var BordsInverse=[".Bparametres",".Bota"];
           $('form').submit(function(e){
             e.preventDefault();
-            var form = $('#upload_form')[0];
-            var data = new FormData(form);
+            let form = $('#upload_form')[0];
+            let data = new FormData(form);
             
             $.ajax({
               url: '/update',
@@ -57,10 +57,10 @@ const char *OtaHtml = R"====(
               contentType: false,
               processData:false,
               xhr: function() {
-              var xhr = new window.XMLHttpRequest();
+              let xhr = new window.XMLHttpRequest();
               xhr.upload.addEventListener('progress', function(evt) {
               if (evt.lengthComputable) {
-              var per = evt.loaded / evt.total;
+              let per = evt.loaded / evt.total;
               $('#prg').html('progression: ' + Math.round(per*100) + '%');
               }
               }, false);
@@ -76,22 +76,20 @@ const char *OtaHtml = R"====(
         });
         function Init(){
           SetHautBas();
-          LoadParaRouteur();
-          LoadCouleurs();
+          LoadParaFixe();
+          
         }
-        function AdaptationSource(){
-          setTimeout('GH("Version_actu", GID("version").innerHTML)',1000);
-        };
-        function FinParaRouteur(){
-          GID("Bheure").style.display= (Horloge>1) ? "inline-block": "none";
-          GID("Bwifi").style.display= (ESP32_Type<10) ? "inline-block": "none";
-        };
+        function SetParaFixe(){
+          GID("Bwifi").style.display= (F.ESP32_Type<10) ? "inline-block": "none";
+          GH("Version_actu", F.VersionStocke);
+          Set_Couleurs();
+        }
     </script>
     <br>
     <small>Après une mise à jour un reset de l'ESP32 et un Ctrl+F5 pour vider le cache du navigateur sont recommandés.</small>
     <div id="pied"></div>
     <br>
-    <script src="/ParaRouteurJS"></script>
+    <script src="/ParaCommunJS"></script>
     <script src="/CommunCouleurJS"></script>
 </body></html>
  

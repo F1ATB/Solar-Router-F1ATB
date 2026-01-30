@@ -27,6 +27,12 @@ public:
   byte SelActEnCours(int Heure);
   int Valmin(int Heure);
   int Valmax(int Heure);
+  struct ParaPeriode {
+    int Type;
+    int Vmin;
+    int Vmax;
+  };
+  ParaPeriode ParaEnCours(int Heure, float Temperature, int Ltarfbin, int Retard);
   void InitGpio(int FreqPWM);
   byte Actif;  //0=Inactif,1=Decoupe ou On/Off, 2=Multi, 3= Train, 4=PWM (sauf Triac)
   int Port;
@@ -40,20 +46,22 @@ public:
   int OutOn;
   int OutOff;
   int tOnOff;
-  byte Kp,Ki,Kd;
+  byte Kp, Ki, Kd;
   byte NbPeriode;
-  byte ExtSelAct;  //Selection Action en cours
+  byte ForceOuvre;
+  byte ExtSelAct;     //Selection Action en cours
   int8_t ExtValide;   //Condition Action externe
-  int16_t ExtHequiv;   //Duree heure *100 action externe
-  int16_t ExtOuvert;   //Pourcent ouverture
+  int16_t ExtHequiv;  //Duree heure *100 action externe
+  int16_t ExtOuvert;  //Pourcent ouverture
 
-  bool On,PID;
+  bool On, PID;
   float H_Ouvre;
   byte Type[8];  //0=NO(pas utilisé),1=OFF,2=ON,3=PW,4=Triac
   int16_t Hdeb[8];
   int16_t Hfin[8];
   int16_t Vmin[8];  //Seuil Pw On ou decoupe
-  int16_t Vmax[8];  //Seuil Pw Off ou ouverture max 
+  int16_t Vmax[8];  //Seuil Pw Off ou ouverture max
+  byte ONouvre[8];  //Ouverture max à ON forcé
   int16_t Tinf[8];  //Temperarure * 10
   int16_t Tsup[8];
   int16_t Hmin[8];  //Heure deci *100 Min pour actif. 0=non utilisé

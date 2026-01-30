@@ -3,37 +3,43 @@
 //*********************************************
 const char *MainHtml = R"====(
 <!doctype html>
-<html>
+<html lang="fr">
 
 <head>
   <meta charset="UTF-8">
+
   <link rel="stylesheet" href="/commun.css">
   <title>RMS F1ATB</title>
+
   <style>
-    .grid-container2,.grid-container2M {
+    .grid-container2,
+    .grid-container2M {
       display: grid;
-      grid-template-columns: auto auto auto auto auto auto;
-      grid-gap: 2px;
+      grid-template-columns: repeat(6, auto);
+      gap: 2px;
       background-color: rgba(30, 30, 30, 0.3);
       padding: 10px;
       border: 2px inset grey;
       border-radius: 10px;
       text-align: right;
-      color:black;
-    }
-    .grid-container1 {
-      display: grid;
-      grid-template-columns: auto auto auto auto;
-      grid-gap: 2px;
-      background-color: rgba(30, 30, 30, 0.3);
-      padding: 10px;
-      border: 2px inset grey;
-      border-radius: 10px;
-      text-align: right;
-      color:black;
+      color: black;
     }
 
-    .grid-container1>div,.grid-container2>div,.grid-container2M>div {     
+    .grid-container1 {
+      display: grid;
+      grid-template-columns: repeat(4, auto);
+      gap: 2px;
+      background-color: rgba(30, 30, 30, 0.3);
+      padding: 10px;
+      border: 2px inset grey;
+      border-radius: 10px;
+      text-align: right;
+      color: black;
+    }
+
+    .grid-container1 > div,
+    .grid-container2 > div,
+    .grid-container2M > div {
       padding: 10px;
     }
 
@@ -53,6 +59,7 @@ const char *MainHtml = R"====(
       grid-column-start: 6;
       background-color: rgba(62, 194, 247, 0.5);
     }
+
     .item31 {
       grid-column-start: 4;
       background-color: rgba(62, 194, 247, 0.5);
@@ -76,66 +83,54 @@ const char *MainHtml = R"====(
       grid-column-start: 1;
       text-align: left;
     }
-    .item_Act{
+
+    .item_Act {
       grid-column: 1 / span 2;
       background-color: rgba(62, 194, 247, 0.5);
       font-weight: bold;
     }
-    .item_H{
+
+    .item_H {
       background-color: rgba(62, 194, 247, 0.5);
       font-weight: bold;
     }
-    .item_val{
-      background-color: rgba(200,200,200, 0.5);  
+
+    .item_val {
+      background-color: rgba(200, 200, 200, 0.5);
     }
-    .item_F{
-      background-color: rgba(250,250,200, 0.5);  
+
+    .item_F {
+      background-color: rgba(250, 250, 200, 0.5);
     }
-    .item_Force{
+
+    .item_Force {
       grid-column: 4 / span 3;
       background-color: rgba(62, 194, 247, 0.5);
       font-weight: bold;
     }
-    .item_temp_nom{
-        grid-column: 1 / span 2;
-        background-color: #8f8;
-    }
-    .item_temp_val{
-        grid-column: 3 / span 4;
-        background-color: #8f8;
+
+    .item_temp_nom {
+      grid-column: 1 / span 2;
+      background-color: #8f8;
     }
 
-    .le {
-      text-align: left;
+    .item_temp_val {
+      grid-column: 3 / span 4;
+      background-color: #8f8;
     }
 
-    .ce {
-      text-align: center;
-    }
+    .le { text-align: left; }
+    .ce { text-align: center; }
 
-    .Wh {
-      background-color: #ff8;
-    }
+    .Wh { background-color: #ff8; }
+    .W { background-color: #f88; }
+    .VA { background-color: #0ff; }
+    .deg { background-color: #fdf; }
 
-    .W {
-      background-color: #f88;
-    }
-
-    .VA {
-      background-color: #0ff;
-    }
-
-    .deg {
-      background-color: #fdf;
-    }
-
-    
-
-    .foot {
+    #foot {
       font-size: 16px;
+      display:none;
     }
-
-   
 
     svg {
       border: 2px inset grey;
@@ -146,8 +141,8 @@ const char *MainHtml = R"====(
       position: absolute;
       top: 4px;
       left: 4px;
-      width: 0px;
-      height: 0px;
+      width: 0;
+      height: 0;
       border: 5px solid red;
       border-radius: 5px;
     }
@@ -159,11 +154,11 @@ const char *MainHtml = R"====(
     .jauge {
       background-color: #ff8;
       height: 28px;
-      text-align: left;
-      overflow: visible;
       position: absolute;
       top: 4px;
       left: 4px;
+      text-align: left;
+      overflow: visible;
     }
 
     .jaugeBack {
@@ -181,7 +176,7 @@ const char *MainHtml = R"====(
       left: 4px;
     }
 
-    #♣TabMesures,
+    #TabMesures,
     #SVG_PW48hT,
     #SVG_PW2sT,
     .SVG_Temp48h,
@@ -189,13 +184,13 @@ const char *MainHtml = R"====(
     #SVG_Ouvertures_2s {
       display: none;
     }
-   
+
     #donneeDistante {
       font-size: 50%;
       color: white;
       text-align: center;
-      margin-bottom: 10px;
       display: none;
+      margin-bottom: 10px;
     }
 
     #info {
@@ -206,7 +201,7 @@ const char *MainHtml = R"====(
 
     #info_txt {
       position: absolute;
-      background-color: rgba(120, 120, 120, 0.7);
+      background: rgba(120,120,120,0.7);
       padding: 4px;
       right: 10px;
       border: 1px solid black;
@@ -222,12 +217,10 @@ const char *MainHtml = R"====(
       display: none;
     }
 
-  
-
     .choixG {
       text-align: left;
       width: 100%;
-      height: 0px;
+      height: 0;
       position: relative;
     }
 
@@ -258,52 +251,75 @@ const char *MainHtml = R"====(
     .autreRif {
       width: 100%;
     }
-    
+    #B_graph{ 
+      display:none;
+      justify-content:space-between;
+      position:relative;
+      margin-top:10px;
+      margin-bottom:-20px;
+    }
+    #B_Graph{
+      border: 6px inset azure;
+      border-radius: 10px;
+      font-size:20px;
+      padding:8px;
+      position:absolute;
+      top:-30px;
+      right:30px;
+      display:none;
+    }
+    #B_Graph_in{
+      display:grid;text-align:left;
+      grid-template-columns: auto auto auto auto;
+      
+    }
+    #date{
+      display:none;
+    }
   </style>
 </head>
 
 <body onload="Init();">
+
   <div id="LED" title="Réception des données"></div>
   <div id="lesOnglets"></div>
   <div id="date">DATE</div>
+  <h2 id="routeur">Routeur - RMS - F1ATB</h2>
   <div id="TabMesures"></div>
-  
+
   <br>
-  
+
   <div id="donneeDistante">Données distantes</div>
+
   <div id="etatActions" class="grid-container2"></div>
-  <p id="SVG_PW2sM"></p>
-  <div class="choixG">
-    <div class="choix" id="SVG_PW2sM_L"><label>VA</label><input type="checkbox" id="SVG_PW2sM_C"></div>
-  </div>
-  <p id="SVG_PW2sT"></p>
-  <div class="choixG">
-    <div class="choix" id="SVG_PW2sT_L"><label>VA</label><input type="checkbox" id="SVG_PW2sT_C"></div>
-  </div>
-  <p id="SVG_PW48hM"></p>
-  <p id="SVG_PW48hT"></p>
-  <p class="SVG_Temp48h" id="SVG_Temp48h0"></p>
-  <p class="SVG_Temp48h" id="SVG_Temp48h1"></p>
-  <p class="SVG_Temp48h" id="SVG_Temp48h2"></p>
-  <p class="SVG_Temp48h" id="SVG_Temp48h3"></p>
-  <p id="SVG_Ouvertures_2s"></p>
-  <p id="SVG_Ouvertures"></p>
-  <p id="SVG_Wh1an"></p>
+
+  <div id="B_graph"><div>&nbsp;</div><div>Graphiques</div><div style="cursor:pointer;"><span onclick="ListeGraph();">📈</span><div id="B_Graph"></div></div></div>
+  <div id="LesGraphes"></div>
+
   <div id="info">
     <div id="info_txt"></div>
   </div>
+
   <br><br>
-  <div class="foot">Donn&eacute;es RMS<div id="source"></div>
+
+  <div id="foot">
+    Données RMS
+    <div id="source"></div>
   </div>
+
   <div id="autresRMS"></div>
   <div id="pied"></div>
-  <script src="/ParaRouteurJS"></script>
+
+  <!-- Scripts -->
+  <script src="/ParaCommunJS"></script>
   <script src="MainJS1"></script>
   <script src="MainJS2"></script>
   <script src="MainJS3"></script>
   <script src="/CommunCouleurJS"></script>
-  <br>
-</body>
 
+  <br>
+
+</body>
 </html>
+
 )====";

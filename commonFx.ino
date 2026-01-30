@@ -103,7 +103,7 @@ void DecodeSerial() {
   }
 
   if (sw.indexOf("restart") >= 0) {
-    ESP.restart();
+    ReseT("Reset Demandé");
   }
   if (sw.indexOf("ssid:") >= 0) {
     ssid = valeur;
@@ -149,6 +149,9 @@ void DecodeSerial() {
   if (sw.indexOf("Offset:") >= 0) {  //Decalage mesure Puissance pour essais
     OffsetP = valeur.toInt();
   }
+  if (sw.indexOf("partition") >= 0) {
+    dumpPartitions();
+  }
   if ((sw.indexOf("H") >= 0 || sw.indexOf("?") >= 0) && p == -1) {
     MessageCommandes();
   }
@@ -172,7 +175,8 @@ P:yyy        | En mode Train de Sinus force la longueur des Pulses.
              | P:yyy = yyy*10ms. P<=T . Evitez P impaire et Trame paire. 
 R:x          | Affiche pour le Triac (x=0) ou les Relais (1,2..) , 
              | le Retard en% somme de| Propor | Integral | Dérivé.
-             | R: pour annuler          
+             | R: pour annuler 
+partition    | Pour afficher la table de partition de la mémoire FLASH         
 H ou ?       | pour avoir cette aide
 **************
 )====";
@@ -206,8 +210,8 @@ String urlDecode(const String &src) {
     char c = src[i];
     if (c == '%') {
       if (i + 2 < src.length()) {
-        char hex[3] = { src[i+1], src[i+2], 0 };
-        result += (char) strtol(hex, nullptr, 16);
+        char hex[3] = { src[i + 1], src[i + 2], 0 };
+        result += (char)strtol(hex, nullptr, 16);
         i += 2;
       }
     } else if (c == '+') {
@@ -218,3 +222,26 @@ String urlDecode(const String &src) {
   }
   return result;
 }
+
+//*****************
+// Reset contrôlé
+//*****************
+void ReseT(String MesSage) {
+  Record_Data( DateAMJ,  MesSage,HeureCouranteDeci);
+  delay(500);
+  ESP.restart();
+}
+void dumpPartitions() {
+  esp_partition_iterator_t it =
+    esp_partition_find(ESP_PARTITION_TYPE_ANY,
+                       ESP_PARTITION_SUBTYPE_ANY,
+                       NULL);
+  while (it != NULL) {
+    const esp_partition_t* p = esp_partition_get(it);
+    StockMessage("Name:" + String(p->label) + "| Type:" + String(p->type) + "| Subtype:" + String(p->subtype) + "| Offset:" + String(p->address) + "| Size:" + String(p->size / 1024)+ "kB");
+    it = esp_partition_next(it);
+  }
+
+  esp_partition_iterator_release(it);
+}
+
