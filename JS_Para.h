@@ -187,7 +187,7 @@ function SendValues() {
   F.clickPresence = GID("clickPresence").value;
   F.NumPageBoot = GID("NumPageBoot").value;
   F.pUxI = GID("pUxI").value;
-  F.pTemp = GID("pTemp").value;
+  F.pTemp = GID("PTemp").value;
   F.ReacCACSI = GID("EstimCACSI").checked ? 100 : 0; 
   F.Source=GID("sources").value;
   if (F.ModePara == 0) { //Non Expert
@@ -449,7 +449,7 @@ function AdaptationSource() {
     GID('ligneFixe2').style.display = isSourceDual ? "table-row" : "none";
     
     // Visibilité de la calibration (seulement si UxI est la source et la source de données)
-    const isSourceUxI = (V.Source_data === 'UxI' && Source === 'UxI');
+    const isSourceUxI = (V.Source_data === 'UxI' && F.Source === 'UxI');
     GID('Zcalib').style.display = isSourceUxI ? "table" : "none";
     GID('Analog').style.display = isSourceUxI ? "table-row" : "none";
     

@@ -1,4 +1,4 @@
-#define Version "17.00"
+#define Version "17.01"
 #define HOSTNAME "RMS-ESP32-"
 #define CLE_Rom_Init 912567899  //Valeur pour tester si ROM vierge ou pas. Un changement de valeur remet à zéro toutes les données. / Value to test whether blank ROM or not.
 
@@ -248,6 +248,8 @@
     Icone pour affichage sur Chrome/Android
     Choix de la disposition des graphiques en page d'accueil
     Choix des écrans 2.4 ou 2.8 pouces en résistif ou capacitif
+  - Version 17.01
+    Correction bug sur le choix du GPIO du capteur de température et des GPIOs analogiques .
 
   
   Les détails sont disponibles sur / Details are available here:
