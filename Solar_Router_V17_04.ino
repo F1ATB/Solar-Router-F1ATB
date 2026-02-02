@@ -1,4 +1,4 @@
-#define Version "17.01"
+#define Version "17.04"
 #define HOSTNAME "RMS-ESP32-"
 #define CLE_Rom_Init 912567899  //Valeur pour tester si ROM vierge ou pas. Un changement de valeur remet à zéro toutes les données. / Value to test whether blank ROM or not.
 
@@ -249,14 +249,20 @@
     Choix de la disposition des graphiques en page d'accueil
     Choix des écrans 2.4 ou 2.8 pouces en résistif ou capacitif
   - Version 17.01
-    Correction bug sur le choix du GPIO du capteur de température et des GPIOs analogiques .
-
+    Correction bug sur le choix du GPIO du capteur de température et des GPIOs analogiques.
+  - Version 17.02
+    Correction bug sur le choix Enphase et Shelly.
+  - Version 17.03
+    Correction bug sur le choix des GPIOs.
+    Enregistrement Ordre reçu par MQTT
+  - Version 17.04
+    Erreur sur l'affichage du numéro de version en 17.03
   
   Les détails sont disponibles sur / Details are available here:
   https://f1atb.fr  Section Domotique / Home Automation
 
   
-  F1ATB Janvier 2026
+  F1ATB Février 2026
 
   GNU Affero General Public License (AGPL) / AGPL-3.0-or-later
 
@@ -1000,6 +1006,7 @@ void setup() {
     RAZ_Histo_Conso();
   }
   ReadFichierParametres();  //On remplace par les paramètres du fichier  qui sera éventuellement crée avec les données en ROM
+  
   LectureConsoMatinJour();
 
   TelnetPrintln("Chip Model: " + String(ESP.getChipModel()));

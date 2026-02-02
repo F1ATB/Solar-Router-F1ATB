@@ -103,7 +103,7 @@ void DecodeSerial() {
   }
 
   if (sw.indexOf("restart") >= 0) {
-    ReseT("Reset Demandé");
+    ReseT("Restart Demandé");
   }
   if (sw.indexOf("ssid:") >= 0) {
     ssid = valeur;

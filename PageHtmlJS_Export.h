@@ -41,11 +41,11 @@ const char *ExportHtml = R"====(
             <div class="lds-dual-ring" id="attente"></div>
           </div>
         </form>
-        <span class="fsize12">Après un Import de paramètres, faites un Reset pour redémarrer avec les nouveaux.</span>
+        <span class="fsize12">Après un Import de paramètres, faites un Restart pour redémarrer avec les nouveaux.</span>
     </div>
 
     
-    <input  class="bouton" type="button" onclick="Reset();" value="ESP32 Reset" >
+    <input  class="bouton" type="button" onclick="Reset();" value="ESP32 Restart" >
     <script>
         var BordsInverse=[".Bparametres",".Bexport"]; 
         function Init(){

@@ -391,30 +391,47 @@ async function LoadData() {
                 break;
 
             case "SmartG":
+                GID('infoSmartG').style.display="block";
+                groupes[1] = groupes[1].replaceAll('"','');
+                var G1=groupes[1].split(",");
+                let Sg="";              
+                for (var i=0;i<G1.length;i++){
+                      Sg +=G1[i]+"<br>";
+                }
+                GH('dataSmartG', Sg);
+                break;
             case "HomeW":
+                GID('infoHomeW').style.display="block";
+                groupes[1] = groupes[1].replaceAll('"','');
+                var G1=groupes[1].split(",");
+                let Sw="";              
+                for (var i=0;i<G1.length;i++){
+                      Sw +=G1[i]+"<br>";
+                }
+                GH('dataHomeW', Sw);
+                break;
             case "ShellyEm":
             case "ShellyPro":
-                // Regroupement des cas similaires
-                const infoId = `info${Source_data.replace('Em', 'ShellyEm').replace('Pro', 'ShellyEm')}`;
-                const dataId = `data${Source_data.replace('Em', 'ShellyEm').replace('Pro', 'ShellyEm')}`;
-                GID(infoId).style.display = "block";
                 
-                // Utilisation de replaceAll uniquement si la méthode existe
-                const cleanGroup1 = groupes[1].replace(/"/g, ''); 
+                GID('infoShellyEm').style.display="block";
                 
-                const G1_list = cleanGroup1.split(",");
-                let S_list = "";
-                for (let i = 0; i < G1_list.length; i++) {
-                    S_list += G1_list[i] + "<br>";
+                GID('infoShellyEm').style.display="block";
+                groupes[1] = groupes[1].replaceAll('"','');
+                var G1=groupes[1].split(",");
+                let Ss="";              
+                for (var i=0;i<G1.length;i++){
+                      Ss +=G1[i]+"<br>";
                 }
-                GH(dataId, S_list);
+                GH('dataShellyEm', Ss);
                 break;
 
             case "UxIx3":
+                GID('infoUxIx3').style.display="block";
+                GH('dataUxIx3', groupes[1]);
+                break;
             case "Pmqtt":
-                // Regroupement des cas similaires
-                GID(`info${Source_data}`).style.display = "block";
-                GH(`data${Source_data}`, groupes[1]);
+                GID('infoPmqtt').style.display="block";
+                GH('dataPmqtt', groupes[1]);
                 break;
 
             case "Linky":

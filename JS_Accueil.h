@@ -81,7 +81,7 @@ async function LoadData() {
 
         // Logique Tarif
         const Tarif = ["NON_DEFINI", "PLEINE", "CREUSE", "BLEU", "BLANC", "ROUGE"];
-        const couleur = ["#" + Koul[Coul_Tab][3], "#f00", "#0f0", "#00bfff", "#fff", "#f00"];
+        const couleur = ["#666" , "#f00", "#0f0", "#00bfff", "#fff", "#f00"];
         const tarif = ["", "H.<br>pleine", "H.<br>creuse", "Tempo<br>Bleu", "Tempo<br>Blanc", "Tempo<br>Rouge"];
         
         let idx_jour = 0;

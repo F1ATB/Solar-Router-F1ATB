@@ -640,7 +640,9 @@ void DeserializeConfiguration(String json) {
     Serial.println(error.c_str());
     return;
   }
-
+  
+  String V = Version;
+  int Versioncompile = int(100 * V.toFloat());
   int VersionStocke = conf["VersionStocke"];
   ssid = conf["ssid"].as<String>();
   password = conf["password"].as<String>();
@@ -762,6 +764,7 @@ void DeserializeConfiguration(String json) {
     }
     iAct++;
   }
+  if(Versioncompile !=VersionStocke) RecordFichierParametres(); //Mise à jour num version
 }
 
 String SerializeConfiguration() {

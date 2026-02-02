@@ -249,7 +249,7 @@ const char *ActionsHtml = R"====(
             <div id="Freq_PWM">
                 <div>
                     Fréquence signaux PWM 
-                    <span class="fsize10">Nécessite un Reset de l'ESP32</span>
+                    <span class="fsize10">Nécessite un Restart de l'ESP32</span>
                 </div>
                 <div class="form2">
                     <div class="CacPwm">

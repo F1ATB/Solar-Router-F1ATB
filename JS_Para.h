@@ -198,6 +198,10 @@ function SendValues() {
   F.masque = ip2int(GID("masque").value);
   F.dns = ip2int(GID("dns").value);
 
+  F.EnphaseUser = GID("EnphaseUser").value ;
+  F.EnphasePwd = GID("EnphasePwd").value ;
+  F.EnphaseSerial = GID("EnphaseSerial").value ;
+
   F.nomRouteur =GID("nomRouteur").value.trim() ;
   F.nomSondeFixe = GID("nomSondeFixe").value.trim();
   F.nomSfixePpos = GID("nomSfixePpos").value.trim();

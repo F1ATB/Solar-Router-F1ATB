@@ -107,7 +107,7 @@ void envoiVersMQTT() {
     if (!Discovered) {  //(uniquement au démarrage discovery = 0 et toute les 5mn si HA redemarre)
       sendMQTTDiscoveryMsg_global();
     }
-    if(EnergieActiveValide) SendDataToHomeAssistant();  // envoie du Payload au State topic
+    if (EnergieActiveValide) SendDataToHomeAssistant();  // envoie du Payload au State topic
     clientMQTT.loop();
   }
 }
@@ -137,6 +137,7 @@ void callback(char *topic, byte *payload, unsigned int length) {
   }
   if (subMQTT == 1) {
     char TopicAct[60];
+    bool recordDemande = false;
     for (int i = 0; i < NbActions; i++) {
       if (LesActions[i].Titre.length() > 0) {
         sprintf(TopicAct, "%s/%s", MQTTdeviceName.c_str(), LesActions[i].Titre.c_str());
@@ -145,6 +146,7 @@ void callback(char *topic, byte *payload, unsigned int length) {
             LesActions[i].tOnOff = int(ValJson("tOnOff", message));
           if (message.indexOf("Mode\":") > 0) {
             String modeRecu = StringJson("Mode", message);
+            recordDemande = true;
             if (modeRecu == "Inactif") {
               LesActions[i].Actif = MODE_INACTIF;
             } else if (modeRecu == "Decoupe" || modeRecu == "OnOff") {
@@ -162,6 +164,7 @@ void callback(char *topic, byte *payload, unsigned int length) {
           if (message.indexOf("Periode\":") > 0) {
             int periodeRecu = int(ValJson("Periode", message));
             if (periodeRecu >= 0 && periodeRecu < LesActions[i].NbPeriode) {
+              recordDemande = true;
               if (message.indexOf("SeuilOn\":") > 0)
                 LesActions[i].Vmin[periodeRecu] = int(ValJson("SeuilOn", message));
               if (message.indexOf("SeuilOff\":") > 0)
@@ -170,11 +173,13 @@ void callback(char *topic, byte *payload, unsigned int length) {
                 LesActions[i].Vmax[periodeRecu] = int(ValJson("OuvreMax", message));  // Autre Modes
             }
           }
+
           LesActions[i].Prioritaire();
           StockMessage("Action MQTT : " + String(topic) + " | " + String(Message));
         }
       }
     }
+    if (recordDemande) RecordFichierParametres();
   }
 }
 //*************************************************************************
@@ -445,8 +450,8 @@ void SendDataToHomeAssistant() {
   }
   //Info ESP32
   float H = float(T_On_seconde) / 3600.0;
-  sprintf(value, "%s,\"ESP32_On\":%f", value,  H);
-  
+  sprintf(value, "%s,\"ESP32_On\":%f", value, H);
+
   sprintf(value, "%s}", value);
   bool published = clientMQTT.publish(StateTopic, value);
 }

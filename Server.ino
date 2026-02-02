@@ -570,7 +570,7 @@ void handlePinsActionsJS() {  // Pins disponibles
     S = "var Pins=[0,4,5,13,14,16,17,18,19,21,22,25,26,27,32,33,-1];";
   if (ESP32_Type == 4 || ESP32_Type == 5)
     S = "var Pins=[0,5,18,19,22,23,27,-1];";  //Ecran 2.8
-  if (ESP32_Type >= 6 || ESP32_Type <= 8)
+  if (ESP32_Type >= 6 && ESP32_Type <= 8)
     S = "var Pins=[0,5,18,19,21,22,23,-1];";  //Ecran 2.4
   if (ESP32_Type == 9)  
     S= "var Pins=[0,4,5,16,17,18,19,21,22,23,-1];"; //Ecran 2.8 capacitif

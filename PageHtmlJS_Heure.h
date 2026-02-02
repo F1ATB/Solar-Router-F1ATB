@@ -71,7 +71,7 @@ const char *HeureHtml = R"====(
     <div id="BoutonsBas">        
         <input  class="bouton" type="button" onclick="SendHour();" value="Sauvegarder" >
         <div class="lds-dual-ring" id="attente"></div>
-        <input  class='bouton' type='button' onclick='Reset();' value='ESP32 Reset' >
+        <input  class='bouton' type='button' onclick='Reset();' value='ESP32 Restart' >
     </div>
     <script>    
         var BordsInverse=[".Bparametres",".Bheure"];

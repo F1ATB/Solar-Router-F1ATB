@@ -92,7 +92,7 @@ const char *ParaHtml = R"====(
           <label for="TempoRTEon">Affichage couleur Tempo RTE </label>
           <input type="checkbox" id="TempoRTEon" name="TempoRTEon" style="width:25px;"
                 title="Si vous avez un tarif Tempo.">
-          <span class="fsize10">Nécessite un Reset de l'ESP32</span>
+          <span class="fsize10">Nécessite un Restart de l'ESP32</span>
         </div>
 
         <div class="ligne" id="l_wifi_1">
@@ -108,7 +108,7 @@ const char *ParaHtml = R"====(
             Wifi Sleep/veille <small>(réduit la consommation mais ralentit la communication)</small> 
           </label>
           <input type="checkbox" id="WifiSleep" name="WifiSleep" style="width:25px;">
-          <span class="fsize10">Nécessite un Reset de l'ESP32</span>
+          <span class="fsize10">Nécessite un Restart de l'ESP32</span>
         </div>
 
         <div class="ligne">
@@ -119,7 +119,7 @@ const char *ParaHtml = R"====(
 
       </div>
 
-      <div>Configuration matérielle <span class="fsize10">Nécessite un Reset de l'ESP32</span></div>
+      <div>Configuration matérielle <span class="fsize10">Nécessite un Restart de l'ESP32</span></div>
 
       <div class="form">
 
@@ -272,7 +272,7 @@ const char *ParaHtml = R"====(
         <div class="ligne">
           <label for="dhcp">Adresse IP <span id="localIP"></span></label>
           <input type="checkbox" id="dhcp" name="dhcp" style="width:25px;" onclick="checkDisabled();">
-          <span id="ipreset" class="fsize10">Nécessite un Reset de l'ESP32</span>
+          <span id="ipreset" class="fsize10">Nécessite un Restart de l'ESP32</span>
         </div>
 
       </div>
@@ -281,7 +281,7 @@ const char *ParaHtml = R"====(
 
         <div class="ligne">
           <label for="adrIP">Adresse IP si fixe (ex : 192.168.1.245)
-            <br><span class="fsize10">Nécessite un Reset de l'ESP32</span>
+            <br><span class="fsize10">Nécessite un Restart de l'ESP32</span>
           </label>
           <input type="text" id="adrIP" name="adrIP"  minlength=7 maxlength=15 placeholder="xxx.xxx.xxx.xxx" title="4 groupes de nombres entre 0 et 255 separ&eacute;s par ." required>
         </div>
@@ -309,7 +309,7 @@ const char *ParaHtml = R"====(
       <div class="form">
 
         <div class="ligne">
-          <label for="ComSurv">Reset si coupure WiFi ou Ethernet de</label>
+          <label for="ComSurv">Restart si coupure WiFi ou Ethernet de</label>
           <select id="ComSurv" onclick="checkDisabled();">
             <option value="6" selected>3mn</option>
             <option value="60">30mn</option>
@@ -386,7 +386,7 @@ const char *ParaHtml = R"====(
           <input type="text" id="TopicP" name="TopicP" autocomplete="on">
         </div>
 
-        <div><span class="fsize10">Nécessite un Reset de l'ESP32</span></div>
+        <div><span class="fsize10">Nécessite un Restart de l'ESP32</span></div>
 
       </div>
 
@@ -492,7 +492,7 @@ const char *ParaHtml = R"====(
       <br>
       <input class="bouton" type="button" onclick="SendValues();" value="Sauvegarder">
       <div class="lds-dual-ring" id="attente"></div>
-      <input class="bouton" type="button" onclick="Reset();" value="ESP32 Reset">
+      <input class="bouton" type="button" onclick="Reset();" value="ESP32 Restart">
     </div>
   </div>
   <br>

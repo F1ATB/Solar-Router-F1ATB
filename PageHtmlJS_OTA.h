@@ -86,7 +86,7 @@ const char *OtaHtml = R"====(
         }
     </script>
     <br>
-    <small>Après une mise à jour un reset de l'ESP32 et un Ctrl+F5 pour vider le cache du navigateur sont recommandés.</small>
+    <small>Après une mise à jour un restart de l'ESP32 et un Ctrl+F5 pour vider le cache du navigateur sont recommandés.</small>
     <div id="pied"></div>
     <br>
     <script src="/ParaCommunJS"></script>
