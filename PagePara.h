@@ -24,6 +24,7 @@ const char *ParaHtml = R"====(
     .Bgeneraux { border: inset 4px azure; }
     #BoutonsBas { text-align:center; }
     #ligneFixe, .ligneTemperature, #ligneExt, #ligneEnphaseUser, #ligneEnphasePwd, #ligneEnphaseSerial,
+    #ligneWesUser, #ligneWesPwd, #ligneWesPinceNum,
     #infoIP, #ligneTopicP, #ligneTopicT { display:none; }
     .Zone, .generaux { width:100%; border:1px solid grey; border-radius:10px; margin-top:10px;
                        background-color:rgba(30,30,30,0.3); }
@@ -347,6 +348,7 @@ const char *ParaHtml = R"====(
             <option value="HomeW">HomeWizard</option>
             <option value="ShellyEm">Shelly Em</option>
             <option value="ShellyPro">Shelly Pro Em</option>
+            <option value="WesV2">WES v2 Cartelectronic</option>
             <option value="Ext">ESP Externe</option>
             <option value="Pmqtt">MQTT</option>
           </select>
@@ -379,6 +381,27 @@ const char *ParaHtml = R"====(
           <label for="EnphaseSerial" id="label_enphase_shelly"></label>
           <input type="text" id="EnphaseSerial" name="EnphaseSerial"
                 onchange="checkDisabled();" autocomplete="on">
+        </div>
+
+        <div class="ligne" id="ligneWesUser">
+          <label for="WesUser">WES v2 User :
+            <span class="fsize10"><br>Nom d'utilisateur WES (défaut: admin)</span>
+          </label>
+          <input type="text" id="WesUser" name="WesUser" autocomplete="on">
+        </div>
+
+        <div class="ligne" id="ligneWesPwd">
+          <label for="WesPwd">WES v2 Password :
+            <span class="fsize10"><br>Mot de passe WES</span>
+          </label>
+          <input type="password" id="WesPwd" name="WesPwd" autocomplete="on">
+        </div>
+
+        <div class="ligne" id="ligneWesPinceNum">
+          <label for="WesPinceNum">WES v2 Numéro de pince :
+            <span class="fsize10"><br>Pince 1 à 8</span>
+          </label>
+          <input type="number" id="WesPinceNum" name="WesPinceNum" min="1" max="8" autocomplete="on">
         </div>
 
         <div class="ligne" id="ligneTopicP">

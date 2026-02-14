@@ -678,6 +678,9 @@ void DeserializeConfiguration(String json) {
   EnphaseUser = conf["EnphaseUser"].as<String>();
   EnphasePwd = conf["EnphasePwd"].as<String>();
   EnphaseSerial = conf["EnphaseSerial"].as<String>();
+  WesUser = conf["WesUser"] | WesUser;
+  WesPwd = conf["WesPwd"] | WesPwd;
+  WesPinceNum = conf["WesPinceNum"] | WesPinceNum;
   MQTTRepet = conf["MQTTRepet"];
   MQTTIP = conf["MQTTIP"];
   MQTTPort = conf["MQTTPort"];
@@ -808,6 +811,9 @@ String SerializeConfiguration() {
   conf["EnphaseUser"] = EnphaseUser;
   conf["EnphasePwd"] = EnphasePwd;
   conf["EnphaseSerial"] = EnphaseSerial;
+  conf["WesUser"] = WesUser;
+  conf["WesPwd"] = WesPwd;
+  conf["WesPinceNum"] = WesPinceNum;
   if (ModePara == 0) {
     MQTTRepet = 0;
     subMQTT = 0;

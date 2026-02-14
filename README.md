@@ -16,7 +16,7 @@ Routeur photovoltaïque basé sur **ESP32**, permettant d’optimiser l’autoco
 - ⚙️ **Mesures de puissance multi-sources**
   - Lecture directe du **compteur Linky** via **prise TIC**.
   - Mesure par méthode **UxI**, **UxIx2**, ou **UxIx3** à l’aide de sondes de courant.
-  - Support des capteurs externes via **MQTT**, **Shelly EM**, etc.
+  - Support des capteurs externes via **MQTT**, **Shelly EM**, **Enphase Envoy**, **WES v2 Cartelectronic**, etc.
 
 - 🔌 **Pilotage des charges**
   - Sorties pour  **relais statiques (SSR)**.

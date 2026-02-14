@@ -112,6 +112,9 @@ function SetParaFixe() {
     GID("EnphaseUser").value = F.EnphaseUser;
     GID("EnphasePwd").value = F.EnphasePwd;
     GID("EnphaseSerial").value = F.EnphaseSerial;
+    GID("WesUser").value = F.WesUser;
+    GID("WesPwd").value = F.WesPwd;
+    GID("WesPinceNum").value = F.WesPinceNum;
     GID("TopicP").value = F.TopicP;
     GID("MQTTRepet").value = F.MQTTRepet;
     GID("MQTTIP").value = int2ip(F.MQTTIP);
@@ -201,6 +204,9 @@ function SendValues() {
   F.EnphaseUser = GID("EnphaseUser").value ;
   F.EnphasePwd = GID("EnphasePwd").value ;
   F.EnphaseSerial = GID("EnphaseSerial").value ;
+  F.WesUser = GID("WesUser").value ;
+  F.WesPwd = GID("WesPwd").value ;
+  F.WesPinceNum = GID("WesPinceNum").value ;
 
   F.nomRouteur =GID("nomRouteur").value.trim() ;
   F.nomSondeFixe = GID("nomSondeFixe").value.trim();
@@ -483,6 +489,9 @@ function AdaptationSource() {
                                  <div class='shem'><Strong>Shelly Em Gen3</strong><br>
                                  Courant maison sur voie 0 = 30, voie 1 = 31</div>`;
             break;
+        case 'WesV2':
+            txtExt = "WES v2 Cartelectronic";
+            break;
     }
     
     // Mise à jour des libellés
@@ -490,13 +499,16 @@ function AdaptationSource() {
     GH('label_enphase_shelly', lab_enphaseShelly);
 
     // Visibilité de la ligne d'IP externe/Référence
-    const isExternalSource = ['Ext', 'Enphase', 'SmartG', 'HomeW', 'ShellyEm', 'ShellyPro'].includes(F.Source);
+    const isExternalSource = ['Ext', 'Enphase', 'SmartG', 'HomeW', 'ShellyEm', 'ShellyPro', 'WesV2'].includes(F.Source);
     GID('ligneExt').style.display = isExternalSource ? "table-row" : "none";
 
-    // Visibilité des options d'authentification/série Enphase/Shelly
+    // Visibilité des options d'authentification/série Enphase/Shelly/WES
     GID('ligneEnphaseUser').style.display = (F.Source === 'Enphase') ? "table-row" : "none";
     GID('ligneEnphasePwd').style.display = (F.Source === 'Enphase') ? "table-row" : "none";
     GID('ligneEnphaseSerial').style.display = (F.Source === 'Enphase' || F.Source === 'ShellyEm' || F.Source === 'ShellyPro') ? "table-row" : "none";
+    GID('ligneWesUser').style.display = (F.Source === 'WesV2') ? "table-row" : "none";
+    GID('ligneWesPwd').style.display = (F.Source === 'WesV2') ? "table-row" : "none";
+    GID('ligneWesPinceNum').style.display = (F.Source === 'WesV2') ? "table-row" : "none";
 }
 
 /**

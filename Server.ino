@@ -290,6 +290,9 @@ void handleAjaxRMS() {  // Envoi des dernières données  brutes reçues du RMS
     if (Source_data == "UxIx3") {
       S += GS + MK333_dataBrute;
     }
+    if (Source_data == "WesV2") {
+      S += GS + Wes_dataBrute;
+    }
     if (Source_data == "Pmqtt") {
       S += GS + P_MQTT_Brute;
     }
