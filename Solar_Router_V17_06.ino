@@ -616,6 +616,12 @@ float PwMQTT = 0;
 float PvaMQTT = 0;
 float PfMQTT = 1;
 
+//Paramètres for WES v2
+String Wes_dataBrute = "";
+String WesUser = "admin";
+String WesPwd = "";
+byte WesPinceNum = 1;
+
 //Paramètres pour RTE
 byte TempoRTEon = 0;
 int LastHeureRTE = -1;
@@ -1382,6 +1388,11 @@ void Task_LectureRMS(void *pvParameters) {
         LectureShellyProEm();
         LastRMS_Millis = millis();
         PeriodeProgMillis = 300 + ralenti;  //On adapte  la vitesse pour ne pas surchargé Wifi
+      }
+      if (Source == "WesV2") {
+        LectureWesV2();
+        LastRMS_Millis = millis();
+        PeriodeProgMillis = 300 + ralenti;  //On adapte la vitesse pour ne pas surcharger Wifi
       }
 
       if (Source == "Ext") {

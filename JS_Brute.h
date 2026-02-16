@@ -433,6 +433,10 @@ async function LoadData() {
                 GID('infoPmqtt').style.display="block";
                 GH('dataPmqtt', groupes[1]);
                 break;
+            case "WesV2":
+                GID('infoWesV2').style.display="block";
+                GH('dataWesV2', groupes[1]);
+                break;
 
             case "Linky":
                 GID('infoLinky').style.display = "block";
