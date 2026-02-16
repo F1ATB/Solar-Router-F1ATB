@@ -1,7 +1,8 @@
 const char * ActionsJS1 = R"====(
-// Structure de données LesActions
+// Structure de données 
 var mouseClick = false;
 var blockEvent = false;
+var draggedHandle = null; 
 var ListeActions = [];
 var SelectActions = "";
 var PlotIdx = -1;
@@ -139,11 +140,11 @@ function TracePlanning(iAct) {
     // Conteneur des curseurs de période (avec correction onmouseup)
     S += "<div style='margin:4px;'>";
     S += "<div id='infoAction" + iAct + "' class='infoAction'></div>";
-    S += "<div id='curseurs" + iAct + "' class='curseur' onmousedown='mouseClick=true;' onmouseup='mouseClick=false;' onmousemove='mouseMove(this,event," + iAct + ");' ontouchstart='touchMove(this,event," + iAct + ");' ontouchmove='touchMove(this,event," + iAct + ");' ></div>";
+    S += "<div id='curseurs" + iAct + "' class='curseur' onmousemove='dragHandle(event," + iAct + ");' onmouseup='stopDrag();' ontouchmove='dragHandle(event," + iAct + ");' ontouchend='stopDrag();'></div>";
     S += "</div>";
     S += "</div>"; // Ferme le bloc principal
 
-    // Remplissage des valeurs depuis LesActions
+    // Remplissage des valeurs depuis F.Actions
     GH("planning" + iAct, S);
     const action = F.Actions[iAct];
     
@@ -275,7 +276,19 @@ function TracePeriodes(iAct) {
         const para = paras[Type];
         
         // Remplissage du div de la période (curseur visuel)
-        S += `<div class='periode' style='width:${w}%;left:${left}%;background-color:${color};'><div>&lArr;</div><div>&rArr;</div></div>`;
+          // Créer la période
+        S += "<div id='zone" + iAct + "_" + i + "' class='periode' data-idx='" + i + "' style='width:" + w + "%;left:" + left + "%;background-color:" + color + ";'>";
+       
+        // Ajouter une poignée de déplacement uniquement si ce n'est pas la dernière période
+        if (i < action.Periodes.length - 1) {
+            
+           
+            S += "<div class='handleStyle' ' data-action='" + iAct + "' data-periode='" + i + "' ";
+            S += "onmousedown='startDrag(this,event," + iAct + "," + i + ");' ";
+            S += "ontouchstart='startDrag(this,event," + iAct + "," + i + ");'>|||</div>";
+        }
+       
+        S += "</div>";
         
         // Remplissage du div d'information
         const Hmn = Hdeci2Hmn(H0);
@@ -294,7 +307,80 @@ function TracePeriodes(iAct) {
 )====";
 
 const char * ActionsJS2 = R"====(
-    
+    function startDrag(handleElement, ev, iAct, iPeriode) {
+   if (ev.preventDefault) ev.preventDefault();
+    if (ev.stopPropagation) ev.stopPropagation();
+     draggedHandle = {
+        action: iAct,
+        periode: iPeriode,
+        element: handleElement,
+        originalStyle: handleElement.style.cssText
+    };
+    var dragStyle = "position:absolute;right:-15px;top:50%;transform:translateY(-50%) scale(1.2);width:30px;height:40px;";
+    dragStyle += "background-color:#ffeb3b;border:2px solid #f57c00;border-radius:8px;";
+    dragStyle += "cursor:ew-resize;display:flex;align-items:center;justify-content:center;";
+    dragStyle += "font-size:14px;font-weight:bold;color:#333;z-index:10;";
+    dragStyle += "box-shadow:0 4px 8px rgba(0,0,0,0.5);touch-action:none;user-select:none;";
+    handleElement.style.cssText = dragStyle;
+}
+
+function dragHandle(ev, iAct) {
+    if (!draggedHandle || draggedHandle.action !== iAct) return;
+   
+    if (ev.preventDefault) ev.preventDefault();
+   
+    var curseur = GID('curseurs' + iAct);
+    var leftPos;
+   
+      if (ev.touches && ev.touches.length > 0) {
+        leftPos = ev.touches[0].clientX - curseur.getBoundingClientRect().left;
+    } else {
+        leftPos = ev.clientX - curseur.getBoundingClientRect().left;
+    }
+   var width = curseur.getBoundingClientRect().width;
+    var HeureMouse = leftPos * 2420 / width;
+    var iPeriode = draggedHandle.periode;
+   
+    var NewHfin = Math.max(0, Math.min(HeureMouse, 2400));
+   const action = F.Actions[iAct];
+  if (iPeriode < action.Periodes.length - 1) {
+        NewHfin = Math.min(NewHfin, action.Periodes[iPeriode + 1].Hfin);
+    }
+    if (iPeriode > 0) {
+        NewHfin = Math.max(NewHfin, action.Periodes[iPeriode - 1].Hfin);
+    }
+   
+   action.Periodes[iPeriode].Hfin = Math.floor(NewHfin);
+   var H0 = (iPeriode > 0) ? action.Periodes[iPeriode - 1].Hfin : 0;
+    var left = H0 / 24;
+    var w = (NewHfin - H0) / 24;
+   
+   var zone = GID('zone' + iAct + '_' + iPeriode);
+    if (zone) {
+        zone.style.width = w + '%';
+    }
+   
+     if (iPeriode < action.Periodes.length - 1) {
+        var nextZone = GID('zone' + iAct + '_' + (iPeriode + 1));
+        var nextLeft = NewHfin / 24;
+        var nextW = (action.Periodes[iPeriode + 1].Hfin - NewHfin) / 24;
+        if (nextZone) {
+            nextZone.style.left = nextLeft + '%';
+            nextZone.style.width = nextW + '%';
+        }
+    }
+}
+
+function stopDrag() {
+    if (draggedHandle && draggedHandle.element) {
+      draggedHandle.element.style.cssText = draggedHandle.originalStyle;
+       
+      var iAct = draggedHandle.action;
+        TracePeriodes(iAct);
+    }
+    draggedHandle = null;
+}
+
 /**
  * Gère le mouvement du doigt (touch) pour ajuster les périodes.
  * @param {HTMLElement} t - L'élément curseur cliqué.
@@ -900,7 +986,7 @@ function Send_Values(){
   
     GID("attente").style.visibility = "visible"; 
 
-    // 1. Mise à jour du modèle LesActions depuis le DOM
+    // 1. Mise à jour du modèle  depuis le DOM
     for (let iAct = 0; iAct < F.Actions.length; iAct++) {
         const action = F.Actions[iAct];
         

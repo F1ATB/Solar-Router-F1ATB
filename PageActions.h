@@ -48,7 +48,7 @@ const char *ActionsHtml = R"====(
             position: absolute; height: 100%;
             border: outset 4px; border-radius: 5px;
             display: flex; justify-content: space-between; align-items: center;
-            color: white; cursor: ew-resize;
+            color: white; 
         }
 
         .curseur { position: relative; width: 100%; height: 30px; }
@@ -203,6 +203,12 @@ const char *ActionsHtml = R"====(
 
         svg {
             border:2px inset grey; border-radius:5px; width:100%;
+        }
+        .handleStyle {position:absolute;right:-15px;top:50%;transform:translateY(-50%);width:30px;height:40px;
+            background-color:rgba(255,255,255,0.8);border:2px solid #333;border-radius:8px;
+            cursor:ew-resize;display:flex;align-items:center;justify-content:center;
+            font-size:14px;font-weight:bold;color:#333;z-index:10;
+            box-shadow:0 2px 5px rgba(0,0,0,0.3);touch-action:none;user-select:none;
         }
     </style>
 </head>

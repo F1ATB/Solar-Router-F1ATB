@@ -5,7 +5,7 @@ const char *ntpServer1 = "fr.pool.ntp.org";
 const char *ntpServer2 = "time.nist.gov";
 
 unsigned short Int_Last_10Millis = 0;                                                                      // Europe Centrale                                                                                  //-1=inconnu,0=dimache,1=lundi...
-String codeTZ[] = { "CET-1CEST,M3.5.0,M10.5.0/3", "AST4", "GFT3", "RET-3", "EAT-3", "NCT-11", "WFT-12" };  // Europe centrale, Guadeloupe / Martinique, Guyane, Réunion, Mayotte,Nouvelle Calédonie, Wallis et Futuna
+String codeTZ[] = { "CET-1CEST,M3.5.0,M10.5.0/3", "AST4", "GFT3", "RET-4", "EAT-3", "NCT-11", "WFT-12" };  // Europe centrale, Guadeloupe / Martinique, Guyane, Réunion, Mayotte,Nouvelle Calédonie, Wallis et Futuna
 int8_t Jour = -1;                                                                                          //-1=inconnu,0=dimanche,1=lundi...
 uint64_t baseTick10ms = 0;
 time_t baseEpoch = 0;
@@ -45,15 +45,11 @@ void JourHeureChange() {
     settimeofday(&tv, nullptr);
   }
 
-  int16_t old_Heure = Int_Heure;
-  int16_t old_Minute = Int_Minute;
-  int16_t old_HeureCouranteDeci = Int_Heure * 100 + Int_Minute * 10 / 6;
-  String oldDateAMJ = DateAMJ;
 
   if (HeureValide) {
     FormatteHeureDate();
     HeureCouranteDeci = Int_Heure * 100 + Int_Minute * 10 / 6;
-    if (HeureCouranteDeci >= 599 && HeureCouranteDeci <= 600) {
+    if (old_Heure == 5 && Int_Heure == 6) {
       for (int i = 0; i < LES_ACTIONS_LENGTH; i++) {
         LesActions[i].H_Ouvre = 0;  //RAZ temps equivalent ouverture à 6h du matin
       }
@@ -61,6 +57,7 @@ void JourHeureChange() {
     if (old_Heure == 23 && Int_Heure == 0) {
       erreurTriac = false;
       if (EnergieActiveValide) {  //Données recues
+        int16_t old_HeureCouranteDeci = old_Heure * 100 + old_Minute * 10 / 6;
         Record_Data(oldDateAMJ,oldDateAMJ,old_HeureCouranteDeci);
         idxPromDuJour = (idxPromDuJour + 1 + NbJour) % NbJour;
         //On enregistre les conso en début de journée pour l'historique de l'année
@@ -82,6 +79,9 @@ void JourHeureChange() {
       PuisMaxI_T = 0;
       PuisMaxI_M = 0;
     }
+    old_Heure = Int_Heure;
+    old_Minute = Int_Minute;
+    oldDateAMJ = DateAMJ;
   }
 }
 // **************
@@ -112,7 +112,7 @@ void InitHeure() {
 }
 
 void MiseAheure(String New_H, String New_J) {
-  if (Horloge >= 2 && Horloge <= 4) {
+  if (Horloge >= 2 && Horloge <= 5) {
     int H_, Mn;
     New_H.trim();
     New_J.trim();

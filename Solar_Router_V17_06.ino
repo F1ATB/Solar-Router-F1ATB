@@ -1,4 +1,4 @@
-#define Version "17.04"
+#define Version "17.06"
 #define HOSTNAME "RMS-ESP32-"
 #define CLE_Rom_Init 912567899  //Valeur pour tester si ROM vierge ou pas. Un changement de valeur remet à zéro toutes les données. / Value to test whether blank ROM or not.
 
@@ -257,6 +257,13 @@
     Enregistrement Ordre reçu par MQTT
   - Version 17.04
     Erreur sur l'affichage du numéro de version en 17.03
+  - Version 17.05
+    Changement fuseau horaire de la réunion en RET-4
+    Correction bug mise à l'heure
+  - Version 17.06
+    Correction sauvegarde à minuit
+    Correction affichage des graphiques en page d'Accueil
+    Modification curseur page Actions (Merci 59jag)
   
   Les détails sont disponibles sur / Details are available here:
   https://f1atb.fr  Section Domotique / Home Automation
@@ -409,12 +416,15 @@ int cptLEDgreen = 0;
 String DATE = "";
 String DateCeJour = "";  //Plus utilisé depuis V13
 String DateAMJ;
+String oldDateAMJ = "";
 bool HeureValide = false;
 int16_t HeureCouranteDeci = 0;
 int16_t idxPromDuJour = 0;
 int16_t Int_Heure = 0;  //Heure interne
 int16_t Int_Minute = 0;
 int16_t Int_Seconde = 0;
+int16_t old_Heure = 0;
+int16_t old_Minute = 0;
 byte Horloge = 0;  //0=Internet, 1=Linky, 2=Interne, 3=IT 10ms/triac, 4=IT 20ms, 5 externe                                                                                          // 0=Internet, 1=Linky, 2=Interne, 3=IT 10ms/triac, 4=IT 20ms
 byte idxFuseau = 0;
 String ntpServer = "";
@@ -687,8 +697,8 @@ volatile int OutOff[LES_ACTIONS_LENGTH];
 HardwareSerial MySerial(2);
 byte pSerial = 0;             //Choix Pin port serie
 int8_t RXD2 = -1, TXD2 = -1;  //Port serie
-int8_t RX2_[] = { -1, 16, 26, 18, 5, 21 ,22};
-int8_t TX2_[] = { -1, 17, 27, 19, 17, 22 ,17};
+int8_t RX2_[] = { -1, 16, 26, 18, 5, 21, 22 };
+int8_t TX2_[] = { -1, 17, 27, 19, 17, 22, 17 };
 unsigned int Serial2V = 0;  //Vitesse en bauds
 
 
@@ -904,8 +914,9 @@ void setup() {
   //Ports Série ESP
   Serial.begin(115200);
   delay(500);
-
+  Serial.println();
   StockMessage("Booting Routeur F1ATB");
+  Serial.println(Version);
   //Watchdog initialisation
   esp_task_wdt_deinit();
   // Initialisation de la structure de configuration pour la WDT
@@ -1006,7 +1017,7 @@ void setup() {
     RAZ_Histo_Conso();
   }
   ReadFichierParametres();  //On remplace par les paramètres du fichier  qui sera éventuellement crée avec les données en ROM
-  
+
   LectureConsoMatinJour();
 
   TelnetPrintln("Chip Model: " + String(ESP.getChipModel()));
@@ -1340,6 +1351,7 @@ void Task_LectureRMS(void *pvParameters) {
         if (Source == "UxIx3") {
           Lecture_JSY333();
           PeriodeProgMillis = 800;
+          if (Serial2V == 19200) PeriodeProgMillis = 500;
         }
         if (Source == "Linky") {
           LectureLinky();
@@ -1813,8 +1825,8 @@ void InitGPIOs() {
   Init_LED_OLED();
 
   if (pSerial > 0) {
-    if (ESP32_Type == 2) pSerial = 2;                     //Obligatoire carte 1 relais
-    RXD2 = RX2_[pSerial];                                 //Port serie
+    if (ESP32_Type == 2) pSerial = 2;  //Obligatoire carte 1 relais
+    RXD2 = RX2_[pSerial];              //Port serie
     TXD2 = TX2_[pSerial];
   }
   if (ESP32_Type >= 4 && ESP32_Type <= 9 && clickPresence == 1) pinMode(35, INPUT);  //Motion detector en 35

@@ -103,7 +103,7 @@ void LectureShellyProEm() {
   clientESP_RMS.stop();
   p = Shelly_Data.indexOf("{");
   Shelly_Data = Shelly_Data.substring(p) +"}}";
-  if (Shelly_Name == "shellypro3em" && voie == 3) {
+  if (Shelly_Name.indexOf("shellypro3em")==0 && voie == 3) { //pour shellypro3em et shellypro3em63
     // 3 em Triphasé
     ShEm_dataBrute = "<strong>" + Shelly_Name + "</strong><br>" + Shelly_Data;
 

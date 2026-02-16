@@ -9,7 +9,7 @@ float deltaWI = 0;
 int boucle_appel_Linky = 0;
 void Setup_Linky() {
   delay(20);
-  Serial2V=9600; //On force la vitesse
+  Serial2V = 9600;  //On force la vitesse
   MySerial.setRxBufferSize(SER_BUF_SIZE);
   MySerial.begin(Serial2V, SERIAL_7E1, RXD2, TXD2);  //  7-bit Even parity 1 stop bit pour le Linky
   delay(100);
@@ -155,7 +155,6 @@ void LectureLinky() {  //Lecture port série du LINKY .
                   }
                   PuissanceI_M = PintMax(int(COSphiI * float(PVAI_M)));
                   Pva_valide = true;
- 
                 }
               }
             }
@@ -163,27 +162,26 @@ void LectureLinky() {  //Lecture port série du LINKY .
           if (code.indexOf("DATE") == 0) {
 
             PuissanceRecue = true;  //Reset du Watchdog à chaque trame du Linky reçue
-            if (Horloge == 1)
-        {
+            if (Horloge == 1) {
 
-          struct tm t = {0};                             // toujours initialiser à 0
-          t.tm_year = val.substring(1, 3).toInt() + 100; // années depuis 1900
-          t.tm_mon = val.substring(3, 5).toInt() - 1;    // mois 0–11 (octobre = 9)
-          t.tm_mday = val.substring(5, 7).toInt();       // jour du mois
-          t.tm_hour = val.substring(7, 9).toInt();
-          t.tm_min = val.substring(9, 11).toInt();
-          t.tm_sec = val.substring(11, 13).toInt();
+              struct tm t = { 0 };                            // toujours initialiser à 0
+              t.tm_year = val.substring(1, 3).toInt() + 100;  // années depuis 1900
+              t.tm_mon = val.substring(3, 5).toInt() - 1;     // mois 0–11 (octobre = 9)
+              t.tm_mday = val.substring(5, 7).toInt();        // jour du mois
+              t.tm_hour = val.substring(7, 9).toInt();
+              t.tm_min = val.substring(9, 11).toInt();
+              t.tm_sec = val.substring(11, 13).toInt();
 
-          time_t now = mktime(&t);
+              time_t now = mktime(&t);
 
-          // 🔹 Création d’une structure timeval pour settimeofday()
-          struct timeval tv = {.tv_sec = now, .tv_usec = 0};
-          settimeofday(&tv, nullptr); // mise à l'heure de l’ESP32
+              // 🔹 Création d’une structure timeval pour settimeofday()
+              struct timeval tv = { .tv_sec = now, .tv_usec = 0 };
+              settimeofday(&tv, nullptr);  // mise à l'heure de l’ESP32
 
-          FormatteHeureDate();
-        }
+              FormatteHeureDate();
+            }
           }
-          
+
           //LJ START
           if (ReacCACSI == 100) {  //Estimateur ON
             if (code.indexOf("IRMS1") == 0) {
@@ -224,10 +222,10 @@ void LectureLinky() {  //Lecture port série du LINKY .
                 } else {
                   pPuissance = 150 + (pSINSTS == 0 ? -1 : 1) * pURMS1 * pIRMS1;  // marge de 150W, en mono SINSTS==0 si PuissanceS_M==0
                 }
-                if (pPuissance < 0) {  // estimation si l'écart est supérieur à 150W
+                if (pPuissance < 0) {          // estimation si l'écart est supérieur à 150W
                   PuissanceI_M = -pPuissance;  // "-" car on donne la valeur injectée
                 }
-                PVAI_M = PuissanceI_M;       //On egalise Pw et PVA
+                PVAI_M = PuissanceI_M;  //On egalise Pw et PVA
               }
             }
           }

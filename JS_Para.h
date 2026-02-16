@@ -239,7 +239,7 @@ function SendValues() {
     let Vip = (F.ModePara == 0) ? 0 : ip2int(GID("RMS_IP" + i).value.trim());
     F["RMS_IP"+i] = Vip;
   }
-  console.log(F);
+  
   document.cookie = "CleAcces=" + encodeURIComponent(F.CleAccesRef) + ";max-age=31536000;path=/"; // Ajout de la durée et du chemin
   if ((GID("dhcp").checked || checkIP("adrIP") && checkIP("gateway")) && (!GID("MQTTRepet").checked || checkIP("MQTTIP"))) {
     fetch("/ParaNew", {

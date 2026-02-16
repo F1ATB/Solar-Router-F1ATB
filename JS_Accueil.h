@@ -1046,7 +1046,7 @@ function AdaptationSource() {
 var Graphes_Nom=["Pw / 10 mn","Pw T","Pw / 48h","Pw 48h T","Temperature 0","Temperature 1","Temperature 2","Temperature 3","Ouvertures / 10mn","Ouvertures / 48h","Wh Jour","Wh 1an"];
 var Graphes_Dispo=[true,true,true,true,true,true,true,true,true,true,true,true]; //Il y a des données
 var Graphes_Select=[true,true,true,true,true,true,true,true,true,true,true,true]; //Affichage choisi par la personne
-var Graphes_Ordre=[];
+var Graphes_Ordre=[0,1,2,3,4,5,6,7,8,9,10,11]; //12 graphiques différents
 function Init() {
   SetHautBas();
   
@@ -1099,9 +1099,10 @@ function Init() {
   let Ordre_g= JSON.parse(localStorage.getItem("TableauGraphiques"));
   if (Ordre_g!=null) {
       Graphes_Ordre=Ordre_g;
-      Graphes_Select= JSON.parse(localStorage.getItem("TableauGraphiquesSelected"));
-  }else {
-    Graphes_Ordre=[0,1,2,3,4,5,6,7,8,9,10,11]; //12 graphiques différents
+  }
+  let Ordre_gS= JSON.parse(localStorage.getItem("TableauGraphiquesSelected"));
+  if (Ordre_gS!=null) {
+      Graphes_Select= Ordre_gS;
   }
   let G="";
   for (let i=0;i<Graphes_Ordre.length;i++){
@@ -1216,7 +1217,7 @@ function ListeGraph(){
         Gnom +=`<input type='checkbox' onchange="Gr_Select();" id="GraphCheck${Ord}" ${chk}><div>${Graphes_Nom[Ord]}</div><div onclick="decalG(${i},-1);">⬆️</div><div onclick="decalG(${i},1);">⬇️</div>`;
     }
   } 
-  Gnom +=`</div><input type="button" value="Valider" onclick="location.reload();" >`;
+  Gnom +=`</div><input type="button" value="Valider" onclick="Gr_Select();location.reload();" >`;
   GH("B_Graph",Gnom);
   GID("B_Graph").style= 'background:linear-gradient( #' + Koul[Coul_Graphe][5] + ',#' + Koul[Coul_Graphe][3] + ',#' + Koul[Coul_Graphe][5] + ');';
   GID("B_Graph").style.display="block";

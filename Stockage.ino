@@ -321,7 +321,7 @@ int EcritureEnROM() {
   int address = adr_ParaActions;
   int VersionStocke = 0;
   String V = Version;
-  VersionStocke = int(100 * V.toFloat());
+  VersionStocke = round(100 * V.toFloat());
   EEPROM.writeULong(address, Cle_ROM);
   address += sizeof(unsigned long);
   EEPROM.writeUShort(address, VersionStocke);
@@ -642,7 +642,8 @@ void DeserializeConfiguration(String json) {
   }
   
   String V = Version;
-  int Versioncompile = int(100 * V.toFloat());
+ 
+  int Versioncompile = round(100 * V.toFloat());
   int VersionStocke = conf["VersionStocke"];
   ssid = conf["ssid"].as<String>();
   password = conf["password"].as<String>();
@@ -764,7 +765,7 @@ void DeserializeConfiguration(String json) {
     }
     iAct++;
   }
-  if(Versioncompile !=VersionStocke) RecordFichierParametres(); //Mise à jour num version
+  if(Versioncompile != VersionStocke) RecordFichierParametres(); //Mise à jour num version
 }
 
 String SerializeConfiguration() {
@@ -773,7 +774,7 @@ String SerializeConfiguration() {
   byte NbPeriode;
   conf["Routeur"] = "F1ATB";
   String V = Version;
-  int VersionStocke = int(100 * V.toFloat());
+  int VersionStocke = round(100 * V.toFloat());
   conf["VersionStocke"] = VersionStocke;
   conf["ssid"] = ssid;
   conf["password"] = password;
@@ -934,15 +935,16 @@ void Record_Data(String dateAMJ, String MesSage, int16_t HeureCouranteDeci_) {
 
   String New_Record_Conf = "Date";
   String Data = dateAMJ + "," + String(EnergieJour_M_Soutiree) + "," + String(EnergieJour_M_Injectee);
+  if (EnergieJour_M_Soutiree>1000000 || EnergieJour_M_Injectee>1000000) Data = dateAMJ + ", ," ; //Aberration à certains ReseT
   New_Record_Conf += "," + Filtre_Nom(nomSondeMobile) + " / Soutirée," + Filtre_Nom(nomSondeMobile) + " / Injectée";
-  if (nomSondeFixe != "" && nomSfixePpos != "" && biSonde) {
+  if (nomSondeFixe != "" && nomSfixePpos != "" && biSonde && EnergieJour_T_Soutiree<1000000) {
     New_Record_Conf += "," + Filtre_Nom(nomSondeFixe) + " / " + Filtre_Nom(nomSfixePpos);
     Data += "," + String(EnergieJour_T_Soutiree);
   } else {
     New_Record_Conf += ",";  //Colonne vide
     Data += ",";
   }
-  if (nomSondeFixe != "" && nomSfixePneg != "" && biSonde) {
+  if (nomSondeFixe != "" && nomSfixePneg != "" && biSonde && EnergieJour_T_Injectee<1000000) {
     New_Record_Conf += "," + Filtre_Nom(nomSondeFixe) + " / " + Filtre_Nom(nomSfixePneg);
     Data += "," + String(EnergieJour_T_Injectee);
   } else {
