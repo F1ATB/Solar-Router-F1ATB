@@ -1,8 +1,6 @@
 
 
 #include <Arduino.h>
-String BIDON;
-String BIDON3 = "essai3";
 String Record_Conf = "";
 void INIT_EEPROM(void) {
   if (!EEPROM.begin(EEPROM_SIZE)) {
@@ -55,70 +53,7 @@ void LectureConsoMatinJour(void) {
 
 
 
-String HistoriqueEnergie1An(void) {
-  JsonDocument conf;
-  int i;
-  //Energie Soutire-Injecté sur 370 jours
-  int Adr_SoutInjec = 0;
-  long EnergieJour = 0;
-  long DeltaEnergieJour = 0;
-  int iS = 0;
-  long lastDay = 0;
-  String ligne = "";
 
-  for (i = 0; i < NbJour; i++) {
-    iS = (idxPromDuJour + i + 1) % NbJour;
-    Adr_SoutInjec = adr_HistoAn + iS * 4;
-    EnergieJour = EEPROM.readLong(Adr_SoutInjec);
-    if (lastDay == 0) { lastDay = EnergieJour; }
-    DeltaEnergieJour = EnergieJour - lastDay;
-    lastDay = EnergieJour;
-    conf["Energie1an"][i] = DeltaEnergieJour;
-  }
-
-  //Vue par jour/mois Soutiré et Injecté
-  int M0 = DateAMJ.substring(4, 6).toInt();
-  int an0 = DateAMJ.substring(0, 4).toInt();
-  i = 0;
-  for (int M = -2; M <= 0; M++) {  //3 derniers mois
-    int M1 = M0 + M;
-    int an1 = an0;
-    if (M1 < 1) {
-      M1 = M1 + 12;
-      an1 = an0 - 1;
-    }
-    M1 = M1 + 100;
-    String SM1 = String(M1);
-    String AM_file = "/Mois_Wh_" + String(an1) + SM1.substring(1, 3) + ".csv";
-    if (LittleFS.exists(AM_file)) {
-
-      File file = LittleFS.open(AM_file);
-      while (file.available()) {
-        char c = file.read();
-        if (c == '\n' || c == '\r') {
-          if (ligne.length() > 10) {
-            if (ligne.indexOf("Date,") < 0) {
-              ligne.trim();
-              conf["EnergieJour"][i] = ligne;
-              i++;
-            }
-            ligne = "";
-          }
-
-        } else {
-          ligne += String(c);
-        }
-      }
-      file.close();
-    }
-  }
-  if (i == 0) {  //Rien trouvé
-    conf["EnergieJour"] = "";
-  }
-  String Json;
-  serializeJson(conf, Json);
-  return Json;
-}
 unsigned long LectureCle() {
   return EEPROM.readULong(adr_ParaActions);
 }
@@ -771,7 +706,6 @@ void DeserializeConfiguration(String json) {
 String SerializeConfiguration() {
   JsonDocument conf;
 
-  byte NbPeriode;
   conf["Routeur"] = "F1ATB";
   String V = Version;
   int VersionStocke = round(100 * V.toFloat());

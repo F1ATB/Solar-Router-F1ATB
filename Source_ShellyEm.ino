@@ -30,7 +30,6 @@ void LectureShellyEm() {
   float Pw = 0;
   float voltage = 0;
   float pf = 0;
-  float Pva;
   int p = 0;
   // Use WiFiClient class to create TCP connections
   WiFiClient clientESP_RMS;
@@ -84,6 +83,8 @@ void LectureShellyEm() {
     p = Shelly_Data.indexOf("emeters");
     Shelly_Data = Shelly_Data.substring(p + 10);
     Pw = PfloatMax(ValJson("power", Shelly_Data));  //Phase 1
+    Tension_M1 = ValJson("voltage", Shelly_Data);
+    Intensite_M1= ValJson("current", Shelly_Data);
     pf = ValJson("pf", Shelly_Data);
     pf = abs(pf);
     float total_Pw = Pw;
@@ -96,6 +97,8 @@ void LectureShellyEm() {
     p = Shelly_Data.indexOf("}");
     Shelly_Data = Shelly_Data.substring(p + 1);
     Pw = PfloatMax(ValJson("power", Shelly_Data));  //Phase 2
+    Tension_M2 = ValJson("voltage", Shelly_Data);
+    Intensite_M2= ValJson("current", Shelly_Data);
     pf = ValJson("pf", Shelly_Data);
     pf = abs(pf);
     total_Pw += Pw;
@@ -107,6 +110,8 @@ void LectureShellyEm() {
     p = Shelly_Data.indexOf("}");
     Shelly_Data = Shelly_Data.substring(p + 1);
     Pw = PfloatMax(ValJson("power", Shelly_Data));  //Phase 3
+    Tension_M3 = ValJson("voltage", Shelly_Data);
+    Intensite_M3= ValJson("current", Shelly_Data);
     pf = ValJson("pf", Shelly_Data);
     pf = abs(pf);
     total_Pw += Pw;

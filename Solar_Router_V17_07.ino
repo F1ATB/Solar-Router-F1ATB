@@ -1,4 +1,4 @@
-#define Version "17.06"
+#define Version "17.07"
 #define HOSTNAME "RMS-ESP32-"
 #define CLE_Rom_Init 912567899  //Valeur pour tester si ROM vierge ou pas. Un changement de valeur remet à zéro toutes les données. / Value to test whether blank ROM or not.
 
@@ -264,17 +264,22 @@
     Correction sauvegarde à minuit
     Correction affichage des graphiques en page d'Accueil
     Modification curseur page Actions (Merci 59jag)
+  - Version 17.07
+    Un grand Merci à Michel H qui a enlevé tous les warnings de compilation de la V17.06
+    Correction bug durée ESPON
+    Changement de fonte dans LCD.ino
+    Correction  sur sortie MQTT en triphasé.
   
   Les détails sont disponibles sur / Details are available here:
   https://f1atb.fr  Section Domotique / Home Automation
 
   
-  F1ATB Février 2026
+  F1ATB Mars 2026
 
   GNU Affero General Public License (AGPL) / AGPL-3.0-or-later
 
-  Arduino IDE 2.3.7
-  Espressif ESP V3.3.5
+  Arduino IDE 2.3.8
+  Espressif ESP V3.3.7
   Compilation avec Partition Scheme : custom 
 
 
@@ -290,7 +295,9 @@
 #include <PubSubClient.h>  //Librairie pour la gestion Mqtt
 #include <EEPROM.h>        //Librairie pour le stockage en EEPROM historique quotidien
 #include <esp_sntp.h>
-#include "OneWire.h"
+#include "OneWire.h"  // V2.3.8 depuis .zip github (pas bib arduino : même N° de version mais different !!)
+// + modif OneWire.cpp : #undef interrupts et #undef noInterrupts
+// + modif OneWire_direct_gpio.h : remplacement 2x digitalPinIsValid(pin) par pin < SOC_GPIO_PIN_COUNT
 #include "DallasTemperature.h"
 #include "UrlEncode.h"
 #include <HardwareSerial.h>
@@ -541,6 +548,9 @@ long LesDatas[14];
 int Sens_1, Sens_2;
 bool RAZ_JSY = false;
 
+//Paramètres pour triphasé
+float Tension_M1 = 0, Tension_M2 = 0, Tension_M3 = 0;
+float Intensite_M1 = 0, Intensite_M2 = 0, Intensite_M3 = 0;
 
 //Parameters for JSY-MK-333 module triphasé
 String MK333_dataBrute = "";
@@ -548,8 +558,6 @@ String MK333_dataBrute = "";
 float Energie_jour_Soutiree = 0;
 float Energie_jour_Injectee = 0;
 long Temps_precedent = 0;  // mesure précise du temps entre deux appels au JSY-MK-333
-float Tension_M1, Tension_M2, Tension_M3;
-float Intensite_M1, Intensite_M2, Intensite_M3;
 float PW_M1, PW_M2, PW_M3;
 
 //Parameters for Linky
@@ -735,7 +743,7 @@ uint8_t bestBSSID[6];  //Meilleur en dBm adresse MAC
 
 //Ethernet
 int16_t EthernetBug = 0;
-EMACDriver driver(ETH_PHY_LAN8720, 23, 18, 16);
+EMACDriver driver(ETH_PHY_LAN8720, 23, 18, 16);  //
 
 WebServer server(80);  // Simple Web Server on port 80
 
@@ -864,8 +872,9 @@ void wpsStop() {                                                                
 }  //SR19
 
 //Evènements WPS/WiFi                                                                                //SR19
-void WiFiEvent(WiFiEvent_t event) {                                                            //SR19
-  switch (event) {                                                                             //SR19
+void WiFiEvent(WiFiEvent_t event) {  //SR19
+  switch (event) {
+
     case ARDUINO_EVENT_WIFI_STA_START:                                                         //SR19
       TelnetPrintln("WiFi Démarré en Mode Station. Attente WPS Client...");                    //SR19
       break;                                                                                   //SR19
@@ -1150,18 +1159,18 @@ void setup() {
         TelnetPrintln("");
       }
     }
-
+   
     if (WiFi.status() == WL_CONNECTED && ModeReseau < 2) {
       RMS_IP[0] = String2IP(WiFi.localIP().toString());
       StockMessage("Connecté par WiFi, addresse IP : " + WiFi.localIP().toString() + " or <a href='http://" + hostname + ".local' >" + hostname + ".local</a>");
     } else {
-      /*** WPS SETUP ***/                                               //SR19
-      if (WiFi.scanNetworks() != 0 && WiFi.RSSI(0) > -83) {             //WPS inutile si aucun signal WiFi > -83dBm                                                                        //SR19
-        WiFi.disconnect(false, true);                                   //RAZ config.                                                                                                                             //SR19
-        delay(100);                                                     //SR19
-        WiFi.mode(WIFI_AP_STA);                                         //SR19
-        delay(10);                                                      //SR19
-        TelnetPrintln("Tentative de connexion via WPS...");             //SR19
+      /*** WPS SETUP ***/                                    //SR19
+      if (WiFi.scanNetworks() != 0 && WiFi.RSSI(0) > -83) {  //WPS inutile si aucun signal WiFi > -83dBm                                                                        //SR19
+        WiFi.disconnect(false, true);                        //RAZ config.                                                                                                                             //SR19
+        delay(100);                                          //SR19
+        WiFi.mode(WIFI_AP_STA);                              //SR19
+        delay(10);                                           //SR19
+        TelnetPrintln("Tentative de connexion via WPS...");  //SR19
         WiFi.onEvent(WiFiEvent);                                        //appel évènements WPS/WiFi depuis WiFiEvent(WiFiEvent_t event)                                                                               //SR19
         delay(10);                                                      //SR19
         esp_wifi_wps_enable(&wps_config);                               //SR19
@@ -1587,6 +1596,7 @@ void loop() {
     } else {  //ESP32 Ethernet
       PrintScroll("IP :" + Ethernet.localIP().toString());
       if (Ethernet.linkStatus() == LinkOFF) {
+      
         PrintScroll("Câble Ethernet non connecté.");
         EthernetBug++;
       } else {
@@ -1663,7 +1673,6 @@ void GestionOverproduction() {  // chaque 200ms (adaptation 5 fois par seconde)
   float Kp, Ki, Kd;
   float GainCACSI = float(ReacCACSI);
   int LeCanalTemp;
-  float laTemperature;
   bool forceOff;
   bool lissage = false;
   int Vout;
@@ -1739,7 +1748,7 @@ void GestionOverproduction() {  // chaque 200ms (adaptation 5 fois par seconde)
     Retard[i] = round(RetardF[i]);         //Valeure entiere pour piloter le Triac et les relais
     if (RetardVx == i && Actif[i] != 0) {  //Affiche calcul retards port série ou Telnet
       char buffer[50];
-      sprintf(buffer, "Ecart= %4.0fW Retard= %3u P= %4.1f I= %4.1f D= %4.1f", ErrorPw, Retard[i], Propor[i], IntegrErrorPw[i], DeriveF[i]);
+      snprintf(buffer, sizeof(buffer), "Ecart= %4.0fW Retard= %3u P= %4.1f I= %4.1f D= %4.1f", ErrorPw, Retard[i], Propor[i], IntegrErrorPw[i], DeriveF[i]);
       TelnetPrintln(String(buffer));
     }
     if (Retard[i] == 100) {  // Force en cas d'arret des IT

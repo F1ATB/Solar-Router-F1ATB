@@ -37,8 +37,18 @@ void Call_RTE_data() {
     }
   }
 
-
-  if ((HeureValide) && (!(couleur_lendemain && couleur_jour)) && ((LastH != Hcour) && (Hcour == 306 || Hcour == 310 || Hcour == 530 || Hcour == 560 || Hcour == 600 || Hcour == 900 || Hcour == 1150) || LastHeureRTE < 0)) {
+  if (!HeureValide) return;  // l'horloge n'est pas bonne, on ne peu pas comparer le jour courant
+  if (couleur_lendemain && couleur_jour) return;  // on connait déja les couleurs du jour et celle de demain, on interroge pas RTE
+  if (LastHeureRTE >= 0 && LastH == Hcour) return; // On a déja obtenu des info depuis RTE et l'heure n'a pas changé, on ne traite pas la suite
+  int heuresCheck[] = {306, 310, 530, 560, 600, 900, 1150};
+  bool estHeureDeConsulter = false;
+  for (int h : heuresCheck) {
+      if (Hcour == h) {
+          estHeureDeConsulter = true;
+          break;
+      }
+  }
+  if (LastHeureRTE == -1 || estHeureDeConsulter) { // si l'heure actuelle fait partie des horaires à consulter
     if (TempoRTEon == 1 && ModeReseau == 0) {
       // Use clientSecu class to create TCP connections
       clientSecuRTE.setInsecure();  //skip verification

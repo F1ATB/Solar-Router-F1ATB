@@ -719,7 +719,6 @@ void GrapheTrace(int8_t gr) {
 
 void TraceMessages() {
   int j = idxMessage;
-  int k = 0;
   lcd->setTextColor(CoulTexte, CoulFond);
   PrintCentre("Messages", -1, 0, 1.2);
   lcd->setCursor(0, 30);
@@ -778,7 +777,9 @@ void TraceWcolor() {
   unsigned long CF = WattToColor();
   lcd->fillScreen(CF);
   lcd->setTextColor(CoulTexte, CF);
-  PrintCentre(String(PuissanceS_M - PuissanceI_M) + " W", lcd->width() / 2, lcd->height() / 2.7, 4);
+  lcd->setFont(&fonts::FreeSansBold18pt7b);
+  PrintCentre(String(PuissanceS_M - PuissanceI_M) + " W", lcd->width() / 2, lcd->height() / 2.7, 2);
+  lcd->setFont(&fonts::AsciiFont8x16);
   for (int i = 0; i < NbActions; i++) {
     if (LesActions[i].Actif != MODE_INACTIF) {
       String S = LesActions[i].Titre + " : " + String(100 - Retard[i]) + "%";
@@ -811,7 +812,9 @@ void TraceGaugeW() {
   Teta0=Teta1;
   Teta1=0.0;
   lcd->fillArc(W2,C,R0,R1,Teta0,Teta1,TFT_RED);
-  PrintCentre(String(PuissanceS_M - PuissanceI_M) + " W", W2, C, 4);
+  lcd->setFont(&fonts::FreeSansBold18pt7b);
+  PrintCentre(String(PuissanceS_M - PuissanceI_M) + " W", W2, C, 2);
+  lcd->setFont(&fonts::AsciiFont8x16);
   for (int i = 0; i < NbActions; i++) {
     if (LesActions[i].Actif != MODE_INACTIF) {
       String S = LesActions[i].Titre ;

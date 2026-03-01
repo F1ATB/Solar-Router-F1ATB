@@ -121,9 +121,9 @@ void MiseAheure(String New_H, String New_J) {
     if (p > 0) {
       H_ = (New_H.substring(p - 2, p).toInt()) % 24;
       Mn = (New_H.substring(p + 1).toInt()) % 60;
-    }
+    } else return;
     if (New_J.substring(2, 3) == "/" && New_J.substring(5, 6) == "/") {
-      struct tm t = { 0 };                                // toujours initialiser à 0
+      struct tm t = {.tm_sec = 0, .tm_min = 0, .tm_hour = 0, .tm_mday = 0, .tm_mon = 0, .tm_year = 0, .tm_wday = 0, .tm_yday = 0, .tm_isdst = 0}; // 1 janvier 1900 a 0h00:00
       t.tm_year = New_J.substring(6, 10).toInt() - 1900;  // années depuis 1900
       t.tm_mon = New_J.substring(3, 5).toInt() - 1;       // mois 0–11 (octobre = 9)
       t.tm_mday = New_J.substring(0, 2).toInt();          // jour du mois

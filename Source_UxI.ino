@@ -39,8 +39,6 @@ void ComputePower() {
   float I;
   float Uef2 = 0;
   float Ief2 = 0;
-  int idx0 = 0;
-  int j = 0;
   
   for (int i = 0; i < 100; i++) {
     voltM[i] = (19.0 * voltM[i] + float(volt[i])) / 20.0;  //Mean value. First Order Filter. Short Integration

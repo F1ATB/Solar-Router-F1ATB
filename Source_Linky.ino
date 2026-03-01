@@ -164,10 +164,10 @@ void LectureLinky() {  //Lecture port série du LINKY .
             PuissanceRecue = true;  //Reset du Watchdog à chaque trame du Linky reçue
             if (Horloge == 1) {
 
-              struct tm t = { 0 };                            // toujours initialiser à 0
-              t.tm_year = val.substring(1, 3).toInt() + 100;  // années depuis 1900
-              t.tm_mon = val.substring(3, 5).toInt() - 1;     // mois 0–11 (octobre = 9)
-              t.tm_mday = val.substring(5, 7).toInt();        // jour du mois
+              struct tm t = { .tm_sec = 0, .tm_min = 0, .tm_hour = 0, .tm_mday = 0, .tm_mon = 0, .tm_year = 0, .tm_wday = 0, .tm_yday = 0, .tm_isdst = 0 };  // 1 janvier 1900 a 0h00:00
+              t.tm_year = val.substring(1, 3).toInt() + 100;                                                                                                 // années depuis 1900
+              t.tm_mon = val.substring(3, 5).toInt() - 1;                                                                                                    // mois 0–11 (octobre = 9)
+              t.tm_mday = val.substring(5, 7).toInt();                                                                                                       // jour du mois
               t.tm_hour = val.substring(7, 9).toInt();
               t.tm_min = val.substring(9, 11).toInt();
               t.tm_sec = val.substring(11, 13).toInt();
@@ -182,60 +182,62 @@ void LectureLinky() {  //Lecture port série du LINKY .
             }
           }
 
-          //LJ START
-          if (ReacCACSI == 100) {  //Estimateur ON
-            if (code.indexOf("IRMS1") == 0) {
-              pIRMS1 = val.toInt();
-            }
-            if (code.indexOf("IRMS2") == 0) {
-              pIRMS2 = val.toInt();
-            }
-            if (code.indexOf("IRMS3") == 0) {
-              pIRMS3 = val.toInt();
-            }
-            if (code.indexOf("URMS1") == 0) {
-              pURMS1 = val.toInt();
-            }
-            if (code.indexOf("URMS2") == 0) {
-              pURMS2 = val.toInt();
-            }
-            if (code.indexOf("URMS3") == 0) {
-              pURMS3 = val.toInt();
-            }
-            if (code.indexOf("SINSTS1") == 0) {
-              pSINSTS1 = val.toInt();
-            }
-            if (code.indexOf("SINSTS2") == 0) {
-              pSINSTS2 = val.toInt();
-            }
-            if (code.indexOf("SINSTS3") == 0) {
-              pSINSTS3 = val.toInt();
-            }
-            if (code == "SMAXSN") {
 
-              PuissanceI_M = 0;
-              if (PuissanceS_M == 0) {                                            // estimation de la puissance d'injection si PuissanceS_M==0
-                if (pIRMS3 != -1) {                                               // triphasé
-                  pPuissance = 150 + (pSINSTS1 == 0 ? -1 : 1) * pURMS1 * pIRMS1;  // marge de 150W, en mono SINSTS1==0 si PuissanceS_M==0
-                  pPuissance += (pSINSTS2 == 0 ? -1 : 1) * pURMS2 * pIRMS2;
-                  pPuissance += (pSINSTS3 == 0 ? -1 : 1) * pURMS3 * pIRMS3;
-                } else {
-                  pPuissance = 150 + (pSINSTS == 0 ? -1 : 1) * pURMS1 * pIRMS1;  // marge de 150W, en mono SINSTS==0 si PuissanceS_M==0
-                }
-                if (pPuissance < 0) {          // estimation si l'écart est supérieur à 150W
-                  PuissanceI_M = -pPuissance;  // "-" car on donne la valeur injectée
-                }
-                PVAI_M = PuissanceI_M;  //On egalise Pw et PVA
+
+          if (code.indexOf("IRMS1") == 0) {
+            pIRMS1 = val.toInt();
+             Intensite_M = val.toFloat();  //Phase 1 uniquement
+             Intensite_M1=Intensite_M;
+          }
+          if (code.indexOf("IRMS2") == 0) {
+            pIRMS2 = val.toInt();
+            Intensite_M2 = val.toFloat();
+          }
+          if (code.indexOf("IRMS3") == 0) {
+            pIRMS3 = val.toInt();
+            Intensite_M3 = val.toFloat();
+          }
+          if (code.indexOf("URMS1") == 0) {
+            pURMS1 = val.toInt();
+             Tension_M = val.toFloat();  //phase 1 uniquement
+             Tension_M1=Tension_M;
+          }
+          if (code.indexOf("URMS2") == 0) {
+            pURMS2 = val.toInt();
+            Tension_M2 = val.toFloat();
+          }
+          if (code.indexOf("URMS3") == 0) {
+            pURMS3 = val.toInt();
+            Tension_M3 = val.toFloat();
+          }
+          if (code.indexOf("SINSTS1") == 0) {
+            pSINSTS1 = val.toInt();
+          }
+          if (code.indexOf("SINSTS2") == 0) {
+            pSINSTS2 = val.toInt();
+          }
+          if (code.indexOf("SINSTS3") == 0) {
+            pSINSTS3 = val.toInt();
+          }
+          if (code == "SMAXSN" && ReacCACSI == 100) {
+
+            PuissanceI_M = 0;
+            if (PuissanceS_M == 0) {                                            // estimation de la puissance d'injection si PuissanceS_M==0
+              if (pIRMS3 != -1) {                                               // triphasé
+                pPuissance = 150 + (pSINSTS1 == 0 ? -1 : 1) * pURMS1 * pIRMS1;  // marge de 150W, en mono SINSTS1==0 si PuissanceS_M==0
+                pPuissance += (pSINSTS2 == 0 ? -1 : 1) * pURMS2 * pIRMS2;
+                pPuissance += (pSINSTS3 == 0 ? -1 : 1) * pURMS3 * pIRMS3;
+              } else {
+                pPuissance = 150 + (pSINSTS == 0 ? -1 : 1) * pURMS1 * pIRMS1;  // marge de 150W, en mono SINSTS==0 si PuissanceS_M==0
               }
+              if (pPuissance < 0) {          // estimation si l'écart est supérieur à 150W
+                PuissanceI_M = -pPuissance;  // "-" car on donne la valeur injectée
+              }
+              PVAI_M = PuissanceI_M;  //On egalise Pw et PVA
             }
           }
-          //LJ STOP
-          if (code.indexOf("URMS1") == 0) {
-            Tension_M = val.toFloat();  //phase 1 uniquement
-          }
-          if (code.indexOf("IRMS1") == 0) {
-            Intensite_M = val.toFloat();  //Phase 1 uniquement
-          }
+
+          
           if (code.indexOf("STGE") == 0) {
             STGE = val;  //Status
             STGE.trim();

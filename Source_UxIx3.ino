@@ -95,7 +95,7 @@ void Lecture_JSY333() {
 
       // PhDV61 : on considère que cette puissance active "globale" a duré "delta_temps", et on l'intègre donc pour obtenir une énergie en Wh
       Energie_jour_Injectee += ((float)delta_temps / 1000.0) * (PuissanceI_M_inst / 3600.0);
-
+      Energie_M_Injectee = Energie_jour_Injectee; // ajout piamp
     } else {  // soutirage
       PuissanceI_M_inst = 0;
       PuissanceS_M_inst = float((Lecture333[21] << 24) + (Lecture333[22] << 16) + (Lecture333[23] << 8) + Lecture333[24]);
@@ -104,10 +104,10 @@ void Lecture_JSY333() {
 
       // PhDV61 : on considère que cette puissance active "globale" a duré "delta_temps", et on l'intègre donc pour obtenir pour obtenir une énergie en Wh
       Energie_jour_Soutiree += ((float)delta_temps / 1000.0) * (PuissanceS_M_inst / 3600.0);
+      Energie_M_Soutiree = Energie_jour_Soutiree; // ajout piamp
     }
 
-    Energie_M_Soutiree = ((float)((float)(Lecture333[119] * 16777216) + (float)(Lecture333[120] * 65536) + (float)(Lecture333[121] * 256) + (float)Lecture333[122])) * 10;
-    Energie_M_Injectee = ((float)((float)(Lecture333[135] * 16777216) + (float)(Lecture333[136] * 65536) + (float)(Lecture333[137] * 256) + (float)Lecture333[138])) * 10;
+   
 
     MK333_dataBrute = "";
     MK333_dataBrute = "<strong>Triphasé</strong>";

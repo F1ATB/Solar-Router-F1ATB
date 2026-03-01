@@ -149,7 +149,7 @@ function LoadDataESP32() {
 
         let S = "<table>";
 
-        let H = parseFloat(message[0]);
+        let H = parseInt(message[0]);
         H = (H + (message[0] - H) * 0.6).toFixed(2);
         H = H.replace(".", "h ") + "mn";
         let LaSource=F.Source;
