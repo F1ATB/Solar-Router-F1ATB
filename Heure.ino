@@ -57,21 +57,7 @@ void JourHeureChange() {
     if (old_Heure == 23 && Int_Heure == 0) {
       erreurTriac = false;
       if (EnergieActiveValide) {  //Données recues
-        int16_t old_HeureCouranteDeci = old_Heure * 100 + old_Minute * 10 / 6;
-        Record_Data(oldDateAMJ,oldDateAMJ,old_HeureCouranteDeci);
-        idxPromDuJour = (idxPromDuJour + 1 + NbJour) % NbJour;
-        //On enregistre les conso en début de journée pour l'historique de l'année
-        long energie = Energie_M_Soutiree - Energie_M_Injectee;  //Bilan energie du jour
-        EEPROM.writeLong(idxPromDuJour * 4, energie);
-        EEPROM.writeULong(adr_E_T_soutire0, long(Energie_T_Soutiree));
-        EEPROM.writeULong(adr_E_T_injecte0, long(Energie_T_Injectee));
-        EEPROM.writeULong(adr_E_M_soutire0, long(Energie_M_Soutiree));
-        EEPROM.writeULong(adr_E_M_injecte0, long(Energie_M_Injectee));
-        EEPROM.writeString(adr_DateCeJour, "");
-        EEPROM.writeUShort(adr_lastStockConso, idxPromDuJour);
-        EEPROM.commit();
-        LectureConsoMatinJour();
-        
+        LectureConsoMatinJour();       
       }
       //Puissance Max du jour à zero
       PuisMaxS_T = 0;

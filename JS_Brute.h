@@ -193,7 +193,6 @@ function LoadDataESP32() {
               }
               S+='<tr><td>Charge coeur 0 (Lecture Puissance) Min, Moy, Max :</td><td>'+message[10]+' ms</td></tr>';
               S+='<tr><td>Charge coeur 1 (Calcul + Wifi) Min, Moy, Max :</td><td>'+message[11]+' ms</td></tr>';
-              S+='<tr><td>Espace mémoire EEPROM utilisé :</td><td>'+message[12]+' %</td></tr>';
               S+='<tr><td>Mémoire RAM libre actuellement :</td><td>'+message[13]+' octet</td></tr>';
               S+='<tr><td>Mémoire RAM libre minimum :</td><td>'+message[14]+' octet</td></tr>';
               S+="<tr><td>Nombre d'interruptions en 15ms du Gradateur (signal Zc) : Filtrés/Brutes :</td><td>"+message[15]+'</td></tr>';

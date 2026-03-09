@@ -355,7 +355,7 @@ void handleAjaxESP32() {  // Envoi des dernières infos sur l'ESP32
     adr = WiFi.localIP().toString() + US + hostname + US + WiFi.globalIPv6().toString() + RS + WiFi.gatewayIP().toString() + RS + WiFi.subnetMask().toString();
   }
   S += String(H) + RS + String(ESP32_Type) + RS + acces + RS + Mac + RS + ssid + RS + adr;
-  S += RS + coeur0 + RS + coeur1 + RS + String(P_cent_EEPROM) + RS;
+  S += RS + coeur0 + RS + coeur1 + RS + "inutil" + RS;
   S += String(esp_get_free_internal_heap_size()) + RS + String(esp_get_minimum_free_heap_size()) + RS;
   delay(15);  // Comptage interruptions
   if (IT10ms_in > 0) {
@@ -650,7 +650,7 @@ void handleParaFixe() {  //Paramètres stockés en fichier
   file.close();
 }
 void handleajaxRAZhisto() {
-  RAZ_Histo_Conso();
+ 
   for (int i = 0; i < 600; i++) {
     tabPw_Maison_5mn[i] = 0;  // Puissance Active:Soutiré-Injecté toutes les 5mn
     tabPw_Triac_5mn[i] = 0;
@@ -983,16 +983,6 @@ class ChunkedWriter : public Print {
 
 void envoyerHistoriqueEnergie(WebServer &serverRef) {
   JsonDocument doc;
-
-  // Energie Soutire-Injecté sur 370 jours/Historique 1 an (EEPROM)
-  long lastDay = 0;
-  for (int i = 0; i < NbJour; i++) {
-    int iS = (idxPromDuJour + i + 1) % NbJour;
-    long EnergieJour = EEPROM.readLong(adr_HistoAn + iS * 4);
-    if (i == 0) lastDay = EnergieJour;
-    doc["Energie1an"].add(EnergieJour - lastDay);
-    lastDay = EnergieJour;
-  }
 
   // //Vue par jour/mois Soutiré et Injecté (LittleFS)
   int M0 = DateAMJ.substring(4, 6).toInt();

@@ -304,8 +304,6 @@ async function LoadHisto1an() {
 
         let retour = await response.text();
         retour=JSON.parse(retour);
-        const tabWh = retour.Energie1an;
-        if (Graphes_Select[11]) Plot('SVG_Wh1an', tabWh, Koul[Coul_Wh][3], 'Energie Active Wh / Jour sur 1an', '', '');
         const tabJWh = retour.EnergieJour;
         let tabJourWh=[];
         let j=-1;
@@ -476,14 +474,7 @@ function Plot(SVG, Tab, couleur1, titre1, couleur2, titre2) {
       dispVA = GID(SVG + '_C').checked; 
       localStorage.setItem(SVG + '_LS', dispVA);
       break;
-    case 'SVG_Wh1an':
-      label = 'Mois';
-      pixelTic = dX * 30.4375;
-      dTextTic = 1;
-      moduloText = 12;
-      H00 = d.getMonth();
-      X0 = dX * (1 - d.getDate());
-      break;
+    
   }
   const c1 = '"' + couleur1 + '"';
   const c2 = '"' + couleur2 + '"';
@@ -505,13 +496,8 @@ function Plot(SVG, Tab, couleur1, titre1, couleur2, titre2) {
     Y2 = Y0 + 6;
     S += "<line x1='" + X + "' y1='" + Y0 + "' x2='" + X + "' y2='" + Y2 + "' style='stroke:" + cT + ";stroke-width:2' />";
     X = X - 8;
-    Y2 = Y0 + 22;
-    if (SVG === 'SVG_Wh1an') { 
-      X = X + 8;
-      S += "<text x='" + X + "' y='" + Y2 + "' style='font-size:16px;fill:" + cT + ";'>" + Mois[H00] + "</text>";
-    } else {
-      S += "<text x='" + X + "' y='" + Y2 + "' style='font-size:16px;fill:" + cT + ";'>" + H00 + "</text>";
-    }
+    Y2 = Y0 + 22;   
+    S += "<text x='" + X + "' y='" + Y2 + "' style='font-size:16px;fill:" + cT + ";'>" + H00 + "</text>";   
     H00 = (H00 - dTextTic + moduloText) % moduloText;
   }
   
@@ -1043,10 +1029,10 @@ function AdaptationSource() {
 
 
 // Fonction d'initialisation
-var Graphes_Nom=["Pw / 10 mn","Pw T","Pw / 48h","Pw 48h T","Temperature 0","Temperature 1","Temperature 2","Temperature 3","Ouvertures / 10mn","Ouvertures / 48h","Wh Jour","Wh 1an"];
-var Graphes_Dispo=[true,true,true,true,true,true,true,true,true,true,true,true]; //Il y a des données
-var Graphes_Select=[true,true,true,true,true,true,true,true,true,true,true,true]; //Affichage choisi par la personne
-var Graphes_Ordre=[0,1,2,3,4,5,6,7,8,9,10,11]; //12 graphiques différents
+var Graphes_Nom=["Pw / 10 mn","Pw T","Pw / 48h","Pw 48h T","Temperature 0","Temperature 1","Temperature 2","Temperature 3","Ouvertures / 10mn","Ouvertures / 48h","Wh Jour"];
+var Graphes_Dispo=[true,true,true,true,true,true,true,true,true,true,true]; //Il y a des données
+var Graphes_Select=[true,true,true,true,true,true,true,true,true,true,true]; //Affichage choisi par la personne
+var Graphes_Ordre=[0,1,2,3,4,5,6,7,8,9,10]; //11 graphiques différents
 function Init() {
   SetHautBas();
   
@@ -1091,18 +1077,19 @@ function Init() {
 
             `<p id="SVG_Ouvertures_2s"></p>`,
             `<p id="SVG_Ouvertures"></p>`,
-            `<p id="SVG_WhJour"></p>`,
-            `<p id="SVG_Wh1an"></p>`,
+            `<p id="SVG_WhJour"></p>`     
   ];
   
   
   let Ordre_g= JSON.parse(localStorage.getItem("TableauGraphiques"));
   if (Ordre_g!=null) {
       Graphes_Ordre=Ordre_g;
+      if(Graphes_Ordre.length>11) Graphes_Ordre.pop(); //Retrait SVG_Wh1an
   }
   let Ordre_gS= JSON.parse(localStorage.getItem("TableauGraphiquesSelected"));
   if (Ordre_gS!=null) {
       Graphes_Select= Ordre_gS;
+      if(Graphes_Select.length>11) Graphes_Select.pop(); //Retrait SVG_Wh1an
   }
   let G="";
   for (let i=0;i<Graphes_Ordre.length;i++){

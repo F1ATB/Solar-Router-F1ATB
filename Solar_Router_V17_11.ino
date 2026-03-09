@@ -1,6 +1,5 @@
-#define Version "17.10"
+#define Version "17.11"
 #define HOSTNAME "RMS-ESP32-"
-#define CLE_Rom_Init 912567899  //Valeur pour tester si ROM vierge ou pas. Un changement de valeur remet à zéro toutes les données. / Value to test whether blank ROM or not.
 
 /*
   PV Router / Routeur Photovoltaïque 
@@ -276,6 +275,9 @@
   - Version 17.10
     Correction bug state_class non initialisé sur envoi MQTT. 
     Rajout de GPIOs pour connecter une sonde de température
+  - Version 17.11
+    Retrait ancienne méthode stockage parametres.(On gagne de la place en mémoire FLASH).
+    Retrait courbe Energie sur 1an faisant double emploi avec Energie Soutirée/Injectée par jour. 
   
   Les détails sont disponibles sur / Details are available here:
   https://f1atb.fr  Section Domotique / Home Automation
@@ -300,7 +302,6 @@
 #include <WebServer.h>
 #include <ArduinoOTA.h>    //Modification On The Air
 #include <PubSubClient.h>  //Librairie pour la gestion Mqtt
-#include <EEPROM.h>        //Librairie pour le stockage en EEPROM historique quotidien
 #include <esp_sntp.h>
 #include "OneWire.h"  // V2.3.8 depuis .zip github (pas bib arduino : même N° de version mais different !!)
 // + modif OneWire.cpp : #undef interrupts et #undef noInterrupts
@@ -420,7 +421,6 @@ String RS = String((char)30);  //Record Separator
 String US = String((char)31);  //Unit Separator
 String MessageH[10];
 int idxMessage = 0;
-int P_cent_EEPROM;
 int cptLEDyellow = 0;
 int cptLEDgreen = 0;
 
@@ -448,7 +448,7 @@ bool LastRecordConf = false;
 // Stockage des données en ROM
 // ***************************
 //Plan stockage
-#define EEPROM_SIZE 4090
+
 #define adr_HistoAn 0          //taille 2* 370*4=1480
 #define adr_E_T_soutire0 1480  // 1 long. Taille 4 Triac
 #define adr_E_T_injecte0 1484
@@ -913,7 +913,7 @@ void WiFiEvent(WiFiEvent_t event) {  //SR19
       TelnetPrintln("WiFi Reconnecté en Mode Station");
       ssid = WiFi.SSID();     // met à jour le SSID global
       password = WiFi.psk();  // met à jour le mot de passe global
-      password.trim();        // supprime espaces et caractères indésirables (dont \n, \r, \t)                                      // sauvegarde dans l’EEPROM                                       //SR19
+      password.trim();        // supprime espaces et caractères indésirables (dont \n, \r, \t)                                                                         //SR19
       break;                  //SR19
     default:                  //SR19
       break;                  //SR19
@@ -1019,20 +1019,6 @@ void setup() {
   InitTemperature();
 
 
-
-  INIT_EEPROM();
-
-
-
-  Cle_ROM = CLE_Rom_Init;  //Lecture Clé pour identifier si la ROM a déjà été initialisée
-  unsigned long Rcle = LectureCle();
-  TelnetPrintln("cle : " + String(Rcle));
-
-  if (Rcle == Cle_ROM) {  // Programme déjà executé
-    LectureEnROM();       //Valeurs paramètres ancien stockage avant V16.10
-  } else {
-    RAZ_Histo_Conso();
-  }
   ReadFichierParametres();  //On remplace par les paramètres du fichier  qui sera éventuellement crée avec les données en ROM
 
   LectureConsoMatinJour();
@@ -1557,7 +1543,7 @@ void loop() {
   }
   if (LastShowActionMillis != 0) {
     if (millis() - LastShowActionMillis > 6000) {  //Pas prendre tps en retard
-      LectureEnROM();                              //On remet les coefficint du PID aux valeurs stockés après des essais.
+      ReadFichierParametres();                             //On remet les coefficint du PID aux valeurs stockés après des essais.
       LastShowActionMillis = 0;
     }
   }
