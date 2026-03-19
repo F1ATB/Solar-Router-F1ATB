@@ -114,7 +114,7 @@ const char *ConnectAP_Html = R"====(
   }
   
   function SetParaFixe(){
-    GID("Bwifi").style.display= (F.ESP32_Type<10) ? "inline-block": "none";
+    GID("Bwifi").style.display= (F.ESP32_Type!=10) ? "inline-block": "none";
     Set_Couleurs();
   }
 </script>

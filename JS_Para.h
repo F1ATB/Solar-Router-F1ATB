@@ -306,7 +306,7 @@ function checkDisabled() {
     GID("Vport_serie").style.display = (GID("Serie").value>0) ? "table-row": "none";
 
     // Mise à jour de l'affichage des boutons/lignes
-    GID("Bwifi").style.display = (F.ESP32_Type < 10) ? "inline-block" : "none";
+    GID("Bwifi").style.display = (F.ESP32_Type != 10) ? "inline-block" : "none";
     
     // Affichage des paramètres IP statiques
     const ipSettingsVisible = !(GID("dhcp").checked || F.ModeReseau == 2);
@@ -316,7 +316,7 @@ function checkDisabled() {
     GID("dhcp").style.visibility = (F.ModeReseau == 2) ? "hidden" : "visible";
     GID("ipreset").style.display = (F.ModeReseau == 2) ? "none" : "inherit";
     
-    const isESPTypeEcran = (pESP >= 4 && pESP<=9 );
+    const isESPTypeEcran = ((pESP >= 4 && pESP<=9 ) || pESP==101);
     GID("rotation").style.display = isESPTypeEcran ? "table-row" : "none";
     GID("dureeOn").style.display = isESPTypeEcran ? "table-row" : "none";
     GID("Click35").style.display = isESPTypeEcran && GID("DurEcran").value>0  ? "table-row" : "none";
@@ -327,7 +327,7 @@ function checkDisabled() {
     // Lignes de WiFi (visibilité)
     GID("l_wifi_0").style.display = (F.ModeReseau == 2) ? "none" : "table-row";
     GID("l_wifi_1").style.display = (F.ModeReseau == 2 || F.ModePara == 0) ? "none" : "table-row";
-    GID("l_wifi_2").style.display = (F.ModeReseau == 2 || F.ModePara == 0 || F.ESP32_Type >= 10) ? "none" : "table-row";
+    GID("l_wifi_2").style.display = (F.ModeReseau == 2 || F.ModePara == 0 || F.ESP32_Type == 10) ? "none" : "table-row";
 
     // Visibilité de la liste des routeurs
     GID("listerouteurs").style.display = (F.ModeReseau == 2 || F.ModePara == 0) ? "none" : "block";

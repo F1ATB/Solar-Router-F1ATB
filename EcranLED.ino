@@ -32,7 +32,7 @@ void Gestion_LEDs() {
   int retard_min = 100;
   int retardI;
   cptLEDyellow++;
-  if ((WiFi.status() != WL_CONNECTED && ESP32_Type < 10) || (EthernetBug > 0 && ESP32_Type >= 10)) {  // Attente connexion au Wifi ou ethernet
+  if ((WiFi.status() != WL_CONNECTED && (ESP32_Type < 10 || ESP32_Type==101)) || (EthernetBug > 0 && ESP32_Type == 10)) {  // Attente connexion au Wifi ou ethernet
     if (WiFi.getMode() == WIFI_STA) {                                                                 // en  Station mode
       cptLEDyellow = (cptLEDyellow + 6) % 10;
       cptLEDgreen = cptLEDyellow;

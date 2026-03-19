@@ -345,7 +345,7 @@ void handleAjaxESP32() {  // Envoi des dernières infos sur l'ESP32
   String acces = "";
   String Mac = "";
   String adr = "";
-  if (ESP32_Type >= 10) {
+  if (ESP32_Type == 10) {
     acces = " " + RS + " " + RS + " ";
     Mac = Ethernet.macAddress();
     adr = Ethernet.localIP().toString() + US + hostname + US + "" + RS + Ethernet.gatewayIP().toString() + RS + Ethernet.subnetMask().toString();
@@ -572,7 +572,7 @@ void handlePinsActionsJS() {  // Pins disponibles
     S = "var Pins=[0,5,18,19,22,23,27,-1];";  //Ecran 2.8
   if (ESP32_Type >= 6 && ESP32_Type <= 8)
     S = "var Pins=[0,5,18,19,21,22,23,-1];";  //Ecran 2.4
-  if (ESP32_Type == 9)  
+  if (ESP32_Type == 9 || ESP32_Type == 101)  
     S= "var Pins=[0,4,5,16,17,18,19,21,22,23,-1];"; //Ecran 2.8 capacitif
   if (ESP32_Type == 10)
     S = "var Pins=[0,5,12,14,17,32,33,-1];";
@@ -610,7 +610,7 @@ void handleParaNew() {
   }
 
   LastHeureRTE = -1;
-  if (ESP32_Type >= 4 && ESP32_Type <= 9) {
+  if ((ESP32_Type >= 4 && ESP32_Type <= 9) || ESP32_Type==101) {
     int R=rotation;
     if (ESP32_Type ==9) R=(R+2)%4;
     lcd->setRotation(R);
@@ -650,7 +650,7 @@ void handleParaFixe() {  //Paramètres stockés en fichier
   file.close();
 }
 void handleajaxRAZhisto() {
- 
+  RAZ_Histo_Conso();
   for (int i = 0; i < 600; i++) {
     tabPw_Maison_5mn[i] = 0;  // Puissance Active:Soutiré-Injecté toutes les 5mn
     tabPw_Triac_5mn[i] = 0;
@@ -872,7 +872,7 @@ void handleCouleurUpdate() {
   EcritureEnROM();
 
   server.send(200, "text/plain", "OK couleurs");
-  if (ESP32_Type >= 4 && ESP32_Type <= 9) SetCouleurs();
+  if ((ESP32_Type >= 4 && ESP32_Type <= 9)||ESP32_Type==101) SetCouleurs();
 }
 void handleCommunCSS() {
   CacheEtClose(60);

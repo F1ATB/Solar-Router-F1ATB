@@ -1,4 +1,4 @@
-#define Version "17.11"
+#define Version "17.16"
 #define HOSTNAME "RMS-ESP32-"
 
 /*
@@ -278,6 +278,17 @@
   - Version 17.11
     Retrait ancienne méthode stockage parametres.(On gagne de la place en mémoire FLASH).
     Retrait courbe Energie sur 1an faisant double emploi avec Energie Soutirée/Injectée par jour. 
+  - Version 17.12
+    Sauvegarde des données en fin de journée, enlevées par erreur en V17.11
+  - Version 17.13
+    RAZ en début de journée de l'énergie quotidienne, enlevée par erreur en V17.11
+  - Version 17.15
+    Masque "Ouverture si forcée" dans le cas On/Off
+    Sauvegarde à minuit des energies pour  restitution après une coupure de courant.
+    Affiche l'heure sur les sliders des périodes
+  - Version 17.16
+    Introduction écran 3.2 pouces ESP32-2432S032C capacitif
+    Correction bug sur curseurs avec Firefox
   
   Les détails sont disponibles sur / Details are available here:
   https://f1atb.fr  Section Domotique / Home Automation
@@ -320,6 +331,7 @@
 #include "esp_partition.h"
 #include "esp_flash.h"
 #include "CST820.h"
+#include "initGT911.h"
 
 
 // Pages WEB
@@ -1041,7 +1053,7 @@ void setup() {
   InitGPIOs();
   TelnetPrintln("ESP32_Type:" + String(ESP32_Type));
   delay(500);
-  if (ESP32_Type >= 4 && ESP32_Type <= 9) Ecran_Init(ESP32_Type);
+  if ((ESP32_Type >= 4 && ESP32_Type <= 9)|| ESP32_Type==101) Ecran_Init(ESP32_Type);
 
   IP2String(RMS_IP[0]);
   // Set youRMS_IP[0]c IP address
@@ -1122,7 +1134,7 @@ void setup() {
 
 
   //WIFI
-  if (ESP32_Type < 10) {
+  if (ESP32_Type < 10 ||ESP32_Type==101) {
     if (ModeReseau < 2) {
       TelnetPrintln("ssid:" + ssid);
       TelnetPrintln("password:" + password);
@@ -1203,7 +1215,7 @@ void setup() {
     }
   }
 
-  if (ESP32_Type >= 4 && ESP32_Type <= 9) {
+  if ((ESP32_Type >= 4 && ESP32_Type <= 9)||ESP32_Type==101) {
     TraceMessages();  //Ecran
     delay(2000);
   }
@@ -1558,7 +1570,7 @@ void loop() {
 
     JourHeureChange();
     TelnetPrintln("\nDate : " + DATE);
-    if (ESP32_Type < 10) {  //ESP32 en WIFI
+    if (ESP32_Type < 10 || ESP32_Type ==101) {  //ESP32 en WIFI
       if (WiFi.getMode() == WIFI_STA) {
         if (WiFi.waitForConnectResult(10000) != WL_CONNECTED) {
           StockMessage("WIFI Connection Failed! #" + String(WIFIbug));
@@ -1652,7 +1664,7 @@ void loop() {
 
 
   //Ecran
-  if (ESP32_Type >= 4 && ESP32_Type <= 9) Ecran_Loop();
+  if ((ESP32_Type >= 4 && ESP32_Type <= 9)|| ESP32_Type==101) Ecran_Loop();
   //Port Série
   LireSerial();
   delay(1);
@@ -1832,7 +1844,7 @@ void InitGPIOs() {
     RXD2 = RX2_[pSerial];              //Port serie
     TXD2 = TX2_[pSerial];
   }
-  if (ESP32_Type >= 4 && ESP32_Type <= 9 && clickPresence == 1) pinMode(35, INPUT);  //Motion detector en 35
+  if (((ESP32_Type >= 4 && ESP32_Type <= 9)|| ESP32_Type==101 )&& clickPresence == 1) pinMode(35, INPUT);  //Motion detector en 35
   if (pTemp > 0) {
     TelnetPrint("Init Temp:");
     TelnetPrintln(String(pinTemp[pTemp]));

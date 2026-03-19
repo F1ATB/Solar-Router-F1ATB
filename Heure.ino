@@ -24,7 +24,7 @@ void FormatteHeureDate() {
   Int_Minute = timeinfo.tm_min;
   Jour = timeinfo.tm_wday;  //-1=inconnu,0=dimanche,1=lundi...
   HeureValide = true;
-  if ( !LastRecordConf)  LitLastRecord_Conf(); 
+  if (!LastRecordConf) LitLastRecord_Conf();
 }
 
 void JourHeureChange() {
@@ -57,7 +57,10 @@ void JourHeureChange() {
     if (old_Heure == 23 && Int_Heure == 0) {
       erreurTriac = false;
       if (EnergieActiveValide) {  //Données recues
-        LectureConsoMatinJour();       
+        int16_t old_HeureCouranteDeci = old_Heure * 100 + old_Minute * 10 / 6;
+        Record_Data(oldDateAMJ, oldDateAMJ, old_HeureCouranteDeci);
+        RecordEnergieMinuit(oldDateAMJ);
+        LectureConsoMatinJour();
       }
       //Puissance Max du jour à zero
       PuisMaxS_T = 0;
@@ -85,15 +88,15 @@ void InitHeure() {
     if (ntpServer != "") {
       char buffer[30];
       ntpServer.toCharArray(buffer, sizeof(buffer));
-      const char* NTP = buffer;
+      const char *NTP = buffer;
 
-      configTzTime(codeTZ[idxFuseau].c_str(), NTP,ntpServer1, ntpServer2);  //Voir Time-Zone:
-    } else { 
-      Serial.println("Heure Defaut:") ;                                                                               //Option
+      configTzTime(codeTZ[idxFuseau].c_str(), NTP, ntpServer1, ntpServer2);  //Voir Time-Zone:
+    } else {
+      Serial.println("Heure Defaut:");                                  //Option
       configTzTime(codeTZ[idxFuseau].c_str(), ntpServer1, ntpServer2);  //Voir Time-Zone:
     }
-    Serial.println("idxFuseau: " +String(idxFuseau));
-    Serial.println("CODE: " +codeTZ[idxFuseau]);
+    Serial.println("idxFuseau: " + String(idxFuseau));
+    Serial.println("CODE: " + codeTZ[idxFuseau]);
   }
 }
 
@@ -109,10 +112,10 @@ void MiseAheure(String New_H, String New_J) {
       Mn = (New_H.substring(p + 1).toInt()) % 60;
     } else return;
     if (New_J.substring(2, 3) == "/" && New_J.substring(5, 6) == "/") {
-      struct tm t = {.tm_sec = 0, .tm_min = 0, .tm_hour = 0, .tm_mday = 0, .tm_mon = 0, .tm_year = 0, .tm_wday = 0, .tm_yday = 0, .tm_isdst = 0}; // 1 janvier 1900 a 0h00:00
-      t.tm_year = New_J.substring(6, 10).toInt() - 1900;  // années depuis 1900
-      t.tm_mon = New_J.substring(3, 5).toInt() - 1;       // mois 0–11 (octobre = 9)
-      t.tm_mday = New_J.substring(0, 2).toInt();          // jour du mois
+      struct tm t = { .tm_sec = 0, .tm_min = 0, .tm_hour = 0, .tm_mday = 0, .tm_mon = 0, .tm_year = 0, .tm_wday = 0, .tm_yday = 0, .tm_isdst = 0 };  // 1 janvier 1900 a 0h00:00
+      t.tm_year = New_J.substring(6, 10).toInt() - 1900;                                                                                             // années depuis 1900
+      t.tm_mon = New_J.substring(3, 5).toInt() - 1;                                                                                                  // mois 0–11 (octobre = 9)
+      t.tm_mday = New_J.substring(0, 2).toInt();                                                                                                     // jour du mois
       t.tm_hour = H_;
       t.tm_min = Mn;
       t.tm_sec = 0;

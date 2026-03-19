@@ -9,6 +9,7 @@
 
 LGFX* lcd = nullptr;
 CST820* touch = nullptr;  //Touch pour les écrans Capacitifs
+initGT911* touchGT911 = nullptr; //Touch pour les écrans Capacitifs GT911
 unsigned long runtime_0 = 0, runtime_click = 0, runtime_On = 0;
 int8_t NumPage = 0, NbrPage = 7;
 int16_t ClickX = 0, ClickY = 0, ClickCount = 0, LastClickX = 0, LastClickY = 0, slideX = 0;
@@ -22,34 +23,45 @@ unsigned long CoulTexte, CoulFond, CoulBouton, CoulBoutFond, CoulBoutBord, CoulW
 unsigned long CoulSaisieTexte, CoulSaisieFond, CoulSaisieBord, CoulTemp, CoulGrTexte, CoulGrFond;
 
 void Ecran_Init(byte ESP32type) {
-  pinMode(4, OUTPUT);    //LED rouge
-  pinMode(16, OUTPUT);   //LED bleue ou verte
-  pinMode(17, OUTPUT);   //LED bleue ou verte
-  digitalWrite(4, 1);    //Extinction
-  digitalWrite(16, 1);   //Extinction
-  digitalWrite(17, 1);   //Extinction
-  pinMode(35, INPUT);    //Entrée capteur Infra-Rouge
-  if (ESP32type >= 8  ) {  //Capacitive
+  pinMode(4, OUTPUT);                   //LED rouge
+  pinMode(16, OUTPUT);                  //LED bleue ou verte
+  pinMode(17, OUTPUT);                  //LED bleue ou verte
+  digitalWrite(4, 1);                   //Extinction
+  digitalWrite(16, 1);                  //Extinction
+  digitalWrite(17, 1);                  //Extinction
+  pinMode(35, INPUT);                   //Entrée capteur Infra-Rouge
+  if (ESP32type >= 8 && ESP32type <= 9) {  //Capacitive
     delay(100);
     touch = new CST820(I2C_SDA, I2C_SCL, TP_RST, TP_INT);
     touch->begin();
+  } else if (ESP32type == 101) {
+    touchGT911 = new initGT911(&Wire, TOUCH_ADDR);
+    // Initialize I2C
+    Wire.begin(I2C_SDA, I2C_SCL, I2C_FREQ);
+    // Initialize GT911 in polling mode
+    if (touchGT911->begin(TP_INT, TP_RST, I2C_FREQ)) {
+      Serial.println("GT911 initialized in polling mode");
+      touchGT911->setupDisplay(240, 320, initGT911::Rotate::_90);
+    } else {
+      Serial.println("Failed to initialize GT911");
+    }
   }
   lcd = new LGFX(ESP32type);
   lcd->init();
   // Réinitialiser le mode non miroir
   lcd->writecommand(0x36);  // Commande MADCTL
   lcd->writedata(0x00);     // Mode normal sans inversion
-  int R=rotation;
-  if (ESP32_Type ==9) R=(R+2)%4;
+  int R = rotation;
+  if (ESP32_Type == 9) R = (R + 2) % 4;
   lcd->setRotation(R);
   SetCouleurs();
   lcd->setFont(&fonts::AsciiFont8x16);
   if (Calibre[7] != 0 && ESP32type < 8) {
     lcd->setTouchCalibrate(Calibre);  //Ancienne calibration ecran
   }
-  NumPage=NumPageBoot;
-  ScreenOn=true;
-  ReDraw=true;
+  NumPage = NumPageBoot;
+  ScreenOn = true;
+  ReDraw = true;
   TraceMessages();
 }
 void Ecran_Loop() {
@@ -110,7 +122,7 @@ void Ecran_Loop() {
   if (millis() - runtime_click > 100) {  //Anti-glitch
     bool touched = false;
     runtime_click = millis();
-    if (ESP32_Type >= 8) {  //Capacitif
+    if (ESP32_Type >= 8 && ESP32_Type <= 9) {  //Capacitif CST820
       uint8_t gesture;
       uint16_t touchX, touchY, temp;
       if (touch->getTouch(&touchX, &touchY, &gesture)) {
@@ -134,7 +146,36 @@ void Ecran_Loop() {
         ClickX = (int16_t)touchX;
         ClickY = (int16_t)touchY;
       }
+    } else if (ESP32_Type == 101) {  //Capacitif GT911
+                                     // Polling mode
+      uint8_t touchCount = touchGT911->touched(GT911_MODE_POLLING);
 
+      if (touchCount > 0) {
+        touched = true;
+        int16_t temp;
+        for (uint8_t i = 0; i < touchCount; i++) { //Attention Multitouch
+          GTPoint p = touchGT911->getPoint(i);
+          ClickX = p.x;
+          ClickY = p.y;
+          switch (rotation) {
+            case 0:
+              ClickX = 239 - ClickX;
+              ClickY = 319 - ClickY;
+              break;
+            case 1:
+              temp = ClickX;
+              ClickX = 319 - ClickY;
+              ClickY = temp;
+              break;
+            case 3:
+              temp = ClickX;
+              ClickX = ClickY;
+              ClickY = 239 - temp;
+              break;
+          }
+          
+        }
+      }
     } else {  //Resistif
       if (lcd->getTouch(&ClickX, &ClickY)) {
         touched = true;
@@ -149,9 +190,9 @@ void Ecran_Loop() {
         GoPage(NumPage);
       } else {  //L'écran est déjà allumé
 
-        ClickCount++;                                           // Suite de click si on reste appuyé
-        if (ClickCount > 15 && ESP32_Type <8) TraceCalibr();  //Pression de 3s force la calibration des resistifs
-        if (Calibre[7] == 0 && ESP32_Type <8) {               //Pas encore calibré
+        ClickCount++;                                          // Suite de click si on reste appuyé
+        if (ClickCount > 15 && ESP32_Type < 8) TraceCalibr();  //Pression de 3s force la calibration des resistifs
+        if (Calibre[7] == 0 && ESP32_Type < 8) {               //Pas encore calibré
           TraceCalibr();
         } else {
           if (ClickCount > 1 && abs(ClickY - LastClickY) > 30) {  // Déplacement vertical du doigt
@@ -759,7 +800,7 @@ void TraceReseau() {
 }
 
 void TraceCalibr() {
-  if (ESP32_Type <8) {
+  if (ESP32_Type < 8) {
     lcd->fillScreen(CoulFond);
     lcd->setTextColor(CoulTexte, CoulFond);
     PrintCentre("Calibration", -1, lcd->height() / 2, 2.5);
@@ -784,53 +825,53 @@ void TraceWcolor() {
     if (LesActions[i].Actif != MODE_INACTIF) {
       String S = LesActions[i].Titre + " : " + String(100 - Retard[i]) + "%";
       PrintDroite(S, lcd->width() - 2, 2, 1.5);
-      i=NbActions;
+      i = NbActions;
     }
   }
   TraceDate();
   TraceTarif();
 }
 void TraceGaugeW() {
-  int C=lcd->height() / 1.5;
-  int W=lcd->width();
-  int W2=W/2;
-  float Teta0,Teta1;
-  int R0=min(lcd->width(),lcd->height());
-  R0=R0/3.1;
-  int R1=1.5*R0;
+  int C = lcd->height() / 1.5;
+  int W = lcd->width();
+  int W2 = W / 2;
+  float Teta0, Teta1;
+  int R0 = min(lcd->width(), lcd->height());
+  R0 = R0 / 3.1;
+  int R1 = 1.5 * R0;
   lcd->fillScreen(CoulFond);
   lcd->setTextColor(CoulTexte, CoulFond);
-  Teta0=-180;
-  Teta1=Teta0+180*2500/9000;
-  lcd->fillArc(W2,C,R0,R1,Teta0,Teta1,TFT_BLUE);
-  Teta0=Teta1;
-  Teta1=Teta0+180/9;
-  lcd->fillArc(W2,C,R0,R1,Teta0,Teta1,TFT_GREEN);
-  Teta0=Teta1;
-  Teta1=Teta0+180*35/90;
-  lcd->fillArc(W2,C,R0,R1,Teta0,Teta1,TFT_ORANGE);
-  Teta0=Teta1;
-  Teta1=0.0;
-  lcd->fillArc(W2,C,R0,R1,Teta0,Teta1,TFT_RED);
+  Teta0 = -180;
+  Teta1 = Teta0 + 180 * 2500 / 9000;
+  lcd->fillArc(W2, C, R0, R1, Teta0, Teta1, TFT_BLUE);
+  Teta0 = Teta1;
+  Teta1 = Teta0 + 180 / 9;
+  lcd->fillArc(W2, C, R0, R1, Teta0, Teta1, TFT_GREEN);
+  Teta0 = Teta1;
+  Teta1 = Teta0 + 180 * 35 / 90;
+  lcd->fillArc(W2, C, R0, R1, Teta0, Teta1, TFT_ORANGE);
+  Teta0 = Teta1;
+  Teta1 = 0.0;
+  lcd->fillArc(W2, C, R0, R1, Teta0, Teta1, TFT_RED);
   lcd->setFont(&fonts::FreeSansBold18pt7b);
   PrintCentre(String(PuissanceS_M - PuissanceI_M) + " W", W2, C, 2);
   lcd->setFont(&fonts::AsciiFont8x16);
   for (int i = 0; i < NbActions; i++) {
     if (LesActions[i].Actif != MODE_INACTIF) {
-      String S = LesActions[i].Titre ;
+      String S = LesActions[i].Titre;
       PrintDroite(S, lcd->width() - 50, 2, 1.5);
-      lcd->fillCircle(lcd->width() - 22,22,18,CoulTexte);
-      Teta0=-90;
-      Teta1=Teta0 + 3.60*(100-Retard[i]);
-      lcd->fillArc(lcd->width() - 22,22,0,18,Teta0,Teta1,CoulW);
-      i=NbActions;
+      lcd->fillCircle(lcd->width() - 22, 22, 18, CoulTexte);
+      Teta0 = -90;
+      Teta1 = Teta0 + 3.60 * (100 - Retard[i]);
+      lcd->fillArc(lcd->width() - 22, 22, 0, 18, Teta0, Teta1, CoulW);
+      i = NbActions;
     }
   }
-  Teta0=-PI + PI*float(PuissanceS_M - PuissanceI_M+3000.0)/9000.0;
-  Teta0=min(Teta0,float(0));
-  Teta0=max(float(-PI),Teta0);
-  R0=0.5*R0;
-  lcd->fillTriangle(W2+R1*cos(Teta0),C+R1*sin(Teta0),W2+R0*cos(Teta0-0.2),C+R0*sin(Teta0-0.2),W2+R0*cos(Teta0+0.2),C+R0*sin(Teta0+0.2),CoulTexte); //Aiguilles
+  Teta0 = -PI + PI * float(PuissanceS_M - PuissanceI_M + 3000.0) / 9000.0;
+  Teta0 = min(Teta0, float(0));
+  Teta0 = max(float(-PI), Teta0);
+  R0 = 0.5 * R0;
+  lcd->fillTriangle(W2 + R1 * cos(Teta0), C + R1 * sin(Teta0), W2 + R0 * cos(Teta0 - 0.2), C + R0 * sin(Teta0 - 0.2), W2 + R0 * cos(Teta0 + 0.2), C + R0 * sin(Teta0 + 0.2), CoulTexte);  //Aiguilles
   TraceDate();
   TraceTarif();
 }

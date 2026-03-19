@@ -210,6 +210,9 @@ const char *ActionsHtml = R"====(
             font-size:14px;font-weight:bold;color:#333;z-index:10;
             box-shadow:0 2px 5px rgba(0,0,0,0.3);touch-action:none;user-select:none;
         }
+        input[type='range'] { pointer-events: none; }
+        input[type='range']::-webkit-slider-thumb { pointer-events: all; cursor:ew-resize; }
+        input[type='range']::-moz-range-thumb { pointer-events: all; cursor:ew-resize; }
     </style>
 </head>
 

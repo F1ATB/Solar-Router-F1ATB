@@ -109,7 +109,7 @@ void DecodeSerial() {
     ssid = valeur;
     ModeReseau = 0;          // A priori
     dhcpOn = 1;              //Au cas ou l'on change de mapping des adresses LAN
-    if (ESP32_Type >= 10) {  //Carte Ethernet
+    if (ESP32_Type == 10) {  //Carte Ethernet
       ESP32_Type = 0;
     }
     EcritureEnROM();

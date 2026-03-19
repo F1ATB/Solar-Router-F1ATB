@@ -22,7 +22,7 @@ const char *ParaHtml = R"====(
     .boldT { text-align:left; font-weight:bold; padding:10px; }
     .Bparametres { border: inset 10px azure; }
     .Bgeneraux { border: inset 4px azure; }
-    #BoutonsBas { text-align:center; }
+    #BoutonsBas { text-align:center; display: flex;justify-content: space-around;}
     #ligneFixe, .ligneTemperature, #ligneExt,#ligneExtIPauto, #ligneEnphaseUser, #ligneEnphasePwd, #ligneEnphaseSerial,
     #infoIP, #ligneTopicP, #ligneTopicT { display:none; }
     .Zone, .generaux { width:100%; border:1px solid grey; border-radius:10px; margin-top:10px;
@@ -137,6 +137,7 @@ const char *ParaHtml = R"====(
             <option value="7">Ecran ESP32-024 R_ST7789</option>
             <option value="8">Ecran ESP32-2432S024C C_ILI9341</option>
             <option value="9">Ecran JC2432W328 C_ST7789</option>
+            <option value="101">Ecran ESP32-2432S032C ST7789</option>
             <option value="10">WT32-ETH01</option>
           </select>
         </div>
@@ -498,12 +499,17 @@ const char *ParaHtml = R"====(
         </div>
       </div>
     </div>
-
+    <br>
     <div id="BoutonsBas">
-      <br>
-      <input class="bouton" type="button" onclick="SendValues();" value="Sauvegarder">
-      <div class="lds-dual-ring" id="attente"></div>
-      <input class="bouton" type="button" onclick="Reset();" value="ESP32 Restart">
+      <div>
+        <input class="bouton" type="button" onclick="SendValues();" value="Sauvegarder">
+      </div>
+      <div>
+        <div class="lds-dual-ring" id="attente"></div>
+      </div>
+      <div>
+        <input class="bouton" type="button" onclick="Reset();" value="ESP32 Restart">
+      </div>
     </div>
   </div>
   <br>

@@ -112,7 +112,7 @@ const char *ExportHtml = R"====(
         }
         function SetParaFixe(){
           LoadParaVar(); 
-          GID("Bwifi").style.display= (F.ESP32_Type<10) ? "inline-block": "none";
+          GID("Bwifi").style.display= (F.ESP32_Type!=10) ? "inline-block": "none";
           Set_Couleurs();
         }
         function SetParaVar(){

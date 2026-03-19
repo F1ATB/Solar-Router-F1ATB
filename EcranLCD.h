@@ -10,7 +10,8 @@ enum ScreenType {
   S024_SCREEN_ILI9341_BL27 = 6,
   S024_SCREEN_ST7789_BL27 = 7,
   S024C_SCREEN_ILI9341_BL27 = 8,
-  S028C_JC2432W328_ST7789_BL27 = 9
+  S028C_JC2432W328_ST7789_BL27 = 9,
+  ESP32_2432S032C_ST7789_BL27 = 101
 };
 
 #define LCD_MOSI 13
@@ -40,6 +41,8 @@ enum ScreenType {
 #define I2C_SCL 32  // Touch screen SCL pin
 #define TP_RST 25   // Touch screen reset pin
 #define TP_INT 21   // Touch screen interrupt pin
+#define TOUCH_ADDR 0x5D  //GT911_I2C_ADDR_5D
+#define I2C_FREQ 400000
 
 
 class LGFX : public lgfx::LGFX_Device {
@@ -76,7 +79,7 @@ private:
   }
 
   void initPanel(ScreenType type) {
-    if (type == S028_SCREEN_ST7789_BL21 || type == S024_SCREEN_ST7789_BL27 || type == S028C_JC2432W328_ST7789_BL27) {
+    if (type == S028_SCREEN_ST7789_BL21 || type == S024_SCREEN_ST7789_BL27 || type == S028C_JC2432W328_ST7789_BL27 || type == ESP32_2432S032C_ST7789_BL27) {
       auto* p = new lgfx::Panel_ST7789();
       auto cfg = p->config();
       cfg.pin_cs = LCD_CS;
@@ -93,6 +96,7 @@ private:
       cfg.dummy_read_bits = 1;
       cfg.readable = true;
       cfg.invert = false;
+      if (type == ESP32_2432S032C_ST7789_BL27) cfg.invert = true;
       cfg.rgb_order = false;
       cfg.dlen_16bit = false;
       cfg.bus_shared = true;
@@ -128,7 +132,7 @@ private:
   }
   void initBacklight(ScreenType type) {
     auto cfg = _light.config();
-    if (type == S024_SCREEN_ILI9341_BL27 || type == S024_SCREEN_ST7789_BL27 || type == S024C_SCREEN_ILI9341_BL27 || type== S028C_JC2432W328_ST7789_BL27) {
+    if (type == S024_SCREEN_ILI9341_BL27 || type == S024_SCREEN_ST7789_BL27 || type == S024C_SCREEN_ILI9341_BL27 || type== S028C_JC2432W328_ST7789_BL27 || type == ESP32_2432S032C_ST7789_BL27) {
       cfg.pin_bl = LCD_BL_27;
     } else {
       cfg.pin_bl = LCD_BL_21;
@@ -142,7 +146,7 @@ private:
 
 
   void initTouch(ScreenType type) {
-    if (type != S024C_SCREEN_ILI9341_BL27  && type !=S028C_JC2432W328_ST7789_BL27) { //Touch resistifs seulement
+    if (type != S024C_SCREEN_ILI9341_BL27  && type !=S028C_JC2432W328_ST7789_BL27 &&  type != ESP32_2432S032C_ST7789_BL27) { //Touch resistifs seulement
       auto cfg = _touch.config();
       cfg.x_min = 0;
       cfg.x_max = 239;

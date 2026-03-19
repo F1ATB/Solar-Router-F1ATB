@@ -102,7 +102,7 @@ function TracePlanning(iAct) {
     S += "<div class='les_select' id='sortie" + iAct + "'>";
     S += "<div class='TitZone' title='Définir la broche (GPIO) ou commande'>Sortie</div>" + SelectPin + SelectOut;
     S += "<div><span id='Tempo" + iAct + "'>Temporisation(s) <input type='number' class='tm' id='tempo" + iAct + "' title='Temporisation entre chaque changement d&apos;état pour éviter des oscillations quand un appareil dans la maison consomme en dents de scie (Ex: un four).'></span></div>";
-    S += "<div>Ouverture si forcée<input type='number' class='tm' id='ForceOuvre" + iAct + "' min='0' max='100' step='1' title='Ouverture prioritaire maximum en % si action forcée'>%</span> </div>";
+    S += "<div><span id='forceOuvre" + iAct + "'>Ouverture si forcée<input type='number' class='tm' id='ForceOuvre" + iAct + "' min='0' max='100' step='1' title='Ouverture prioritaire maximum en % si action forcée'>%</span> </div>";
     S += "</div><div class='les_select' id='ligne_bas" + iAct + "'><div class='TitZone'>Externe</div>";
     S += "<div><span id='Host" + iAct + "'>Host<br><input type='text' id='host" + iAct + "' onchange='checkDisabled();' title='Adresse IP machine sur réseau LAN, nom de domaine ou rien.'></span></div>";
     S += "<div><span id='Port" + iAct + "'>Port<br><input type='number' class='tm' id='port" + iAct + "' title='Port d&apos;acc&egrave;s via le protocole http , uniquement pour machine distante. En g&eacute;n&eacute;ral <b>80</b>.'></span></div>";
@@ -351,6 +351,7 @@ function dragHandle(ev, iAct) {
     }
    
    action.Periodes[iPeriode].Hfin = Math.floor(NewHfin);
+   draggedHandle.element.textContent = Hdeci2Hmn(Math.floor(NewHfin));
    var H0 = (iPeriode > 0) ? action.Periodes[iPeriode - 1].Hfin : 0;
     var left = H0 / 24;
     var w = (NewHfin - H0) / 24;
@@ -851,11 +852,13 @@ function checkDisabled() {
 
         show(`blocPlanning${iAct}`, actifVisible);
         show(`visu${iAct}`, actifVisible);
+        show(`forceOuvre${iAct}`, actifVisible);
 
         // Mode On/Off simple → pas de visu/graph
         if (actif === 1 && iAct > 0) {
             show(`graphAction${iAct}`, "none");
             show(`visu${iAct}`, "none");
+            show(`forceOuvre${iAct}`, "none");
         }
 
         // Zones Host/Port/Repet

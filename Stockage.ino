@@ -4,11 +4,6 @@
 String Record_Conf = "";
 
 
-void LectureConsoMatinJour(void) {
-
-  Energie_jour_Soutiree = 0;  // en Wh
-  Energie_jour_Injectee = 0;  // en Wh
-}
 
 
 void EcritureEnROM() {
@@ -16,9 +11,9 @@ void EcritureEnROM() {
     MQTTRepet = 0;
     subMQTT = 0;
   }
-  
+
   Calibration();
-  RecordFichierParametres(); //Nouveau stockage depuis V17
+  RecordFichierParametres();  //Nouveau stockage depuis V17
 }
 void Calibration() {
   kV = KV * float(CalibU) / 1000.0;  //Calibration coefficient to be applied
@@ -129,6 +124,66 @@ void StockFichier(String filename, String Contenu) {  //Fichier de données
   file.close();
   Serial.println("Ecriture fichier : " + filename);
 }
+void RecordEnergieMinuit(String date) {
+  JsonDocument conf;
+
+  conf["Date"] = date;
+  conf["Energie_M_Soutiree"] = Energie_M_Soutiree;
+  conf["Energie_M_Injectee"] = Energie_M_Injectee;
+  conf["Energie_T_Soutiree"] = Energie_T_Soutiree;
+  conf["Energie_T_Injectee"] = Energie_T_Injectee;
+  String Json;
+  serializeJson(conf, Json);
+  File file = LittleFS.open("/EnergieMinuit.eng", FILE_WRITE);
+  file.print(Json);  //Fichier au format JSON
+  file.close();
+  Serial.println("Ecriture fichier EnergieMinuit.eng");
+}
+void LectureConsoMatinJour(void) {
+  if (!LittleFS.exists("/EnergieMinuit.eng")) {  //Fichier pas encore crée
+    RecordEnergieMinuit(DateAMJ);
+  }
+
+  File file = LittleFS.open("/EnergieMinuit.eng", "r");  //Fichier energie de la veille
+  Serial.println("Lecture du fichier /EnergieMinuit.eng");
+  String json = file.readString();  // lit tout le fichier
+  file.close();
+  Serial.print("Json Energie reçu:");
+  Serial.println(json);
+  JsonDocument conf;
+  DeserializationError error = deserializeJson(conf, json);
+
+  if (error) {
+    Serial.print("Erreur de parsing des paramètres: ");
+    Serial.println(error.c_str());
+    return;
+  }
+
+  EAS_T_J0 = conf["Energie_T_Soutiree"];  //Triac
+  EAI_T_J0 = conf["Energie_T_Injectee"];
+  EAS_M_J0 = conf["Energie_M_Soutiree"];  //Maison
+  EAI_M_J0 = conf["Energie_M_Injectee"];
+
+  if (Energie_T_Soutiree < EAS_T_J0) {
+    Energie_T_Soutiree = EAS_T_J0;
+  }
+  if (Energie_T_Injectee < EAI_T_J0) {
+    Energie_T_Injectee = EAI_T_J0;
+  }
+  if (Energie_M_Soutiree < EAS_M_J0) {
+    Energie_M_Soutiree = EAS_M_J0;
+  }
+  if (Energie_M_Injectee < EAI_M_J0) {
+    Energie_M_Injectee = EAI_M_J0;
+  }
+}
+void RAZ_Histo_Conso() {
+  Energie_T_Soutiree = 0;
+  Energie_T_Injectee = 0;
+  Energie_M_Soutiree = 0;
+  Energie_M_Injectee = 0;
+  RecordEnergieMinuit("");
+}
 //Importation des paramètres
 //***************************
 void ImportParametres(String Conf) {
@@ -148,9 +203,9 @@ void DeserializeConfiguration(String json) {
     Serial.println(error.c_str());
     return;
   }
-  
+
   String V = Version;
- 
+
   int Versioncompile = round(100 * V.toFloat());
   int VersionStocke = conf["VersionStocke"];
   ssid = conf["ssid"].as<String>();
@@ -183,7 +238,7 @@ void DeserializeConfiguration(String json) {
   pTemp = conf["pTemp"];
   Source = conf["Source"].as<String>();
   RMSextIP = conf["RMSextIP"];
-  RMSextIPauto= conf["RMSextIPauto"].isNull() ? RMSextIPauto: conf["RMSextIPauto"];
+  RMSextIPauto = conf["RMSextIPauto"].isNull() ? RMSextIPauto : conf["RMSextIPauto"];
   EnphaseUser = conf["EnphaseUser"].as<String>();
   EnphasePwd = conf["EnphasePwd"].as<String>();
   EnphaseSerial = conf["EnphaseSerial"].as<String>();
@@ -215,7 +270,7 @@ void DeserializeConfiguration(String json) {
   }
   CalibU = conf["CalibU"];
   CalibI = conf["CalibI"];
-  Calibration(); //pour UxI
+  Calibration();  //pour UxI
   TempoRTEon = conf["TempoRTEon"];
   WifiSleep = conf["WifiSleep"];
   ComSurv = conf["ComSurv"];
@@ -275,7 +330,7 @@ void DeserializeConfiguration(String json) {
     }
     iAct++;
   }
-  if(Versioncompile != VersionStocke) RecordFichierParametres(); //Mise à jour num version
+  if (Versioncompile != VersionStocke) RecordFichierParametres();  //Mise à jour num version
 }
 
 String SerializeConfiguration() {
@@ -314,7 +369,7 @@ String SerializeConfiguration() {
   conf["pTemp"] = pTemp;
   conf["Source"] = Source;
   conf["RMSextIP"] = RMSextIP;
-  conf["RMSextIPauto"] =RMSextIPauto;
+  conf["RMSextIPauto"] = RMSextIPauto;
   conf["EnphaseUser"] = EnphaseUser;
   conf["EnphasePwd"] = EnphasePwd;
   conf["EnphaseSerial"] = EnphaseSerial;
@@ -445,16 +500,16 @@ void Record_Data(String dateAMJ, String MesSage, int16_t HeureCouranteDeci_) {
 
   String New_Record_Conf = "Date";
   String Data = dateAMJ + "," + String(EnergieJour_M_Soutiree) + "," + String(EnergieJour_M_Injectee);
-  if (EnergieJour_M_Soutiree>1000000 || EnergieJour_M_Injectee>1000000) Data = dateAMJ + ", ," ; //Aberration à certains ReseT
+  if (EnergieJour_M_Soutiree > 1000000 || EnergieJour_M_Injectee > 1000000) Data = dateAMJ + ", ,";  //Aberration à certains ReseT
   New_Record_Conf += "," + Filtre_Nom(nomSondeMobile) + " / Soutirée," + Filtre_Nom(nomSondeMobile) + " / Injectée";
-  if (nomSondeFixe != "" && nomSfixePpos != "" && biSonde && EnergieJour_T_Soutiree<1000000) {
+  if (nomSondeFixe != "" && nomSfixePpos != "" && biSonde && EnergieJour_T_Soutiree < 1000000) {
     New_Record_Conf += "," + Filtre_Nom(nomSondeFixe) + " / " + Filtre_Nom(nomSfixePpos);
     Data += "," + String(EnergieJour_T_Soutiree);
   } else {
     New_Record_Conf += ",";  //Colonne vide
     Data += ",";
   }
-  if (nomSondeFixe != "" && nomSfixePneg != "" && biSonde && EnergieJour_T_Injectee<1000000) {
+  if (nomSondeFixe != "" && nomSfixePneg != "" && biSonde && EnergieJour_T_Injectee < 1000000) {
     New_Record_Conf += "," + Filtre_Nom(nomSondeFixe) + " / " + Filtre_Nom(nomSfixePneg);
     Data += "," + String(EnergieJour_T_Injectee);
   } else {
