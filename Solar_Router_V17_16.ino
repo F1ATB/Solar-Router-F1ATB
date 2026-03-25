@@ -49,7 +49,7 @@
     Relance découverte MQTT toutes les 5mn
     Re-écriture de la surveillance par watchdog suite au changement de bibliothèque 3.0.x carte ESP32
     Estimation temps equivalent d'ouverture max du Triac et relais cumulée depuis 6h du matin. Prise en compte de la puissance en sin² du mode découpe
-    Correction d'un bug de syntaxe non détecté par le compilateur depuis la version V9 affectant les communications d'un ESP esclave vers le maître
+    Correction d'un bug de syntaxe non détecté par le compilateur depuis la version V9 affectant les communications d'un ESP secondaire vers l'ESP principal
     Affichage de l'occupation RAM
   - V11.10
     Nouvelle source de mesure Shelly Pro Em
@@ -202,7 +202,7 @@
   - V16.00
     Introduction du filtrage PID
   - V16.01
-    Possibilité de choisir un routeur maître en Horloge
+    Possibilité de choisir un routeur principal en Horloge
     Correction bug affichage Action
     Blocage integrateur I du PID à 50 si non utilisé
   - V16.02
@@ -289,7 +289,12 @@
   - Version 17.16
     Introduction écran 3.2 pouces ESP32-2432S032C capacitif
     Correction bug sur curseurs avec Firefox
-  
+  - Version 17.17
+    Nouveau mode Séquenceur de relais (MODE_SEQUENCEUR=6) : distribution séquentielle de la puissance sur
+    un groupe de charges résistives pilotées par des SSR séparés pour réduire les harmoniques.
+    Un séquenceur virtuel (PID sans GPIO) distribue son ouverture vers N relais gérés selon une
+    formule staircase pondérée par la puissance nominale de chaque charge.
+
   Les détails sont disponibles sur / Details are available here:
   https://f1atb.fr  Section Domotique / Home Automation
 
@@ -365,6 +370,7 @@
 #define MODE_TRAINSINUS 3
 #define MODE_PWM 4
 #define MODE_DEMISINUS 5
+#define MODE_SEQUENCEUR 6  // Séquenceur de relais : PID virtuel sans GPIO, distribue l'ouverture sur ses relais gérés
 
 
 
@@ -801,7 +807,7 @@ void IRAM_ATTR GestionIT_10ms() {
   for (int i = 0; i < NbActions; i++) {
     switch (Actif[i]) {   //valeur en RAM
       case MODE_INACTIF:  //Inactif
-
+      case MODE_SEQUENCEUR:  //Inactif
         break;
       case MODE_DECOUPE_ONOFF:  //Decoupe Sinus uniquement pour Triac
         if (i == 0) {
@@ -1673,6 +1679,46 @@ void loop() {
 // ************
 // *  ACTIONS *
 // ************
+
+// Applique Retard[idx] aux variables ISR (PulseOn, PulseTotal, RelaisOn/Arreter)
+// selon le mode de régulation de l'action. Appelé après tout calcul de Retard[],
+// aussi bien dans la boucle principale que dans la passe de distribution du séquenceur.
+void AppliquerRetard(int idx) {
+  if (Retard[idx] == 100) {  // Force en cas d'arret des IT
+    LesActions[idx].Arreter();
+    PulseOn[idx] = 0;  //Stop Triac ou relais
+  } else {
+    switch (Actif[idx]) {    //valeur en RAM du Mode de regulation
+      case MODE_DECOUPE_ONOFF: // Découpe Sinus (Triac) ou On/Off (relais)
+        if (idx > 0) LesActions[idx].RelaisOn();  // idx==0 est le Triac, piloté par l'ISR ZC
+        break;
+      case MODE_MULTISINUS:    // Multi Sinus
+        PulseOn[idx]    = tabPulseSinusOn[100 - Retard[idx]];
+        PulseTotal[idx] = tabPulseSinusTotal[100 - Retard[idx]];
+        if (PulseComptage[idx] >= PulseTotal[idx]) PulseComptage[idx] = 0;
+        break;
+      case MODE_TRAINSINUS:    // Train de Sinus
+        PulseOn[idx]    = 100 - Retard[idx];
+        PulseTotal[idx] = 99;  // Nombre impair pour éviter courant continu
+        if (testTrame > 0) {   // Mode test de mesure de puissance
+          PulseOn[idx]    = testPulse;
+          PulseTotal[idx] = testTrame;
+        }
+        break;
+      case MODE_PWM: {         //PWM
+        int Vout_pwm = int(RetardF[idx] * 2.55f);
+        if (OutOn[idx] == 1) Vout_pwm = 255 - Vout_pwm;
+        ledcWrite(Gpio[idx], Vout_pwm);
+        break;
+      }
+      case MODE_DEMISINUS:     // Demi-Sinus
+        PulseOn[idx]    = 100 - Retard[idx];  // Avance de phase
+        if (PulseTotal[idx] > 1) PulseTotal[idx] = 0;  // 0/1 = mémorise le signe du dernier demi-sinus (phase230V dernier pulse)
+        break;
+    }
+  }
+}
+
 void GestionOverproduction() {  // chaque 200ms (adaptation 5 fois par seconde)
   float SeuilPw, ErrorPw = 0, Derive = 0;
   float MaxTriacPw;
@@ -1681,8 +1727,6 @@ void GestionOverproduction() {  // chaque 200ms (adaptation 5 fois par seconde)
   int LeCanalTemp;
   bool forceOff;
   bool lissage = false;
-  int Vout;
-  int pos = 0;
   //Puissance est la puissance en entrée de maison. >0 si soutire. <0 si injecte
   //Cas du Triac. Action 0
 
@@ -1692,6 +1736,7 @@ void GestionOverproduction() {  // chaque 200ms (adaptation 5 fois par seconde)
   for (int i = 0; i < NbActions; i++) {
     Actif[i] = LesActions[i].Actif;                                                                                //0=Inactif,1=Decoupe ou On/Off, 2=Multi, 3= Train , 4=PWM, 5=Demi-Sinus
     if (Actif[i] == MODE_MULTISINUS || Actif[i] == MODE_TRAINSINUS || Actif[i] == MODE_DEMISINUS) lissage = true;  //En RAM
+    if (LesActions[i].IdxSequenceur >= 0) continue;  // Relais séquencé : skip PID, géré par la passe de distribution
     forceOff = false;
 
     LeCanalTemp = LesActions[i].CanalTempEnCours(HeureCouranteDeci);
@@ -1757,43 +1802,67 @@ void GestionOverproduction() {  // chaque 200ms (adaptation 5 fois par seconde)
       snprintf(buffer, sizeof(buffer), "Ecart= %4.0fW Retard= %3u P= %4.1f I= %4.1f D= %4.1f", ErrorPw, Retard[i], Propor[i], IntegrErrorPw[i], DeriveF[i]);
       TelnetPrintln(String(buffer));
     }
-    if (Retard[i] == 100) {  // Force en cas d'arret des IT
-      LesActions[i].Arreter();
-      PulseOn[i] = 0;  //Stop Triac ou relais
-    } else {
-
-      switch (Actif[i]) {         //valeur en RAM du Mode de regulation
-        case MODE_DECOUPE_ONOFF:  //Decoupe Sinus pour Triac ou On/Off pour relais
-          if (i > 0) LesActions[i].RelaisOn();
-          break;
-        case MODE_MULTISINUS:  // Multi Sinus
-          PulseOn[i] = tabPulseSinusOn[100 - Retard[i]];
-          PulseTotal[i] = tabPulseSinusTotal[100 - Retard[i]];
-          pos = PulseComptage[i];
-          if (pos >= PulseTotal[i]) {
-            PulseComptage[i] = 0;
-          }
-          break;
-        case MODE_TRAINSINUS:  // Train de Sinus
-          PulseOn[i] = 100 - Retard[i];
-          PulseTotal[i] = 99;  //Nombre impair pour éviter courant continu
-          if (testTrame > 0) {
-            PulseOn[i] = testPulse;     //mode Test mesure de Puissance
-            PulseTotal[i] = testTrame;  //
-          }
-          break;
-        case MODE_PWM:  //PWM
-          Vout = int(RetardF[i] * 2.55);
-          if (OutOn[i] == 1) Vout = 255 - Vout;
-          ledcWrite(Gpio[i], Vout);
-          break;
-        case MODE_DEMISINUS:                         // Demi-Sinus
-          PulseOn[i] = 100 - Retard[i];              //Avance de phase
-          if (PulseTotal[i] > 1) PulseTotal[i] = 0;  //0 ou 1 pour mémoriser phase230V dernier pulse
-          break;
+    AppliquerRetard(i);
+  }
+  // --- Distribution séquenceur : calcul des Retard[] des relais gérés depuis leur séquenceur ---
+  // Note : idxRelaisGeres, puissRelais et puissTotale sont recalculés à chaque appel (200 ms)
+  // plutôt que mis en cache. Le coût estimé est ~1-2 µs par cycle soit < 0,001 % du
+  // temps CPU, négligeable face au PID float (~5 µs/action) et au stack WiFi (>> 100 µs).
+  // Un cache nécessiterait +400 octets de RAM et un mécanisme d'invalidation sur
+  // chaque sauvegarde de paramètres — complexité disproportionnée au gain.
+  for (int iSeq = 0; iSeq < NbActions; iSeq++) {
+    if (LesActions[iSeq].Actif != MODE_SEQUENCEUR) continue;
+    // Collecter les relais gérés et la puissance totale du groupe
+    int idxRelaisGeres[LES_ACTIONS_LENGTH];
+    int puissRelais[LES_ACTIONS_LENGTH];
+    int nbRelaisGeres = 0;
+    int puissTotale = 0;
+    for (int j = 0; j < NbActions; j++) {
+      if (LesActions[j].IdxSequenceur == iSeq) {
+        idxRelaisGeres[nbRelaisGeres] = j;
+        int p = (LesActions[j].PuissanceCharge > 0) ? LesActions[j].PuissanceCharge : 1000;
+        puissRelais[nbRelaisGeres] = p;
+        puissTotale += p;
+        nbRelaisGeres++;
       }
     }
+    if (nbRelaisGeres == 0 || puissTotale == 0) continue;
+    // ouvertureGroupe = fraction de la puissance totale du groupe demandée [0.0 .. 1.0]
+    float t = 1.0f - (RetardF[iSeq] / 100.0f);
+    // Distribution pondérée en staircase
+    float puissCumul = 0.0f;
+    for (int r = 0; r < nbRelaisGeres; r++) {
+      int j = idxRelaisGeres[r];
+      float fracPuiss = float(puissRelais[r]) / float(puissTotale);
+      float seuil     = puissCumul / float(puissTotale);
+      float ouverture = constrain((t - seuil) / fracPuiss, 0.0f, 1.0f);
+      puissCumul += puissRelais[r];
+      RetardF[j] = (1.0f - ouverture) * 100.0f;
+
+      // Forçage local d'un relais séquencé : prioritaire sur la distribution du séquenceur parent.
+      if (LesActions[j].tOnOff > 0) {
+        RetardF[j] = 100.0f - float(LesActions[j].ForceOuvre);  // Force On avec ouverture limitée
+      } else if (LesActions[j].tOnOff < 0) {
+        RetardF[j] = 100.0f;  // Force Off
+      }
+
+      Retard[j] = round(RetardF[j]);
+      if (RetardVx == j) {  //Affiche calcul distribution des retards port série ou Telnet
+        char buffer[80];
+        snprintf(buffer, sizeof(buffer),
+          "[relais %d <- seq %d]  GroupeOuv= %.2f%%  SeuilDemarrage= %.2f%%  FractionGroupe= %.2f%%  RelaisOuv= %.2f%%  Retard= %d",
+          j, iSeq,
+          t        * 100.0f,
+          seuil    * 100.0f,
+          fracPuiss* 100.0f,
+          ouverture* 100.0f,
+          Retard[j]);
+        TelnetPrintln(String(buffer));
+      }
+      AppliquerRetard(j);
+    }
   }
+
   LissageLong = lissage;
   //Sortie vers port Série ou Telnet
   if (dispPw || dispAct) {
@@ -1815,6 +1884,7 @@ void InitGPIOs() {
   if (ESP32_Type > 0) {
     //En premier pour affecter le GPIO au constructeur OneWire
     for (int i = 1; i < NbActions; i++) {
+      if (LesActions[i].Actif == MODE_SEQUENCEUR) continue;
       LesActions[i].InitGpio(Fpwm);
       Gpio[i] = LesActions[i].Gpio;
       OutOn[i] = LesActions[i].OutOn;

@@ -32,6 +32,8 @@ Action::Action(int aIdx) {
   ExtValide = 0;  //Condition Action externe
   ExtHequiv = 0;  //Duree heure *100 action externe
   ExtOuvert = 0;  //Pourcent ouverture
+  IdxSequenceur = -1;   // Action autonome par defaut (pas de sequenceur parent)
+  PuissanceCharge = 0;  // 0 => 1000 W par defaut lors de la distribution
   for (int i = 0; i < 8; i++) {
     Type[i] = 0;  //0=NO(pas utilisé),1=OFF,2=ON,3=PW,4=Triac
     Hdeb[i] = 0;
@@ -54,6 +56,10 @@ Action::Action(int aIdx) {
 
 
 void Action::Arreter() {
+  if (Actif == 6) {
+    On = false;
+    return;
+  }
   int Tseconde = int(millis() / 1000);
   if ((Tseconde - T_LastAction) >= Tempo || Idx == 0 || Actif != 1) {
     if (Gpio > 0) {
@@ -73,6 +79,10 @@ void Action::Arreter() {
   }
 }
 void Action::RelaisOn() {
+  if (Actif == 6) {
+    On = true;
+    return;
+  }
   int Tseconde = int(millis() / 1000);
   if ((Tseconde - T_LastAction) >= Tempo) {
     if (Gpio > 0) {
@@ -95,6 +105,7 @@ void Action::RelaisOn() {
   }
 }
 void Action::Prioritaire() {
+  if (Actif == 6) return;
   int tempo_ = Tempo;
   if (tOnOff != 0) {
     Tempo = 0;
@@ -226,6 +237,7 @@ void Action::InitGpio(int FreqPWM) {  //Initialise les sorties GPIO pour des rel
   if (Idx > 0) {
     T_LastAction = 0;
     Gpio = -1;
+    if (Actif == 6) return;  // Séquenceur: neutralise explicitement la pin puis quitte
     p = OrdreOn.indexOf(IS);
     if (p >= 0) {
       Gpio = OrdreOn.substring(0, p).toInt();
@@ -243,6 +255,7 @@ void Action::InitGpio(int FreqPWM) {  //Initialise les sorties GPIO pour des rel
   }
 }
 void Action::CallExterne(String host, String url, int port) {
+  if (Actif == 6) return;
   if (url != "") {
     // Use WiFiClient class to create TCP connections
     WiFiClient clientExt;

@@ -56,6 +56,9 @@ public:
 
   bool On, PID;
   float H_Ouvre;
+  // Séquenceur de relais (MODE_SEQUENCEUR=6)
+  int IdxSequenceur;    // -1: action autonome, >=0: index du séquenceur parent
+  int PuissanceCharge;  // Puissance nominale (W), 0 => valeur par défaut 1000 W
   byte Type[8];  //0=NO(pas utilisé),1=OFF,2=ON,3=PW,4=Triac
   int16_t Hdeb[8];
   int16_t Hfin[8];

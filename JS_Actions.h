@@ -47,13 +47,15 @@ function CreerAction(NumAction, Titre) {
         Ki: 10,
         Kd: 10,
         PID: 0,
-        ForceOuvre:100,
+        ForceOuvre: 100,
+        IdxSequenceur: -1,
+        PuissanceCharge: 0,
         Periodes: [{
                     Hfin: 2400,
                     Type: type,
                     Vmin: 0,
                     Vmax: 100,
-                    ONouvre :100,
+                    ONouvre: 100,
                     Tinf: 1600,
                     Tsup: 1600,
                     Hmin: 0,
@@ -81,7 +83,8 @@ function TracePlanning(iAct) {
     Radio1 += "<div><input type='radio' name='modeactif" + iAct + "' id='radio" + iAct + "-2' onclick='checkDisabled();'>Multi-sinus</div>";
     Radio1 += "<div><input type='radio' name='modeactif" + iAct + "' id='radio" + iAct + "-3' onclick='checkDisabled();'>Train de sinus</div>";
     Radio1 += "<div id='Pwm" + iAct + "'><input type='radio' name='modeactif" + iAct + "' id='radio" + iAct + "-4' onclick='checkDisabled();'>PWM</div>";
-    
+    Radio1 += "<div id='Sequenceur" + iAct + "'><input type='radio' name='modeactif" + iAct + "' id='radio" + iAct + "-6' onclick='checkDisabled();' title='Distribue la puissance séquentiellement sur plusieurs charges pour limiter les harmoniques'>Séquenceur de relais</div>";
+
     // Sélecteur de pin GPIO
     let SelectPin = "<div id='SelectPin" + iAct + "'>Gpio <select id='selectPin" + iAct + "' onchange='checkDisabled();' title='Choix broche (GPIO) de commande'>";
     for (let i = 0; i < Pins.length; i++) {
@@ -111,8 +114,27 @@ function TracePlanning(iAct) {
     S += "<div><span id='Repet" + iAct + "'>Répétition(s)<br><input type='number' id='repet" + iAct + "' class='tm' title='P&eacute;riode en s de r&eacute;p&eacute;tition/rafra&icirc;chissement de la commande. Uniquement pour les commandes vers l&apos;extérieur. 0= pas de répétition.'></span></div>";
     S += "</div>";
 
+    // Panneau séquenceur (informatif, affiché uniquement si mode=6)
+    S += "<div id='groupeSequenceur" + iAct + "' class='les_select' style='display:none;'>";
+    S += "<div class='TitZone'>S&eacute;quenceur de relais</div>";
+    S += "<div style='padding:4px;color:#aaa;font-size:0.9em;'>Ce mode distribue l'ouverture PID vers les relais gérés. Aucune sortie GPIO directe.</div>";
+    S += "</div>";
+
+    // Panneau relais séquencé : sélecteur de séquenceur parent + puissance nominale
+    let optionsSequenceur = "<option value='-1'>— aucun —</option>";
+    for (let m = 0; m < F.Actions.length; m++) {
+        if (m !== iAct && F.Actions[m].Actif === 6) {
+            optionsSequenceur += "<option value='" + m + "'>" + (F.Actions[m].Titre || ("Action " + m)) + "</option>";
+        }
+    }
+    S += "<div id='relaisSequence" + iAct + "' class='les_select' style='display:none;'>";
+    S += "<div class='TitZone'>Relais s&eacute;quenc&eacute;</div>";
+    S += "<div style='display:inline-block'><span>S&eacute;quenceur<br><select id='selectSequenceur" + iAct + "' onchange='checkDisabled();' title='S&eacute;quenceur qui distribue la puissance vers ce relais s&eacute;quenc&eacute;'>" + optionsSequenceur + "</select></span></div>";
+    S += "<div style='display:inline-block'><span>Puissance de la charge&nbsp;(W)<br><input type='number' class='tm' id='puissanceCharge" + iAct + "' min='0' max='10000' value='0' title='Puissance nominale de cette charge en W. 0 = 1000 W par d&eacute;faut.'></span></div>";
+    S += "</div>";
+
     // Curseurs PID
-    S += "<div class='bouton_curseur'><div class='boutons'><input  type='button' value='-' class='tbut' onclick='AddSub(-1," + iAct + ")' title='Retrait d&apos;une p&eacute;riode horaire.'>";
+    S += "<div id='planningControles" + iAct + "' class='bouton_curseur'><div class='boutons'><input  type='button' value='-' class='tbut' onclick='AddSub(-1," + iAct + ")' title='Retrait d&apos;une p&eacute;riode horaire.'>";
     S += "<input  type='button' value='+' class='tbut' onclick='AddSub(1," + iAct + ")' title='Ajout d&apos;une p&eacute;riode horaire.'></div>";
     S += "<div class='slideTriac' id='fen_slide" + iAct + "'>";
     S += "<div class='slideTriacIn' id='Propor" + iAct + "'>";
@@ -138,7 +160,7 @@ function TracePlanning(iAct) {
     S += "<div id='graphAction" + iAct + "' class='graphAction'><div id='graphSVG" + iAct + "' class='graphSVG'></div><div class='GraphSVG' onclick='Pause=!Pause;'>&#x23EF;</div></div>";
     
     // Conteneur des curseurs de période (avec correction onmouseup)
-    S += "<div style='margin:4px;'>";
+    S += "<div style='margin:4px;' id='planningPeriodes" + iAct + "'>";
     S += "<div id='infoAction" + iAct + "' class='infoAction'></div>";
     S += "<div id='curseurs" + iAct + "' class='curseur' onmousemove='dragHandle(event," + iAct + ");' onmouseup='stopDrag();' ontouchmove='dragHandle(event," + iAct + ");' ontouchend='stopDrag();'></div>";
     S += "</div>";
@@ -171,7 +193,17 @@ function TracePlanning(iAct) {
         GV("sliderKd" + iAct, action.Kd);
         GH("sensiKd" + iAct, action.Kd);
         
-        GID("PID" + iAct).checked = action.PID == 1;   
+        GID("PID" + iAct).checked = action.PID == 1;
+
+        // Champs séquenceur de relais
+        if (action.IdxSequenceur !== undefined) {
+            const selectSequenceur = GID("selectSequenceur" + iAct);
+            if (selectSequenceur) selectSequenceur.value = action.IdxSequenceur;
+        }
+        if (action.PuissanceCharge !== undefined && action.PuissanceCharge > 0) {
+            const champPuissance = GID("puissanceCharge" + iAct);
+            if (champPuissance) champPuissance.value = action.PuissanceCharge;
+        }
 
         // Configuration Pin/Sortie (OrdreOn)
         const selectPin = GID("selectPin" + iAct);
@@ -574,7 +606,7 @@ function infoZclicK(i, iAct) {
 
         if (iAct > 0) {
             // Mode Routage ON/OFF ou Multi/Train de sinus
-            const Routage = ["", "Routage ON/Off", "Routage Multi-sinus", "Routage Train de Sinus", "PWM", "Routage Demi-Sinus"];
+            const Routage = ["", "Routage ON/Off", "Routage Multi-sinus", "Routage Train de Sinus", "PWM", "Routage Demi-Sinus", "Routage Séquenceur"];
             S += "<div class='zPw'><div class='radioC'><input type='radio' name='R" + idZ + "' onclick='selectZ(3," + i + "," + iAct + ");' " + check + ">" + Routage[F.Actions[iAct].Actif] + "</div>";
             
             if (F.Actions[iAct].Actif <= 1) {
@@ -590,7 +622,7 @@ function infoZclicK(i, iAct) {
             }
         } else {
             // Mode Triac/Découpe Sinus (iAct === 0)
-            const Routage = ["", "Routage Découpe Sinus", "Routage Multi-sinus", "Routage Train de Sinus", "", "Routage Demi-Sinus"];
+            const Routage = ["", "Routage Découpe Sinus", "Routage Multi-sinus", "Routage Train de Sinus", "", "Routage Demi-Sinus", ""];
             S += "<div class='zTriac'><div class='radioC'><input type='radio' name='R" + idZ + "' onclick='selectZ(4," + i + "," + iAct + ");' " + check + ">" + Routage[F.Actions[iAct].Actif] + "</div>";
             S += "<div>Seuil Pw &nbsp;<input id='Pw_min_" + idZ + "' type='number' value='" + Vmin + "' onchange='NewVal(this)' title='Seuil en W de r&eacute;gulation par le Triac de la puissance mesur&eacute;e Pw en entrée de la maison. Valeur typique : 0.'>W</div>";
             S += "<div><small>Puissance active en entrée de maison</small></div>";
@@ -826,7 +858,7 @@ function checkDisabled() {
     for (let iAct = 0; iAct < F.Actions.length; iAct++) {
 
         // --- Détermination du mode actif ---
-        for (let m = 0; m <= 5; m++) {
+        for (let m = 0; m <= 6; m++) {
             if (chk(`radio${iAct}-${m}`)) {
                 F.Actions[iAct].Actif = m;
             }
@@ -834,57 +866,90 @@ function checkDisabled() {
 
         const pinVal = parseInt(val(`selectPin${iAct}`), 10);
 
-        // Forçage si pas de pin
-        if (pinVal === -1 && F.Actions[iAct].Actif > 1 && iAct > 0) {
+        // Forçage en mode OnOff si pas de pin, sauf si mode Séquenceur (actif=6) ou mode Inactif (actif=0) logique Triac (iAct=0)
+        if (pinVal === -1 && F.Actions[iAct].Actif > 1 && F.Actions[iAct].Actif !== 6 && iAct > 0) {
             F.Actions[iAct].Actif = 1;
             GID(`radio${iAct}-1`).checked = true;
         }
 
         // Mise à jour planning
-        TracePeriodes(iAct);
+        TracePeriodes(iAct);  // Attention: TracePeriodes utilise F.Actions[iAct].Actif pour adapter l'affichage, il faut donc mettre à jour Actif avant d'appeler TracePeriodes
 
         const triac = (F.pTriac > 0) ? "block" : "none";
         show("planning0", triac);
         show("TitrTriac", triac);
 
         const actif = F.Actions[iAct].Actif;
-        const actifVisible = (actif > 0) ? "block" : "none";
+        const estActif = (actif > 0);
+        const estOnOff = (actif === 1 && iAct > 0);      // Mode On/Off simple -> pas de visu ni de graph, temporisation au lieu d'ouverture forcée, pas de relais séquenceur possible
+        const estOnOffExterne = estOnOff && pinVal < 0;  // pin<0 = mode Externe choisi -> désactive le reglage du niveau de sortie et affiche les options de host/port/ordreOnOff
+        const estSequenceur = (actif === 6 && iAct > 0); // Mode Séquenceur -> désactive les options de pin et de niveau de sortie, affiche le panneau de choix du séquenceur parent
 
-        show(`blocPlanning${iAct}`, actifVisible);
-        show(`visu${iAct}`, actifVisible);
-        show(`forceOuvre${iAct}`, actifVisible);
 
-        // Mode On/Off simple → pas de visu/graph
-        if (actif === 1 && iAct > 0) {
+        show(`blocPlanning${iAct}`, estActif ? "block" : "none"); // Masque le bloc de planning complet si mode Inactif selectionné
+        show(`groupeSequenceur${iAct}`, estSequenceur ? "flex" : "none"); // Affiche le bloc informatif Séquenceur de relais uniquement si mode Séquenceur sélectionné
+
+        const sequenceursExistants = [];  // Liste des index des actions configurées en mode Séquenceur (pour alimenter le select de choix du relais séquenceur)
+        for (let m = 0; m < F.Actions.length; m++) {
+            const r6m = GID(`radio${m}-6`);
+            if (r6m && r6m.checked) sequenceursExistants.push(m);
+        }
+        // Affiche le choix de relais séquenceur uniquement si au moins un séquenceur existe et que le mode Séquenceur n'est pas sélectionné (un séquenceur ne peut pas être relais d'un autre séquenceur) et que le mode On/Off simple n'est pas sélectionné (pas de relais séquenceur possible en mode On/Off simple)
+        const peutEtreRelaisSequence = (sequenceursExistants.length > 0 && !estSequenceur && !estOnOff && iAct > 0);
+        show(`relaisSequence${iAct}`, peutEtreRelaisSequence ? "flex" : "none");
+
+        const selectSequenceur = GID(`selectSequenceur${iAct}`);
+        if (selectSequenceur) {
+            // Reconstruction des options du select de relais séquenceur à chaque changement de mode pour refléter les séquenceurs disponibles
+            // à partir du DOM (et pas à partir de F.Actions qui n'a pas encore été synchronisé pour tous les indexes)
+            let opts = "<option value='-1'>\u2014 aucun \u2014</option>";
+            for (let s = 0; s < sequenceursExistants.length; s++) {
+                const idxSeq = sequenceursExistants[s];
+                const titre = (F.Actions[idxSeq] && F.Actions[idxSeq].Titre) ? F.Actions[idxSeq].Titre : ("Action " + idxSeq);
+                opts += `<option value='${idxSeq}'>${titre}</option>`;
+            }
+
+            // Check index de séquenceur valide, et met à jour F.Actions[iAct].IdxSequenceur en conséquence
+            if (!peutEtreRelaisSequence) {
+                // Si le relais ne peut plus etre séquencé, on force la valeur à -1 (aucun) et on met à jour F.Actions pour éviter d'avoir un index de séquenceur non valide
+                selectSequenceur.value = "-1";
+            } else {
+                // Sinon, on restaure la sélection précédente si elle est toujours valide (sinon le navigateur mettra automatiquement la valeur à -1 qui correspond à "aucun")
+                const savedVal = selectSequenceur.value;
+                selectSequenceur.innerHTML = opts;
+                selectSequenceur.value = savedVal;  // restaure la sélection (-> -1 si le séquenceur a disparu)
+                selectSequenceur.value = selectSequenceur.value; // forcer le bon display affichée en cas de restauration à -1
+            }
+        }
+        
+        const estRelaisSequence = (selectSequenceur && selectSequenceur.value != "-1"); // Relais séquencée (=séquenceur parent sélectionné) -> désactive les options de periodes/regulation/visu
+
+        show(`planningPeriodes${iAct}`, (estActif && !estRelaisSequence) ? "block" : "none");        // Pas de periodes de planning en mode séquencé (le séquenceur parent gère lui même son planning)
+        show(`planningControles${iAct}`, (estActif && !estRelaisSequence) ? "flex" : "none");        // Pas de periodes de planning en mode séquencé (le séquenceur parent gère lui même son planning)
+        show(`visu${iAct}`, (estActif && !estOnOff && !estRelaisSequence) ? "block" : "none");       // Pas de visu ni de graph en mode On/Off simple ou en mode séquencé
+        show(`forceOuvre${iAct}`, (estActif && !estOnOff) ? "block" : "none");  // Pas de réglage d'ouverture forcée en mode On/Off
+        show(`Tempo${iAct}`, estOnOff ? "block" : "none");                      // Affiche reglage Temporisation uniquement en mode On/Off
+
+        if (estOnOff || estRelaisSequence) { // Cache le graph dès qu'on passe en mode On/Off ou relais séquencé
             show(`graphAction${iAct}`, "none");
-            show(`visu${iAct}`, "none");
-            show(`forceOuvre${iAct}`, "none");
         }
 
-        // Zones Host/Port/Repet
-        let hostDisp = (actif === 1 && iAct>0) ? "block" : "none";
-        show(`Tempo${iAct}`, hostDisp);
+        show(`SelectPin${iAct}`, estSequenceur ? "none" : "inline-block");  // Masque le choix de pin si mode séquenceur sélectionné (un séquenceur n'agit pas directement sur une pin)
+        show(`SelectOut${iAct}`, (estSequenceur || estOnOffExterne) ? "none" : "inline-block"); // Masque le choix du niveau de sortie On si mode séquenceur sélectionné (un séquenceur n'agit pas directement sur une pin) ou si mode On/Off Externe sélectionné (pas de pin physique en mode On/Off Externe)
 
-        let disable = (pinVal < 0);
-        let disp = disable ? "block" : "none";
+        // Affiche les options de host et d'order On/Off uniquement en mode OnOff Externe
+        let dispOnOffExterne = estOnOffExterne ? "block" : "none";
+        show(`Host${iAct}`, dispOnOffExterne);
+        show(`Port${iAct}`, dispOnOffExterne);
+        show(`Repet${iAct}`, dispOnOffExterne);
+        show(`ordreoff${iAct}`, dispOnOffExterne);
+        show(`ordreon${iAct}`, dispOnOffExterne);
 
-        if (!disable) {
-            hostDisp = "none";
-        }
-
-        show(`SelectOut${iAct}`, (pinVal <= 0) ? "none" : "inline-block");
-        show(`Host${iAct}`, hostDisp);
-        show(`Port${iAct}`, hostDisp);
-        show(`Repet${iAct}`, hostDisp);
-
-        // Désactivation des modes 2..5 si pas de pin
-        for (const mode of [2, 3, 4, 5]) {
+        // Désactivation des modes 2..6 si pas de pin, ie si mode externe choisi
+        for (const mode of [2, 3, 4, 5, 6]) {
             const r = GID(`radio${iAct}-${mode}`);
-            if (r) r.disabled = disable;
+            if (r) r.disabled = estOnOffExterne;
         }
-
-        show(`ordreoff${iAct}`, disp);
-        show(`ordreon${iAct}`, disp);
 
         // Correction d'ordreOn si IS présent alors qu'aucune pin
         const ordreOn = GID(`ordreOn${iAct}`);
@@ -914,19 +979,16 @@ function checkDisabled() {
         const pid = GID(`PID${iAct}`);
         if (F.ModePara === 0 && pid) pid.checked = false;
 
-        show(
-            `PIDbox${iAct}`,
-            (F.ModePara === 0 || (pinVal <= 0 && iAct > 0) || (actif === 1 && iAct > 0))
-                ? "none" : "block"
-        );
+        show(`PIDbox${iAct}`, (F.ModePara === 0 || estOnOff || estRelaisSequence) ? "none" : "block");
 
         const pidActive = pid && pid.checked;
         show(`Propor${iAct}`, pidActive ? "table-row" : "none");
         show(`Derive${iAct}`, pidActive ? "table-row" : "none");
     }
 
-    // PWM désactivé sur triac
+    // PWM et Sequenceur désactivés sur triac
     show("Pwm0", "none");
+    show("Sequenceur0", "none");
 }
 
 
@@ -993,11 +1055,11 @@ function Send_Values(){
     for (let iAct = 0; iAct < F.Actions.length; iAct++) {
         const action = F.Actions[iAct];
         
-        // Correction: S'assurer que tous les modes sont couverts (0 à 5)
-        for (let i = 0; i <= 5; i++) { 
+        // S'assurer que tous les modes sont couverts (0 à 6)
+        for (let i = 0; i <= 6; i++) {
             const radio = GID(`radio${iAct}-${i}`);
-            if (radio && radio.checked) { 
-                action.Actif = i; 
+            if (radio && radio.checked) {
+                action.Actif = i;
             }
         }
         
@@ -1011,7 +1073,13 @@ function Send_Values(){
         action.Repet = parseInt(GID("repet" + iAct).value, 10) || 0;
         action.Tempo = parseInt(GID("tempo" + iAct).value, 10) || 0;
         action.ForceOuvre = parseInt(GID("ForceOuvre" + iAct).value, 10) || 100;
-        
+
+        // Séquenceur de relais
+        const selectSequenceur = GID("selectSequenceur" + iAct);
+        action.IdxSequenceur = selectSequenceur ? (parseInt(selectSequenceur.value, 10) || -1) : -1;
+        const champPuissance = GID("puissanceCharge" + iAct);
+        action.PuissanceCharge = champPuissance ? (parseInt(champPuissance.value, 10) || 0) : 0;
+
         // Coefficients PID
         action.Kp = parseInt(GID("sliderKp" + iAct).value, 10) || 0;
         action.Ki = parseInt(GID("sliderKi" + iAct).value, 10) || 0;
@@ -1019,7 +1087,7 @@ function Send_Values(){
         action.PID = GID("PID" + iAct).checked ? 1 : 0;
         
         const selectPin = GID("selectPin" + iAct);
-        if (selectPin && selectPin.value >= 0) {
+        if (selectPin && selectPin.value >= 0 && action.Actif !== 6) {
             // Reconstruit OrdreOn pour la sortie GPIO/relais (Pin + Sortie)
             const selectOut = GID("selectOut" + iAct);
             action.OrdreOn = selectPin.value + IS + selectOut.value;
@@ -1038,10 +1106,11 @@ function Send_Values(){
             }
         
         // Logique d'effacement de l'action (iAct > 0)
-        if (iAct > 0 && selectPin && (selectPin.value == 0 || action.Titre === "")) { 
+        // Un séquenceur (Actif=6) n'a pas besoin de GPIO, il ne doit pas être supprimé si selectPin=0.
+        if (iAct > 0 && (action.Titre === "" || (selectPin && selectPin.value == 0 && action.Actif !== 6))) { 
             action.Actif = -1; // Marque l'action à effacer 
         }
-        action.NbPeriode= action.Periodes.length;
+        action.NbPeriode = action.Periodes.length;
     }
     
     // 2. Effacement des Actions inutilisées
@@ -1075,7 +1144,6 @@ function Send_Values(){
         return response.json();             // transforme la réponse JSON en objet JS
       })
       .then(resultat => {
-        console.log("Réponse du serveur :", resultat);
         location.reload();
       })
       .catch(error => {

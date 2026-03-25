@@ -303,6 +303,8 @@ void DeserializeConfiguration(String json) {
       LesActions[iAct].PID = obj["PID"];
     }
     LesActions[iAct].ForceOuvre = !obj["ForceOuvre"].isNull() ? obj["ForceOuvre"] : 100;
+    LesActions[iAct].IdxSequenceur  = !obj["IdxSequenceur"].isNull()  ? (int)obj["IdxSequenceur"]  : -1;
+    LesActions[iAct].PuissanceCharge = !obj["PuissanceCharge"].isNull() ? (int)obj["PuissanceCharge"] : 0;
     LesActions[iAct].NbPeriode = obj["NbPeriode"];
 
     Hdeb = 0;
@@ -432,6 +434,8 @@ String SerializeConfiguration() {
     obj["OrdreOn"] = LesActions[iAct].OrdreOn;
     obj["OrdreOff"] = LesActions[iAct].OrdreOff;
     obj["ForceOuvre"] = LesActions[iAct].ForceOuvre;
+    obj["IdxSequenceur"]  = LesActions[iAct].IdxSequenceur;
+    obj["PuissanceCharge"] = LesActions[iAct].PuissanceCharge;
     obj["Repet"] = LesActions[iAct].Repet;
     obj["Tempo"] = LesActions[iAct].Tempo;
     obj["Kp"] = LesActions[iAct].Kp;
