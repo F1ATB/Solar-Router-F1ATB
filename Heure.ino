@@ -40,6 +40,7 @@ void JourHeureChange() {
     while (deltaT >= 100) {
       Int_Last_10Millis = Int_Last_10Millis + 100;
       baseEpoch++;  // 100 ticks = 1 seconde
+      deltaT = Tnow - Int_Last_10Millis;
     }
     struct timeval tv = { .tv_sec = baseEpoch, .tv_usec = 0 };
     settimeofday(&tv, nullptr);

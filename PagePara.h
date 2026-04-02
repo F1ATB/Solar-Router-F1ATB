@@ -78,12 +78,12 @@ const char *ParaHtml = R"====(
                 title="Champ obligatoire si vous avez 2 sondes">
         </div>
         <div class="ligne" id="ligneFixe1">
-          <label for="nomSfixePpos">Nom si Pw seconde sonde >0 <small>(Pas de nom = suppression colone)</small></label>
+          <label for="nomSfixePpos">Nom si Pw seconde sonde >0 <small>(Pas de nom = suppression colonne)</small></label>
           <input type="text" id="nomSfixePpos" name="nomSfixePpos"
                 title="Champ obligatoire si puissance positive">
         </div>
         <div class="ligne" id="ligneFixe2">
-          <label for="nomSfixePneg">Nom si Pw seconde sonde <0 <small>(Pas de nom = suppression colone)</small></label>
+          <label for="nomSfixePneg">Nom si Pw seconde sonde <0 <small>(Pas de nom = suppression colonne)</small></label>
           <input type="text" id="nomSfixePneg" name="nomSfixePneg"
                 title="Champ obligatoire si puissance négative">
         </div>

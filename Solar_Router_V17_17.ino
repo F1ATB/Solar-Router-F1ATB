@@ -1,4 +1,4 @@
-#define Version "17.16"
+#define Version "17.17"
 #define HOSTNAME "RMS-ESP32-"
 
 /*
@@ -289,6 +289,8 @@
   - Version 17.16
     Introduction écran 3.2 pouces ESP32-2432S032C capacitif
     Correction bug sur curseurs avec Firefox
+  - Version 17.17
+    Correction bug heure sur IT 10ms ou 20ms
   
   Les détails sont disponibles sur / Details are available here:
   https://f1atb.fr  Section Domotique / Home Automation

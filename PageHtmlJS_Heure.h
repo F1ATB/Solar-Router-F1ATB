@@ -41,7 +41,7 @@ const char *HeureHtml = R"====(
     <div class="Zone" id="ZoneNew_H">
         <div class="form"  >
           <div class='ligne' >
-            <label for='New_J'  >Année/Mois/Jour <small>JJ/MM/AAAA</small></label><input type='text'  id='New_J' value=""    placeholder="25/12/2025">
+            <label for='New_J'  >Jour/Mois/Année <small>JJ/MM/AAAA</small></label><input type='text'  id='New_J' value=""    placeholder="25/12/2025">
             <label for='New_H'  >Heure  hh:mn</label><input type='text'  id='New_H' value=""  placeholder="15:36" >
           </div>
         </div>
