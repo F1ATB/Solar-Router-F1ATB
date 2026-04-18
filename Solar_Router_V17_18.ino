@@ -1,4 +1,4 @@
-#define Version "17.17"
+#define Version "17.18"
 #define HOSTNAME "RMS-ESP32-"
 
 /*
@@ -291,6 +291,8 @@
     Correction bug sur curseurs avec Firefox
   - Version 17.17
     Correction bug heure sur IT 10ms ou 20ms
+  - Version 17.18
+    Correction bug initialisation Ki en cas de CACSI dans GestionOverproduction
   
   Les détails sont disponibles sur / Details are available here:
   https://f1atb.fr  Section Domotique / Home Automation
@@ -1717,6 +1719,7 @@ void GestionOverproduction() {  // chaque 200ms (adaptation 5 fois par seconde)
       } else {                            // régulation 3 (PW) ou 4 (Triac)
 
         //Coef Integral ou réactivité
+        Ki = float(LesActions[i].Ki) / 10000.0;
         if (Puissance < SeuilPw && ReacCACSI > 1 && ReacCACSI < 100) Ki = Ki * GainCACSI;  //On boost si besoin l'écart (*2, 4 ou 8)
         if (Actif[i] == MODE_DECOUPE_ONOFF && i > 0) {                                     //Les relais en On/Off
           if (Puissance > MaxTriacPw) { RetardF[i] = 100; }                                //OFF
@@ -1724,7 +1727,6 @@ void GestionOverproduction() {  // chaque 200ms (adaptation 5 fois par seconde)
         } else {
           ErrorPw = Puissance - SeuilPw;
           //Integration de l'erreur
-          Ki = float(LesActions[i].Ki) / 10000.0;
           IntegrErrorPw[i] += 0.0001;  //On ferme très légèrement si pas de message reçu. Sécurité
           IntegrErrorPw[i] += ErrorPw * Ki;
           IntegrErrorPw[i] = constrain(IntegrErrorPw[i], 0.0, 100.0);  //Ne pas accumuler des valeurs enormes
