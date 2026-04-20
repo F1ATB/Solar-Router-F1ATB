@@ -945,50 +945,29 @@ void ExtraitCookie() {
   }
 }
 
-// class pour découper au format chunked attendu par navigateur
-class ChunkedWriter : public Print {
-  public:
-    ChunkedWriter(WiFiClient& client) : _client(client), _pos(0) {}
-
-    size_t write(uint8_t c) override {  // receptionne les octets un par un
-      _buffer[_pos++] = c;
-      if (_pos == 512) flushChunk(); // Envoie un chunk dès que le buffer est plein
-      return 1;
-    }
-
-    size_t write(const uint8_t* buffer, size_t size) override {
-      for (size_t i = 0; i < size; i++) write(buffer[i]);
-      return size;
-    }
-
-    void finalise() {
-      flushChunk(); // Envoie le reste du buffer
-      _client.print("0\r\n\r\n"); // Marqueur de fin HTTP
-    }
-
-  private:
-    void flushChunk() {
-      if (_pos == 0) return;
-      _client.print(_pos, HEX);
-      _client.print("\r\n");
-      _client.write(_buffer, _pos);
-      _client.print("\r\n");
-      _pos = 0;
-    }
-
-    WiFiClient& _client;
-    uint8_t _buffer[512]; // Buffer de 512 octets (bon compromis RAM/Vitesse)
-    size_t _pos;
-};
-
 void envoyerHistoriqueEnergie(WebServer &serverRef) {
-  JsonDocument doc;
-
-  // //Vue par jour/mois Soutiré et Injecté (LittleFS)
+  // Vue par jour/mois Soutiré et Injecté (LittleFS), streamée pour limiter la RAM.
   int M0 = DateAMJ.substring(4, 6).toInt();
   int an0 = DateAMJ.substring(0, 4).toInt();
   String ligne;
   ligne.reserve(64);
+
+  auto jsonEscape = [](const String &in) -> String {
+    String out;
+    out.reserve(in.length() + 8);
+    for (size_t i = 0; i < in.length(); i++) {
+      char c = in[i];
+      if (c == '"' || c == '\\') out += '\\';
+      out += c;
+    }
+    return out;
+  };
+
+  bool first = true;
+
+  serverRef.setContentLength(CONTENT_LENGTH_UNKNOWN);
+  serverRef.send(200, "application/json", "");
+  serverRef.sendContent("{\"EnergieJour\":[");
 
   for (int M = -2; M <= 0; M++) {
     int M1 = M0 + M;
@@ -1000,30 +979,22 @@ void envoyerHistoriqueEnergie(WebServer &serverRef) {
 
     if (LittleFS.exists(fileName)) {
       File file = LittleFS.open(fileName, "r");
+      if (!file) continue;
       while (file.available()) {
         ligne = file.readStringUntil('\n');
         ligne.trim();
         if (ligne.length() > 10 && ligne.indexOf("Date,") == -1) {
-          doc["EnergieJour"].add(ligne);
+          if (!first) serverRef.sendContent(",");
+          serverRef.sendContent("\"");
+          serverRef.sendContent(jsonEscape(ligne));
+          serverRef.sendContent("\"");
+          first = false;
         }
       }
       file.close();
     }
   }
 
-  if (doc["EnergieJour"].isNull()) doc["EnergieJour"] = "";
-
-  serverRef.setContentLength(CONTENT_LENGTH_UNKNOWN);
-  serverRef.sendHeader("Transfer-Encoding", "chunked");
-  serverRef.send(200, "application/json", ""); 
-
-  NetworkClient client = serverRef.client(); 
-  ChunkedWriter writer(client);
-  
-  // Sérialisation directe
-  serializeJson(doc, writer);
-
-  //envoie le marqueur "0"
-  writer.finalise();
+  serverRef.sendContent("]}");
 }
 
