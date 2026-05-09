@@ -227,10 +227,18 @@ String urlDecode(const String &src) {
 // Reset contrôlé
 //*****************
 void ReseT(String MesSage) {
-  Record_Data( DateAMJ,  MesSage,HeureCouranteDeci);
-  delay(500);
+  
+  TelnetPrintln(" Reset demandé " + MesSage);
+ 
+  Record_Data( DateAMJ,  MesSage, HeureCouranteDeci);
+ 
+  // PhDV61 On sauvegarde ici les valeurs de compteurs à sauvegarder 
+  RecordEnergieEncours(DateAMJ);
+
+  delay(4000);
   ESP.restart();
 }
+
 void dumpPartitions() {
   esp_partition_iterator_t it =
     esp_partition_find(ESP_PARTITION_TYPE_ANY,

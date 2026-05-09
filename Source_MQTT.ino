@@ -40,7 +40,7 @@ void UpdatePmqtt() {
     }
     PVAS_M_inst = 0;
     EAIfloat += -Pw / 6000.0;
-    Energie_M_Injectee = int(EAIfloat);
+    Energie_M_Injectee = long(EAIfloat);
   }
 
   filtre_puissance();

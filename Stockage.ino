@@ -1,10 +1,7 @@
-
+// Stockage.ino
 
 #include <Arduino.h>
 String Record_Conf = "";
-
-
-
 
 void EcritureEnROM() {
   if (ModePara == 0) {
@@ -124,14 +121,22 @@ void StockFichier(String filename, String Contenu) {  //Fichier de données
   file.close();
   Serial.println("Ecriture fichier : " + filename);
 }
+
 void RecordEnergieMinuit(String date) {
   JsonDocument conf;
 
   conf["Date"] = date;
-  conf["Energie_M_Soutiree"] = Energie_M_Soutiree;
-  conf["Energie_M_Injectee"] = Energie_M_Injectee;
-  conf["Energie_T_Soutiree"] = Energie_T_Soutiree;
-  conf["Energie_T_Injectee"] = Energie_T_Injectee;
+
+  conf["Energie_M_Soutiree"]     = Energie_M_Soutiree;
+  conf["Energie_M_Injectee"]     = Energie_M_Injectee;
+  conf["Energie_T_Soutiree"]     = Energie_T_Soutiree;
+  conf["Energie_T_Injectee"]     = Energie_T_Injectee;
+ 
+  // Ajout PhDV61 des compteurs totaux UxIx3 d'Energie nette, type 'Linky' en cas de demande reset ou de upload OTA pour ne pas perdre l'encours
+  // Ces compteurs servent aussi pour UxI et ils sont en float car les incréments de calcul d'énergie sont petits
+  conf["Energie_M_Soutiree_float"] = double(Energie_M_Soutiree);
+  conf["Energie_M_Injectee_float"] = double(Energie_M_Injectee);
+
   String Json;
   serializeJson(conf, Json);
   File file = LittleFS.open("/EnergieMinuit.eng", FILE_WRITE);
@@ -139,17 +144,69 @@ void RecordEnergieMinuit(String date) {
   file.close();
   Serial.println("Ecriture fichier EnergieMinuit.eng");
 }
+
+ // Ajout PhDV61 Sauvegarde des compteurs totaux à minuit et Jour en cas de demande reset ou de upload OTA 
+ // pour ne pas perdre l'encours. Cette routine est uniquement appelée par reSet() dans CommonFx.ino
+
+void RecordEnergieEncours(String date) { // pour permettre un re-démarrage correct, on stocke les compteurs totaux à minuit et en-cours
+  JsonDocument conf;
+
+  conf["Date"] = date;              // On stocke la valeur des compteurs "à minuit", tels qu'ils étaient au changement de jour
+                                    // Ainsi, lorsqu'on va lire les valeurs des totaux (Linky ou UxIx2 par exemple), la conso jour sera préservée
+                                    // car la référence "minuit" l'a été.
+  conf["Energie_M_Soutiree"]     =           EAS_M_J0;  
+  conf["Energie_M_Injectee"]     =           EAI_M_J0; 
+  conf["Energie_T_Soutiree"]     =           EAS_T_J0;
+  conf["Energie_T_Injectee"]     =           EAI_T_J0;
+
+// cas particulier: les totaux ne sont pas sauvegardés par UxIx3 ou UxI. Il faut donc les stocker pour pouvoir les ré-utiliser après Reset.
+// Lorsqu'on sait qu'EDF va couper, on peut anticiper en réalisant un reset un peu avant, de manière à préserver au mieux ces compteurs
+// Si ce n'est pas possible; on pourra toujours mettre à jour en sauvegardant et rechargeant EnergieMinuit.eng
+
+if ( (Source == "UxIx3") || (Source == "UxI") )
+// Ajout PhDV61 des compteurs totaux "M" pour ne pas perdre l'encours en cas de demande de reset ou de upload OTA 
+{
+  conf["Energie_M_Soutiree_float"] = Energie_M_Soutiree_double;
+  conf["Energie_M_Injectee_float"] = Energie_M_Injectee_double;
+}
+
+ else // Dans les autres cas, les modules stockent les totaux à tout moment 
+{    // donc à priori ces deux lignes sont inutiles. Mais on pourra y insérer d'autres cas particuliers... 
+  conf["Energie_M_Soutiree_float"] =  (double) Energie_M_Soutiree ; 
+  conf["Energie_M_Injectee_float"] =  (double) Energie_M_Injectee ;
+}
+
+  String Json;
+  serializeJson(conf, Json);
+ 
+  File file = LittleFS.open("/EnergieMinuit.eng", FILE_WRITE);
+  file.print(Json);  //Fichier au format JSON
+  file.close();
+  Serial.println("Ecriture fichier EnergieMinuit.eng");
+}
+
 void LectureConsoMatinJour(void) {
-  if (!LittleFS.exists("/EnergieMinuit.eng")) {  //Fichier pas encore crée
+
+  // --->>> Modification PhDV61
+  // Attention cette routine est appelée aussi dans le Setup. A ce stade, toutes les variables sont encore à zéro !
+  // donc après Reset,  Energie_M_Soutiree = 0 ... etc  En revanche, les valeurs relues de EnergieMinuit.eng ne le sont pas forcément... 
+
+  Energie_Jour_JSY_Soutiree   = 0.0;  
+  Energie_Jour_JSY_Injectee   = 0.0;  
+  Energie_Minuit_JSY_Soutiree = 0.0; // Cette mise à zéro forcera la mise à jour de ce compteur depuis le JSY MK333 dans le module de lecture UxIx3
+  Energie_Minuit_JSY_Injectee = 0.0; // Cette mise à zéro forcera la mise à jour de ce compteur dans le module de lecture UxIx3
+
+  if (!LittleFS.exists("/EnergieMinuit.eng")) {  //Fichier pas encore créé
     RecordEnergieMinuit(DateAMJ);
   }
 
-  File file = LittleFS.open("/EnergieMinuit.eng", "r");  //Fichier energie de la veille
+  File file = LittleFS.open("/EnergieMinuit.eng", "r");  //Fichier energie de la veille, ou d'avant le reset demandé
   Serial.println("Lecture du fichier /EnergieMinuit.eng");
   String json = file.readString();  // lit tout le fichier
   file.close();
   Serial.print("Json Energie reçu:");
   Serial.println(json);
+ 
   JsonDocument conf;
   DeserializationError error = deserializeJson(conf, json);
 
@@ -159,10 +216,23 @@ void LectureConsoMatinJour(void) {
     return;
   }
 
+  // lecture des compteurs à minuit, qui servent de référence pour calculer les soutirage et injection jour
   EAS_T_J0 = conf["Energie_T_Soutiree"];  //Triac
   EAI_T_J0 = conf["Energie_T_Injectee"];
   EAS_M_J0 = conf["Energie_M_Soutiree"];  //Maison
   EAI_M_J0 = conf["Energie_M_Injectee"];
+ 
+  // --->>> Modification PhDV61 // lecture des compteurs float des totaux d'énergie soutirée et injectée si nécessaire
+  if (Source == "UxIx3")    
+  {
+    Energie_M_Soutiree_double = conf["Energie_M_Soutiree_float"];  // Ce compteur reprend la valeur courante sauvegardée au moment du Reset 
+    Energie_M_Injectee_double = conf["Energie_M_Injectee_float"];  // Ce compteur reprend la valeur courante sauvegardée au moment du Reset 
+  } 
+  else if (Source == "UxI")  
+  {
+     EASfloat = conf["Energie_M_Soutiree_float"]; 
+     EAIfloat = conf["Energie_M_Injectee_float"];
+  }
 
   if (Energie_T_Soutiree < EAS_T_J0) {
     Energie_T_Soutiree = EAS_T_J0;
@@ -171,12 +241,13 @@ void LectureConsoMatinJour(void) {
     Energie_T_Injectee = EAI_T_J0;
   }
   if (Energie_M_Soutiree < EAS_M_J0) {
-    Energie_M_Soutiree = EAS_M_J0;
+    Energie_M_Soutiree = EAS_M_J0; 
   }
   if (Energie_M_Injectee < EAI_M_J0) {
     Energie_M_Injectee = EAI_M_J0;
   }
 }
+
 void RAZ_Histo_Conso() {
   Energie_T_Soutiree = 0;
   Energie_T_Injectee = 0;
@@ -499,7 +570,9 @@ void Record_Data(String dateAMJ, String MesSage, int16_t HeureCouranteDeci_) {
   if (nomSondeFixe != "" && (Source_data == "UxIx2" || ((Source_data == "ShellyEm" || Source_data == "ShellyPro") && EnphaseSerial.toInt() != 3))) biSonde = true;
 
   String New_Record_Conf = "Date";
+
   String Data = dateAMJ + "," + String(EnergieJour_M_Soutiree) + "," + String(EnergieJour_M_Injectee);
+
   if (EnergieJour_M_Soutiree > 1000000 || EnergieJour_M_Injectee > 1000000) Data = dateAMJ + ", ,";  //Aberration à certains ReseT
   New_Record_Conf += "," + Filtre_Nom(nomSondeMobile) + " / Soutirée," + Filtre_Nom(nomSondeMobile) + " / Injectée";
   if (nomSondeFixe != "" && nomSfixePpos != "" && biSonde && EnergieJour_T_Soutiree < 1000000) {

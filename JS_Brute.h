@@ -4,7 +4,7 @@
 
 
 const char *PageBruteJS1 = R"====(
-      // ============================================================================
+// ============================================================================
 // Variables globales
 // ============================================================================
 
@@ -160,20 +160,23 @@ function LoadDataESP32() {
           "Wroom seul",
           "Carte 1 relais",
           "Carte 4 relais",
-          "Ecran320*240",
-          "",
-          "",
-          "",
-          "",
-          "",
-          "ESP32-ETH01"
+          "Ecran ESP32-2432S028R R_ILI9341",
+          "Ecran ESP32-2432S028 R_ST7789",
+          "Ecran ESP32-2432S024 R_ILI9341",
+          "Ecran ESP32-024 R_ST7789",
+          "Ecran ESP32-2432S024C C_ILI9341",
+          "Ecran JC2432W328 C_ST7789",
+          "ESP32-ETH01",
+          "Ecran ESP32-2432S032C ST7789"
         ];
+
+       if(message[1]==101) message[1]=11; //Carte graphique au dela de 100
 
         S+='<tr><td>ESP32 On depuis :</td><td>'+H+'</td></tr>';
         S+='<tr><td>ESP32 modèle :</td><td>'+typeESP32[message[1]]+'</td></tr>';
         S+='<tr><td>Source des mesures :</td><td>'+LaSource+'</td></tr>';
               if (F.ModeReseau<2){
-                if (message[1]<10){ //WIFI
+                if (message[1]<10 || message[11]){ //WIFI
                   S+='<tr><td>Niveau WiFi :</td><td>'+message[2]+' dBm</td></tr>';
                   S+="<tr><td>Point d'acc&egrave;s WiFi :</td><td>"+message[3]+'</td></tr>';
                   S+='<tr><td>R&eacute;seau WiFi :</td><td>'+message[6]+'</td></tr>';

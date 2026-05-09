@@ -1,5 +1,7 @@
-#define Version "17.18"
+#define Version  "17.19" // PhDV61
 #define HOSTNAME "RMS-ESP32-"
+
+
 
 /*
   PV Router / Routeur Photovoltaïque 
@@ -293,17 +295,30 @@
     Correction bug heure sur IT 10ms ou 20ms
   - Version 17.18
     Correction bug initialisation Ki en cas de CACSI dans GestionOverproduction
-  
+  - Version 17.19 
+    Affichage nouveau modèle de cartes graphique sur page Données Brutes.
+    Modifs PHDV61
+    UxIx3    :  Affichage des compteurs "type Linky" en page "Accueil", et restauration des valeurs exactes injectées et soutirées vues par le MK333 
+                sur les 3 phases dans la page "Données brutes". Ajout en page données brutes des puissances instantanées sur chaque phase "+" ou "-"
+    Stockage :  Sauvegarde à minuit :  remplacement des valeurs exactes totales soutirées et injectées MK333 par les valeurs calculées "nettes Linky"
+    Sauvegarde des compteurs d'Energie en flash avant reset ou upload OTA demandé, puis restauration de ces mêmes compteurs au re-démarrage.
+    Modifications faites à l'aveugle pour UxI. Testées pour Linky et UxIx3. Pour les autres types de mesure qui stockent et donnent des totaux, 
+    cela devrait fonctionner ok comme pour le Linky.
+    Attention, en cas de téléchargement IDE Arduino, on ne bénéficie pas du stockage-restauration sauf à avoir fait un reset auparavant pour stocker 
+    les dernières valeurs d'Energie. Et sinon, mettre à jour "manuellement" le fichier "EnergieMinuit.eng" (comme aussi en cas de panne Elec).
+ 
+
+
   Les détails sont disponibles sur / Details are available here:
   https://f1atb.fr  Section Domotique / Home Automation
 
   
-  F1ATB Mars 2026
+  F1ATB Mai 2026
 
   GNU Affero General Public License (AGPL) / AGPL-3.0-or-later
 
   Arduino IDE 2.3.8
-  Espressif ESP V3.3.7
+  Espressif ESP V3.3.8
   Compilation avec Partition Scheme : custom 
 
 
@@ -455,7 +470,7 @@ int16_t Int_Minute = 0;
 int16_t Int_Seconde = 0;
 int16_t old_Heure = 0;
 int16_t old_Minute = 0;
-byte Horloge = 0;  //0=Internet, 1=Linky, 2=Interne, 3=IT 10ms/triac, 4=IT 20ms, 5 externe                                                                                          // 0=Internet, 1=Linky, 2=Interne, 3=IT 10ms/triac, 4=IT 20ms
+byte Horloge = 0;  //0=Internet, 1=Linky, 2=Interne, 3=IT 10ms/triac, 4=IT 20ms, 5=externe
 byte idxFuseau = 0;
 String ntpServer = "";
 bool LastRecordConf = false;
@@ -465,8 +480,8 @@ bool LastRecordConf = false;
 // ***************************
 //Plan stockage
 
-#define adr_HistoAn 0          //taille 2* 370*4=1480
-#define adr_E_T_soutire0 1480  // 1 long. Taille 4 Triac
+#define adr_HistoAn 0            //taille 2* 370*4=1480
+#define adr_E_T_soutire0 1480    // 1 long. Taille 4 Triac
 #define adr_E_T_injecte0 1484
 #define adr_E_M_soutire0 1488    // 1 long. Taille 4 Maison
 #define adr_E_M_injecte0 1492    // 1 long. Taille 4
@@ -487,7 +502,7 @@ int8_t NumPageBoot = 0;
 bool EnergieActiveValide = false;
 long EAS_T_J0 = 0;
 long EAI_T_J0 = 0;
-long EAS_M_J0 = 0;  //Debut du jour energie active
+long EAS_M_J0 = 0;  //Debut du jour energie totale active
 long EAI_M_J0 = 0;
 float Tension_T, Intensite_T, PowerFactor_T, Frequence;
 float Tension_M, Intensite_M, PowerFactor_M;
@@ -506,8 +521,11 @@ float PuissanceS_T_inst, PuissanceS_M_inst, PuissanceI_T_inst, PuissanceI_M_inst
 float PVAS_T_inst, PVAS_M_inst, PVAI_T_inst, PVAI_M_inst;
 float Puissance_T_moy, Puissance_M_moy;
 float PVA_T_moy, PVA_M_moy;
-float EASfloat = 0;
-float EAIfloat = 0;
+
+// PhDV61   float ne suffit pas lorsque la valeur totale devient très grande, et les incréments très petits (pendant le routage par exemple)
+double EASfloat = 0;
+double EAIfloat = 0;
+
 int PactConso_M, PactProd;
 int16_t tabPw_Maison_5mn[600];  //Puissance Active:Soutiré-Injecté toutes les 5mn
 int16_t tabPw_Triac_5mn[600];
@@ -577,9 +595,15 @@ float Intensite_M1 = 0, Intensite_M2 = 0, Intensite_M3 = 0;
 
 //Parameters for JSY-MK-333 module triphasé
 String MK333_dataBrute = "";
-//  ajout PhDV61 compteur d'énergie quotidienne soutirée et injectée comme calculées par le Linky
-float Energie_jour_Soutiree = 0;
-float Energie_jour_Injectee = 0;
+
+//  ajout PhDV61 compteurs d'énergie quotidienne et totale soutirée et injectée JSY Mk 333
+float  Energie_Minuit_JSY_Soutiree = 0.0;  // Le contenu sera initialisé au premier appel UxIx3 après Reset
+float  Energie_Minuit_JSY_Injectee = 0.0;  // Le contenu sera initialisé au premier appel UxIx3 après Reset
+float  Energie_Jour_JSY_Soutiree   = 0.0;  // Le contenu sera initialisé au premier appel UxIx3 après Reset
+float  Energie_Jour_JSY_Injectee   = 0.0;  // Le contenu sera initialisé au premier appel UxIx3 après Reset
+double Energie_M_Soutiree_double    = 0.0;
+double Energie_M_Injectee_double    = 0.0;
+
 long Temps_precedent = 0;  // mesure précise du temps entre deux appels au JSY-MK-333
 float PW_M1, PW_M2, PW_M3;
 
@@ -965,9 +989,6 @@ void setup() {
   esp_task_wdt_reset();
   delay(1);  //VERY VERY IMPORTANT for Watchdog Reset
 
-
-
-
   if (!LittleFS.begin(true)) {  // `true` = format si erreur
     Serial.println("Erreur de montage fichiers LittleFS");
     StockMessage("Erreur de montage fichiers LittleFS");  //Permet d'avoir le statut par Telnet plus tard
@@ -1034,9 +1055,8 @@ void setup() {
   init_puissance();
   InitTemperature();
 
-
   ReadFichierParametres();  //On remplace par les paramètres du fichier  qui sera éventuellement crée avec les données en ROM
-
+    
   LectureConsoMatinJour();
 
   TelnetPrintln("Chip Model: " + String(ESP.getChipModel()));
@@ -1332,7 +1352,7 @@ void Task_LectureRMS(void *pvParameters) {
   if (Source == "UxIx3") {
     Setup_JSY333();            // init port série
     delay(100);                // pour s'assurer que l'init du port série est ok coté module
-    PeriodeProgMillis = 1000;  // la première lecture aura lieu 1000ms plus tard
+    PeriodeProgMillis = 800;  // la première lecture aura lieu 800ms plus tard
     Requete_JSY333();          // requête initiale au module. La première lecture aura lieu PeriodeProgMillis =1000ms plus tard.
                                // et les données seront déjà toutes dans le buffer de réception
   }
@@ -1406,7 +1426,7 @@ void Task_LectureRMS(void *pvParameters) {
       if (Source == "Ext") {
         CallESP32_Externe();
         LastRMS_Millis = millis();
-        PeriodeProgMillis = 400 + ralenti;  //Après pour ne pas surchargé Wifi
+        PeriodeProgMillis = 800 + ralenti;  //Après pour ne pas surchargé Wifi
       }
       if (Source == "Pmqtt") {
         PeriodeProgMillis = 600;
@@ -1419,8 +1439,6 @@ void Task_LectureRMS(void *pvParameters) {
 }
 
 
-
-
 /* **********************
    * ****************** *
    * * Tâches Coeur 1 * *
@@ -1428,6 +1446,7 @@ void Task_LectureRMS(void *pvParameters) {
    **********************
 */
 void loop() {
+
   //Estimation charge coeur
   unsigned long tps = millis();
   float deltaT = float(tps - previousLoop);
@@ -1496,7 +1515,7 @@ void loop() {
 
     if (tps - previousTimer2sMillis > 2000) {
       unsigned long dt = tps - previousTimer2sMillis;
-      previousTimer2sMillis += 2000;  //Pou caler exactement à 2s
+      previousTimer2sMillis += 2000;  //Pour caler exactement à 2s
       tabPw_Maison_2s[IdxStock2s] = PuissanceS_M - PuissanceI_M;
       tabPw_Triac_2s[IdxStock2s] = PuissanceS_T - PuissanceI_T;
       tabPva_Maison_2s[IdxStock2s] = PVAS_M - PVAI_M;
@@ -1508,11 +1527,13 @@ void loop() {
           tab_histo_2s_ouverture[i][IdxStock2s] = 0;
         }
       }
+      
       IdxStock2s = (IdxStock2s + 1) % 300;
       PuisMaxS_T = max(PuisMaxS_T, PuissanceS_T);
       PuisMaxS_M = max(PuisMaxS_M, PuissanceS_M);
       PuisMaxI_T = max(PuisMaxI_T, PuissanceI_T);
       PuisMaxI_M = max(PuisMaxI_M, PuissanceI_M);
+      
       JourHeureChange();
       EnergieQuotidienne();
       H_Ouvre_Equivalent(dt);
@@ -1573,6 +1594,7 @@ void loop() {
     previousWifiMillis = tps;
 
     JourHeureChange();
+
     TelnetPrintln("\nDate : " + DATE);
     if (ESP32_Type < 10 || ESP32_Type ==101) {  //ESP32 en WIFI
       if (WiFi.getMode() == WIFI_STA) {
@@ -1677,6 +1699,7 @@ void loop() {
 // ************
 // *  ACTIONS *
 // ************
+
 void GestionOverproduction() {  // chaque 200ms (adaptation 5 fois par seconde)
   float SeuilPw, ErrorPw = 0, Derive = 0;
   float MaxTriacPw;
@@ -1880,22 +1903,31 @@ void infoSerieAP() {
 // ***********************************
 
 void EnergieQuotidienne() {
+
   if (HeureValide && Source != "Ext") {
+
     if (Energie_M_Soutiree < EAS_M_J0 || EAS_M_J0 == 0) {
       EAS_M_J0 = Energie_M_Soutiree;
     }
-    EnergieJour_M_Soutiree = Energie_M_Soutiree - EAS_M_J0;
+
+    EnergieJour_M_Soutiree = Energie_M_Soutiree - EAS_M_J0; // Energie soutirée totale - valeur soutirée à minuit 
+ 
     if (Energie_M_Injectee < EAI_M_J0 || EAI_M_J0 == 0) {
       EAI_M_J0 = Energie_M_Injectee;
     }
+
     EnergieJour_M_Injectee = Energie_M_Injectee - EAI_M_J0;
+ 
     if (Energie_T_Soutiree < EAS_T_J0 || EAS_T_J0 == 0) {
       EAS_T_J0 = Energie_T_Soutiree;
     }
+
     EnergieJour_T_Soutiree = Energie_T_Soutiree - EAS_T_J0;
+ 
     if (Energie_T_Injectee < EAI_T_J0 || EAI_T_J0 == 0) {
       EAI_T_J0 = Energie_T_Injectee;
     }
+    
     EnergieJour_T_Injectee = Energie_T_Injectee - EAI_T_J0;
   }
 }

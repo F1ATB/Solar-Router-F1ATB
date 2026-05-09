@@ -12,14 +12,18 @@ void LectureNotDef() {
     PVAS_M_inst = Pw + 250;
     PVAI_M_inst = 0;
     EASfloat += Pw / 6000.0;             // Watt Hour,Every 600ms. Soutirée
-    Energie_M_Soutiree = int(EASfloat);  //
+
+  // PhDV61
+    Energie_M_Soutiree = long(EASfloat); 
   } else {
     PuissanceS_M_inst = 0;
     PuissanceI_M_inst = -Pw;
     PVAI_M_inst = -Pw + 250;
     PVAS_M_inst = 0;
     EAIfloat += -Pw / 6000.0;
-    Energie_M_Injectee = int(EAIfloat);
+
+    // PhDV61
+    Energie_M_Injectee = long(EAIfloat);
   }
   Pva_valide = true;
   filtre_puissance();

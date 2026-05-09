@@ -62,9 +62,11 @@ void Init_Server() {
   server.onNotFound(handleNotFound);
 
   // SERVER OTA
+
   server.on("/OTA", HTTP_GET, []() {
     lectureCookie(OtaHtml);
   });
+
   /*handling uploading firmware file */
   server.on(
     "/update", HTTP_POST, []() {
@@ -121,7 +123,8 @@ void Init_Server() {
         }
       } else if (upload.status == UPLOAD_FILE_END) {
         TelnetPrintln("Fin Upload du fichier: " + fileName);
-        if (fileName.indexOf(".json") > 0) {
+        if (fileName.indexOf(".json") > 0) 
+        {
           int nbOK = 0;
           if (ConfImport.indexOf("Version") != -1)
             nbOK += 1;
@@ -131,11 +134,16 @@ void Init_Server() {
             nbOK += 1;
           if (ConfImport.indexOf("NbActions") != -1)
             nbOK += 1;
-
-          if (nbOK == 4) ImportParametres(ConfImport);  //C'est un fichier de paramètres de configuration
-        } else {                                        //Autre fichier
-          StockFichier(fileName, ConfImport);
+          if (nbOK == 4) ImportParametres(ConfImport);
+            //C'est un fichier de paramètres de configuration
         }
+        else if (fileName.indexOf("EnergieMinuit.eng") != -1) 
+          { 
+            StockFichier(fileName, ConfImport);  
+            // et relecture,car un reset ou téléchargement OTA entraine une sauvegarde des paramètres et écraserait ce qu'on vient d'écrire ...
+            LectureConsoMatinJour(); // PhDV61 pour repartir avec les valeurs maintenant stockées dans "EnergieMinuit.eng" 
+          }
+          else StockFichier(fileName, ConfImport); 
       }
     });
 
@@ -171,7 +179,6 @@ void handleMainJS3() {  // Code Javascript
   CacheEtClose(300);
   server.send(200, "text/javascript", MainJS3);  // Javascript code
 }
-
 void handleBrute() {  // Page données brutes
   CacheEtClose(300);
   server.send(200, "text/html", PageBrute);
@@ -184,7 +191,6 @@ void handleBruteJS2() {  // Code Javascript
   CacheEtClose(300);
   server.send(200, "text/javascript", PageBruteJS2);  // Javascript code
 }
-
 void handleAjaxRMS() {  // Envoi des dernières données  brutes reçues du RMS
   String S = "";
   String RMSExtDataB = "";
@@ -508,6 +514,7 @@ void handleRestart() {  // Eventuellement Reseter l'ESP32 à distance
   delay(1000);
   ReseT("Reset Demandé par le Web");
 }
+
 void handleAjaxData10mn() {  // Envoi Historique de 10mn (300points)Energie Active Soutiré - Injecté
   String S = "";
   String T = "";
@@ -917,6 +924,7 @@ void handleNotFound() {  // Page Web pas trouvé
 
   server.send(404, "text/plain", message);
 }
+
 void CacheEtClose(int16_t seconde) {
   server.sendHeader("Cache-Control", "max-age=" + String(seconde));
 }
@@ -931,6 +939,7 @@ void lectureCookie(String S) {
     }
   }
 }
+
 void ExtraitCookie() {
   CleAcces = "";
   if (server.hasHeader("Cookie")) {

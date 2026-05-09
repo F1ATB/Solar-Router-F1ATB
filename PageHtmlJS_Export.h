@@ -17,6 +17,7 @@ const char *ExportHtml = R"====(
     #onglets2{display:block;}
     .Bparametres{border:inset 10px azure;}
     .Bexport{border:inset 4px azure;}
+    .fs16{font-size:16px;text-align:left;padding-left:10px;}
     #memoire{display:flex;justify-content:space-around;font-size:20px;}
   </style>
   <title>Import/Export</title>
@@ -31,11 +32,14 @@ const char *ExportHtml = R"====(
     </div>
    
     <div class="Zone">
-        <div class="boldT">Import des paramètres (.json) ou d'un fichier de données mensuelles (.csv)</div>
+        <div class="boldT">Import de fichiers éditables et modifiables avec un éditeur de texte : </div>
+        <div class="fs16">- les paramètres du routeur au format .json,<br>
+             - les fichiers de données mensuelles au format .csv,<br>
+             - les bilans d'energie à minuit ou précédent un reset au format json, extension .eng</div>
         <form method="POST" onsubmit="submit_para(event);" action="#" enctype="multipart/form-data" id="upload_form">
           <div class="form">
             <div class="ligne">
-              <div class="cell"><input type="file" name="fichier_para_" id="fichier_para_"  class="bouton" accept=".json,.csv"></div>
+              <div class="cell"><input type="file" name="fichier_para_" id="fichier_para_"  class="bouton" accept=".json,.csv,.eng"></div>
               <input type="submit" value="Mettre à jour"  class="bouton">
             </div>
             <div class="lds-dual-ring" id="attente"></div>
