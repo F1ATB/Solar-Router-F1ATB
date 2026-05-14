@@ -308,6 +308,19 @@ void DeserializeConfiguration(String json) {
   pUxI = conf["pUxI"];
   pTemp = conf["pTemp"];
   Source = conf["Source"].as<String>();
+  // Migration vers le modèle Source / Source_T :
+  // - Si Source_T présent dans le JSON, on l'utilise tel quel
+  // - Sinon, on déduit selon la source historique :
+  //   - sources multi-mesures (UxIx2 / ShellyEm / ShellyProEm) → Source_T = Source
+  //     (préserve l'ancien comportement : la voie 2 alimente _T)
+  //   - toute autre source → Source_T = "NotDef" (pas de mesure Triac)
+  if (!conf["Source_T"].isNull()) {
+    Source_T = conf["Source_T"].as<String>();
+  } else if (Source == "UxIx2" || Source == "ShellyEm" || Source == "ShellyPro") {
+    Source_T = Source;
+  } else {
+    Source_T = "NotDef";
+  }
   RMSextIP = conf["RMSextIP"];
   RMSextIPauto = conf["RMSextIPauto"].isNull() ? RMSextIPauto : conf["RMSextIPauto"];
   EnphaseUser = conf["EnphaseUser"].as<String>();
@@ -322,6 +335,7 @@ void DeserializeConfiguration(String json) {
   MQTTPrefixEtat = conf["MQTTPrefixEtat"].as<String>();
   MQTTdeviceName = conf["MQTTdeviceName"].as<String>();
   TopicP = conf["TopicP"].as<String>();
+  TopicP_T = conf["TopicP_T"] | TopicP_T;  // Topic MQTT pour la source T (Pmqtt en Source_T)
   subMQTT = conf["subMQTT"];
   nomRouteur = conf["nomRouteur"].as<String>();
   nomSondeFixe = conf["nomSondeFixe"].as<String>();
@@ -439,6 +453,7 @@ String SerializeConfiguration() {
   conf["pUxI"] = pUxI;
   conf["pTemp"] = pTemp;
   conf["Source"] = Source;
+  conf["Source_T"] = Source_T;        // Source du canal T (Triac), "NotDef" si non utilisée
   conf["RMSextIP"] = RMSextIP;
   conf["RMSextIPauto"] = RMSextIPauto;
   conf["EnphaseUser"] = EnphaseUser;
@@ -457,6 +472,7 @@ String SerializeConfiguration() {
   conf["MQTTPrefixEtat"] = MQTTPrefixEtat;
   conf["MQTTdeviceName"] = MQTTdeviceName;
   conf["TopicP"] = TopicP;
+  conf["TopicP_T"] = TopicP_T;        // Topic MQTT pour la source T (Pmqtt)
   conf["subMQTT"] = subMQTT;
   conf["nomRouteur"] = nomRouteur;
   conf["nomSondeFixe"] = nomSondeFixe;

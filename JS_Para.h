@@ -108,6 +108,8 @@ function SetParaFixe() {
     // Autres paramètres
     GID("ModeW").value = F.ModeReseau;
     GID("sources").value = F.Source;
+    GID("sources_T").value = F.Source_T || "NotDef";  // Source du canal T (Triac)
+    GID("TopicP_T").value = F.TopicP_T || "";          // Topic MQTT pour Source_T = Pmqtt
     GID("RMSextIP").value = int2ip(F.RMSextIP);
     GID("RMSextIPauto").checked = F.RMSextIPauto == 1;
     GID("EnphaseUser").value = F.EnphaseUser;
@@ -190,7 +192,9 @@ function SendValues() {
   F.pUxI = GID("pUxI").value;
   F.pTemp = GID("PTemp").value;
   F.ReacCACSI = GID("EstimCACSI").checked ? 100 : 0; 
-  F.Source=GID("sources").value;
+  F.Source = GID("sources").value;
+  F.Source_T = GID("sources_T").value;     // Source du canal T (Triac)
+  F.TopicP_T = GID("TopicP_T").value.trim(); // Topic MQTT pour Source_T = Pmqtt
   if (F.ModePara == 0) { //Non Expert
     F.subMQTT = 0; F.WifiSleep = 1;
   }
@@ -408,7 +412,16 @@ function checkDisabled() {
     
     // Visibilité du Topic de Puissance (pour source 11/MQTT)
     GID('ligneTopicP').style.display = (GID("sources").value == "Pmqtt") ? "table-row" : "none";
-    
+
+    // Visibilité du topic Pmqtt côté T : uniquement si Source_T == Pmqtt
+    GID('ligneTopicP_T').style.display = (GID("sources_T").value == "Pmqtt") ? "table-row" : "none";
+    // Avertissement si Source_T == Source (cas ignoré par le firmware sauf pour les sources multi-mesures)
+    const sourcesMultiMesures = ["UxIx2", "ShellyEm", "ShellyPro"];
+    const sameSrc = GID("sources_T").value === GID("sources").value
+                    && GID("sources_T").value !== "NotDef"
+                    && !sourcesMultiMesures.includes(GID("sources").value);
+    GID('ligneSource_T_Warn').style.display = sameSrc ? "table-row" : "none";
+
     // Mise à jour et appel final
     F.Source = GID("sources").value;
     if (F.Source != 'Ext') V.Source_data = F.Source;
@@ -448,8 +461,10 @@ function checkIP(id) {
  * Adapte l'affichage des champs de source de données en fonction de la source sélectionnée.
  */
 function AdaptationSource() {
-    // Visibilité des options de nom (Fixe)
-    const isSourceDual = (V.Source_data === 'UxIx2' || ((V.Source_data === 'ShellyEm' || V.Source_data === 'ShellyPro') && GID("EnphaseSerial").value != 3));
+    // Visibilité des options de nom (Fixe) : source multi-mesures en Source OU Source_T configurée
+    const hasSourceT = (GID("sources_T").value !== "NotDef");
+    const isSourceDual = hasSourceT ||
+        (V.Source_data === 'UxIx2' || ((V.Source_data === 'ShellyEm' || V.Source_data === 'ShellyPro') && GID("EnphaseSerial").value != 3));
     GID('ligneFixe').style.display = isSourceDual ? "table-row" : "none";
     GID('ligneFixe1').style.display = isSourceDual ? "table-row" : "none";
     GID('ligneFixe2').style.display = isSourceDual ? "table-row" : "none";

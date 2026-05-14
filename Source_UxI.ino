@@ -54,39 +54,34 @@ void ComputePower() {
     Ief2 += sq(I);
     PWcal += V * I;
   }
-  Uef2 = Uef2 / 100.0;       //square of voltage
-  Tension_M = sqrt(Uef2);    //RMS voltage
-  Ief2 = Ief2 / 100.0;       //square of current
-  Intensite_M = sqrt(Ief2);  // RMS current
+  // Écriture via pointeurs canal : alimente _M ou _T selon Set_Canal_Lecture()
+  Uef2 = Uef2 / 100.0;        //square of voltage
+  *pTension = sqrt(Uef2);     //RMS voltage
+  Ief2 = Ief2 / 100.0;        //square of current
+  *pIntensite = sqrt(Ief2);   // RMS current
   PWcal = PfloatMax(PWcal / 100.0);
-  float PVA = PfloatMax(floor(Tension_M * Intensite_M));
+  float PVA = PfloatMax(floor((*pTension) * (*pIntensite)));
   float PowerFactor = 0;
   if (PVA > 0) {
     PowerFactor = floor(100.0 * PWcal / PVA) / 100.0;
   }
-  PowerFactor_M = PowerFactor;
+  *pPowerFactor = PowerFactor;
   if (PWcal >= 0) {
-    EASfloat += PWcal / 90000.0;         // Watt Hour,Every 40ms. Soutirée
-   
-    // PhDV61
-    Energie_M_Soutiree_double = EASfloat; // compteur float sauvegardé énergie totale soutirée pour reset
-
-    Energie_M_Soutiree = long(EASfloat);  
-    PuissanceS_M_inst = PWcal;
-    PuissanceI_M_inst = 0;
-    PVAS_M_inst = PVA;
-    PVAI_M_inst = 0;
+    *pEASfloat += PWcal / 90000.0;         // Watt Hour,Every 40ms. Soutirée
+    *pEnergie_Soutiree_double = *pEASfloat; // PhDV61 : compteur double sauvegardé pour reset
+    *pEnergie_Soutiree = long(*pEASfloat);
+    *pPuissanceS_inst = PWcal;
+    *pPuissanceI_inst = 0;
+    *pPVAS_inst = PVA;
+    *pPVAI_inst = 0;
   } else {
-    EAIfloat += -PWcal / 90000.0;
-    Energie_M_Injectee = long(EAIfloat);
-   
-      // PhDV61
-    Energie_M_Injectee_double = EAIfloat; // compteur sauvegardé énergie totale injectée pour reset
-
-    PuissanceS_M_inst = 0;
-    PuissanceI_M_inst = -PWcal;
-    PVAS_M_inst = 0;
-    PVAI_M_inst = PVA;
+    *pEAIfloat += -PWcal / 90000.0;
+    *pEnergie_Injectee = long(*pEAIfloat);
+    *pEnergie_Injectee_double = *pEAIfloat; // PhDV61 : compteur double sauvegardé pour reset
+    *pPuissanceS_inst = 0;
+    *pPuissanceI_inst = -PWcal;
+    *pPVAS_inst = 0;
+    *pPVAI_inst = PVA;
   }
   Pva_valide = true;
   if (cptLEDyellow > 30) {

@@ -403,8 +403,9 @@ String ssid = "";
 String password = "";
 String CleAcces = "";
 String CleAccesRef = "";
-String Source = "NotDef";
-String Source_data = "NotDef";
+String Source = "NotDef";      // Source de mesure du canal M (Maison) — pilote le routeur
+String Source_data = "NotDef"; // Source réelle quand Source == "Ext" (chaînage d'ESP32)
+String Source_T = "NotDef";    // Source de mesure du canal T (Triac) — "NotDef" = pas de mesure dédiée
 String SerialIn = "";
 String hostname = "";
 byte dhcpOn = 1;
@@ -433,7 +434,8 @@ String MQTTPwd = "password";
 String MQTTPrefix = "homeassistant";  // prefix obligatoire pour l'auto-discovery entre HA et Core-Mosquitto (par défaut c'est homeassistant)
 String MQTTPrefixEtat = "homeassistant";
 String MQTTdeviceName = "routeur_rms";
-String TopicP = "PuissanceMaison";
+String TopicP = "PuissanceMaison";    // Topic MQTT pour la source du canal M (Pmqtt)
+String TopicP_T = "PuissanceTriac";   // Topic MQTT pour la source du canal T (Pmqtt en source T)
 byte subMQTT = 0;
 String nomRouteur = "Routeur - RMS";
 String nomSondeMobile = "Données Maison";
@@ -523,8 +525,39 @@ float Puissance_T_moy, Puissance_M_moy;
 float PVA_T_moy, PVA_M_moy;
 
 // PhDV61   float ne suffit pas lorsque la valeur totale devient très grande, et les incréments très petits (pendant le routage par exemple)
-double EASfloat = 0;
-double EAIfloat = 0;
+double EASfloat = 0;          // Accumulateur Wh soutirée pour le canal M (UxI, MQTT)
+double EAIfloat = 0;          // Accumulateur Wh injectée pour le canal M
+double EASfloat_T = 0;        // Accumulateur Wh soutirée pour le canal T (idem si UxI/MQTT en Source_T)
+double EAIfloat_T = 0;        // Accumulateur Wh injectée pour le canal T
+double Energie_M_Soutiree_double = 0.0;  // Compteur double précision pour la mesure Maison (UxIx3)
+double Energie_M_Injectee_double = 0.0;
+double Energie_T_Soutiree_double = 0.0;  // Compteur double précision pour la mesure Triac (UxIx3)
+double Energie_T_Injectee_double = 0.0;
+
+// Canal de lecture courant : 'M' (Maison) ou 'T' (Triac). Mis à jour par Set_Canal_Lecture()
+// avant chaque appel à Lecture_Source(). Lu par les sources multi-mesures pour décider de la voie 2.
+char canal_lecture_courant = 'M';
+
+// Pointeurs indirects vers les variables du canal courant. Initialisés sur le canal M
+// dès la déclaration (valides au boot avant tout appel) puis repositionnés par
+// Set_Canal_Lecture('M'/'T') selon le contexte de chaque lecture de source.
+float*  pPuissanceS_inst        = &PuissanceS_M_inst;
+float*  pPuissanceI_inst        = &PuissanceI_M_inst;
+float*  pPVAS_inst              = &PVAS_M_inst;
+float*  pPVAI_inst              = &PVAI_M_inst;
+float*  pTension                = &Tension_M;
+float*  pIntensite              = &Intensite_M;
+float*  pPowerFactor            = &PowerFactor_M;
+long*   pEnergie_Soutiree       = &Energie_M_Soutiree;
+long*   pEnergie_Injectee       = &Energie_M_Injectee;
+long*   pEnergieJour_Soutiree   = &EnergieJour_M_Soutiree;
+long*   pEnergieJour_Injectee   = &EnergieJour_M_Injectee;
+double* pEASfloat               = &EASfloat;
+double* pEAIfloat               = &EAIfloat;
+double* pEnergie_Soutiree_double = &Energie_M_Soutiree_double;
+double* pEnergie_Injectee_double = &Energie_M_Injectee_double;
+float*  pPuissance_moy          = &Puissance_M_moy;
+float*  pPVA_moy                = &PVA_M_moy;
 
 int PactConso_M, PactProd;
 int16_t tabPw_Maison_5mn[600];  //Puissance Active:Soutiré-Injecté toutes les 5mn
@@ -601,8 +634,6 @@ float  Energie_Minuit_JSY_Soutiree = 0.0;  // Le contenu sera initialisé au pre
 float  Energie_Minuit_JSY_Injectee = 0.0;  // Le contenu sera initialisé au premier appel UxIx3 après Reset
 float  Energie_Jour_JSY_Soutiree   = 0.0;  // Le contenu sera initialisé au premier appel UxIx3 après Reset
 float  Energie_Jour_JSY_Injectee   = 0.0;  // Le contenu sera initialisé au premier appel UxIx3 après Reset
-double Energie_M_Soutiree_double    = 0.0;
-double Energie_M_Injectee_double    = 0.0;
 
 long Temps_precedent = 0;  // mesure précise du temps entre deux appels au JSY-MK-333
 float PW_M1, PW_M2, PW_M3;
@@ -670,6 +701,11 @@ String P_MQTT_Brute = "";
 float PwMQTT = 0;
 float PvaMQTT = 0;
 float PfMQTT = 1;
+// Valeurs en cache pour Pmqtt utilisé comme Source_T (topic distinct = TopicP_T)
+String P_MQTT_Brute_T = "";
+float PwMQTT_T = 0;
+float PvaMQTT_T = 0;
+float PfMQTT_T = 1;
 
 //Paramètres pour RTE
 byte TempoRTEon = 0;
@@ -714,6 +750,7 @@ float previousTimeRMSMoy = 0;
 unsigned long previousMQTTenvoiMillis;
 unsigned long previousMQTTMillis;
 unsigned long LastPwMQTTMillis = 0;
+unsigned long LastPwMQTTMillis_T = 0;  // Horodatage de dernière réception sur TopicP_T
 unsigned long PeriodeMQTTMillis = 500;
 unsigned long LastShowActionMillis = 0;
 
@@ -960,6 +997,97 @@ void WiFiEvent(WiFiEvent_t event) {  //SR19
   }                           //SR19
 }
 
+
+// ---------------------------------------------------------
+// Fonctions génériques de dispatch des sources de mesure
+// ---------------------------------------------------------
+
+// Initialise le module correspondant à la source donnée (primaire ou secondaire)
+void Setup_Source(String src) {
+  if (src == "UxI")    Setup_UxI();
+  if (src == "Enphase") Setup_Enphase();
+  if (pSerial > 0) {
+    if (src == "UxIx2") Setup_UxIx2();
+    if (src == "Linky")  Setup_Linky();
+  }
+}
+
+// Appelle la lecture de la source indiquée et ajuste PeriodeProgMillis.
+// Le paramètre canal ('M' ou 'T') détermine vers quel jeu de variables la source écrit.
+// PeriodeProgMillis est ajustée uniquement pour le canal 'M' (la cadence est pilotée par la source Maison).
+void Lecture_Source(String src, char canal) {
+  Set_Canal_Lecture(canal);
+
+  unsigned long ralenti = long(PuissanceS_M / 10);  // Ralentit le polling si forte puissance soutirée
+  unsigned long periode = PeriodeProgMillis;        // On modifiera periode dans tous les cas, mais on
+                                                    // ne la propage à PeriodeProgMillis qu'en canal 'M'.
+  bool updateLastRMS = false;
+
+  if (src == "NotDef")  { LectureNotDef();        periode = 600; }
+  if (src == "UxI")     { LectureUxI();           periode = 40; }
+  if (pSerial > 0) {
+    if (src == "UxIx2") { LectureUxIx2();         periode = 400; }
+    if (src == "UxIx3") { Lecture_JSY333();        periode = (Serial2V == 19200) ? 500 : 800; }
+    if (src == "Linky") { LectureLinky();          periode = 2; }
+  }
+  if (src == "Enphase")  { LectureEnphase();       updateLastRMS = true; periode = 600 + ralenti; }
+  if (src == "SmartG")   { LectureSmartG();        updateLastRMS = true; periode = 300 + ralenti; }
+  if (src == "HomeW")    { LectureHomeW();         updateLastRMS = true; periode = 300 + ralenti; }
+  if (src == "ShellyEm") { LectureShellyEm();     updateLastRMS = true; periode = 300 + ralenti; }
+  if (src == "ShellyPro"){ LectureShellyProEm();  updateLastRMS = true; periode = 300 + ralenti; }
+  if (src == "Ext")      { CallESP32_Externe();    updateLastRMS = true; periode = 800 + ralenti; }
+  if (src == "Pmqtt")    { UpdatePmqtt();          updateLastRMS = true; periode = 600; }
+
+  if (canal == 'M') {
+    PeriodeProgMillis = periode;                   // La cadence du loop est pilotée par la source M
+    if (updateLastRMS) LastRMS_Millis = millis();
+  }
+}
+
+// Bascule les pointeurs canal vers les variables _M ou _T.
+// Doit être appelé AVANT chaque exécution d'une source de mesure.
+// Les sources qui écrivent uniquement dans _M (UxI, Linky, etc.) le font via ces pointeurs et alimentent
+// donc le bon canal sans connaître elles-mêmes le contexte.
+void Set_Canal_Lecture(char canal) {
+  canal_lecture_courant = canal;
+  if (canal == 'T') {
+    pPuissanceS_inst        = &PuissanceS_T_inst;
+    pPuissanceI_inst        = &PuissanceI_T_inst;
+    pPVAS_inst              = &PVAS_T_inst;
+    pPVAI_inst              = &PVAI_T_inst;
+    pTension                = &Tension_T;
+    pIntensite              = &Intensite_T;
+    pPowerFactor            = &PowerFactor_T;
+    pEnergie_Soutiree       = &Energie_T_Soutiree;
+    pEnergie_Injectee       = &Energie_T_Injectee;
+    pEnergieJour_Soutiree   = &EnergieJour_T_Soutiree;
+    pEnergieJour_Injectee   = &EnergieJour_T_Injectee;
+    pEASfloat               = &EASfloat_T;
+    pEAIfloat               = &EAIfloat_T;
+    pEnergie_Soutiree_double = &Energie_T_Soutiree_double;
+    pEnergie_Injectee_double = &Energie_T_Injectee_double;
+    pPuissance_moy          = &Puissance_T_moy;
+    pPVA_moy                = &PVA_T_moy;
+  } else {  // canal 'M' (par défaut)
+    pPuissanceS_inst        = &PuissanceS_M_inst;
+    pPuissanceI_inst        = &PuissanceI_M_inst;
+    pPVAS_inst              = &PVAS_M_inst;
+    pPVAI_inst              = &PVAI_M_inst;
+    pTension                = &Tension_M;
+    pIntensite              = &Intensite_M;
+    pPowerFactor            = &PowerFactor_M;
+    pEnergie_Soutiree       = &Energie_M_Soutiree;
+    pEnergie_Injectee       = &Energie_M_Injectee;
+    pEnergieJour_Soutiree   = &EnergieJour_M_Soutiree;
+    pEnergieJour_Injectee   = &EnergieJour_M_Injectee;
+    pEASfloat               = &EASfloat;
+    pEAIfloat               = &EAIfloat;
+    pEnergie_Soutiree_double = &Energie_M_Soutiree_double;
+    pEnergie_Injectee_double = &Energie_M_Injectee_double;
+    pPuissance_moy          = &Puissance_M_moy;
+    pPVA_moy                = &PVA_M_moy;
+  }
+}
 
 // SETUP
 //*******
@@ -1260,38 +1388,19 @@ void setup() {
   ArduinoOTA.setHostname((const char *)hostname.c_str());
   ArduinoOTA.begin();  //Mandatory
 
-  //Adaptation à la Source
-  TelnetPrintln("Source : " + Source);
+  // Initialisation du canal M (Maison) — pilote le routage
+  Set_Canal_Lecture('M');                         // Positionne les pointeurs sur les variables _M
+  TelnetPrintln("Source (M) : " + Source);
+  Setup_Source(Source);
+  if (Source == "Pmqtt" || Source_T == "Pmqtt") GestionMQTT();  // Souscription MQTT si nécessaire
+  if (Source == "Ext") { IndexSource(); } else { Source_data = Source; }
 
-  if (Source == "UxI") {
-    Setup_UxI();
-  }
-
-  if (Source == "Enphase") {
-    Setup_Enphase();
-  }
-
-
-  if (Source == "Pmqtt") {
-    GestionMQTT();
-  }
-
-  //Port Série si besoin
-  if (pSerial > 0) {
-
-    if (Source == "UxIx2") {
-      Setup_UxIx2();
-    }
-
-    if (Source == "Linky") {
-      Setup_Linky();
-    }
-  }
-
-  if (Source == "Ext") {
-    IndexSource();
-  } else {
-    Source_data = Source;
+  // Initialisation du canal T (Triac) — optionnel
+  if (Source_T != "NotDef" && Source_T != Source) {
+    TelnetPrintln("Source_T : " + Source_T);
+    Set_Canal_Lecture('T');                       // Pour que Setup_Source pointe sur les variables _T si besoin
+    Setup_Source(Source_T);
+    Set_Canal_Lecture('M');                       // On laisse les pointeurs sur M par défaut
   }
   LireSerial();
 
@@ -1373,65 +1482,13 @@ void Task_LectureRMS(void *pvParameters) {
     //******************************
     if (tps - LastRMS_Millis > PeriodeProgMillis) {  //Attention delicat pour eviter pb overflow
       LastRMS_Millis = tps;
-      unsigned long ralenti = long(PuissanceS_M / 10);  // On peut ralentir échange sur Wifi si grosse puissance soutirée en cours
-      if (Source == "NotDef") {
-        LectureNotDef();
-        PeriodeProgMillis = 600;
-      }
-      if (Source == "UxI") {
-        LectureUxI();
-        PeriodeProgMillis = 40;
-      }
-      if (pSerial > 0) {
-        if (Source == "UxIx2") {
-          LectureUxIx2();
-          PeriodeProgMillis = 400;
-        }
-        if (Source == "UxIx3") {
-          Lecture_JSY333();
-          PeriodeProgMillis = 800;
-          if (Serial2V == 19200) PeriodeProgMillis = 500;
-        }
-        if (Source == "Linky") {
-          LectureLinky();
-          PeriodeProgMillis = 2;
-        }
-      }
-      if (Source == "Enphase") {
-        LectureEnphase();
-        LastRMS_Millis = millis();
-        PeriodeProgMillis = 600 + ralenti;  //On s'adapte à la vitesse réponse Envoy-S metered
-      }
-      if (Source == "SmartG") {
-        LectureSmartG();
-        LastRMS_Millis = millis();
-        PeriodeProgMillis = 300 + ralenti;  //On s'adapte à la vitesse réponse SmartGateways
-      }
-      if (Source == "HomeW") {
-        LectureHomeW();
-        LastRMS_Millis = millis();
-        PeriodeProgMillis = 300 + ralenti;  //On s'adapte à la vitesse réponse HomeWizard
-      }
-      if (Source == "ShellyEm") {
-        LectureShellyEm();
-        LastRMS_Millis = millis();
-        PeriodeProgMillis = 300 + ralenti;  //On adapte la vitesse pour ne pas surchargé Wifi.La gestion overproduction est toujours à 200ms
-      }
-      if (Source == "ShellyPro") {
-        LectureShellyProEm();
-        LastRMS_Millis = millis();
-        PeriodeProgMillis = 300 + ralenti;  //On adapte  la vitesse pour ne pas surchargé Wifi
-      }
 
-      if (Source == "Ext") {
-        CallESP32_Externe();
-        LastRMS_Millis = millis();
-        PeriodeProgMillis = 800 + ralenti;  //Après pour ne pas surchargé Wifi
-      }
-      if (Source == "Pmqtt") {
-        PeriodeProgMillis = 600;
-        LastRMS_Millis = millis();
-        UpdatePmqtt();
+      // Canal M (Maison) — pilote le routage
+      Lecture_Source(Source, 'M');
+
+      // Canal T (Triac) — optionnel
+      if (Source_T != "NotDef" && Source_T != Source) {
+        Lecture_Source(Source_T, 'T');
       }
     }
     delay(2);

@@ -343,9 +343,9 @@ const char *ParaHtml = R"====(
       <div class="form">
 
         <div class="ligne">
-          <label for="sources">Source</label>
+          <label for="sources">Source Maison (M) <span class="fsize10">— pilote le routeur</span></label>
           <select id="sources" onclick="checkDisabled();"
-                  title="Suivant l'interface de mesure choisie.">
+                  title="Source mesurant la puissance à l'entrée Maison. Pilote le routage.">
             <option value="NotDef" selected>Non définie</option>
             <option value="UxI">UxI</option>
             <option value="UxIx2">UxIx2</option>
@@ -396,6 +396,27 @@ const char *ParaHtml = R"====(
         <div class="ligne" id="ligneTopicP">
           <label for="TopicP">MQTT Topic Puissance :</label>
           <input type="text" id="TopicP" name="TopicP" autocomplete="on">
+        </div>
+
+        <div class="ligne">
+          <label for="sources_T">Source Triac (T) <span class="fsize10">— mesure de la sortie Triac</span></label>
+          <select id="sources_T" onclick="checkDisabled();"
+                  title="Source mesurant la puissance délivrée par la sortie Triac. Optionnelle. Note : avec UxIx3, les tensions/courants par phase apparaîtront sous Tension_M1/M2/M3 (préfixe historique conservé).">
+            <option value="NotDef" selected>Aucune</option>
+            <option value="UxI">UxI</option>
+            <option value="UxIx2">UxIx2 (voie 1 du JSY)</option>
+            <option value="UxIx3">UxIx3 (Triac mono ou triphasé)</option>
+            <option value="ShellyEm">Shelly Em</option>
+            <option value="ShellyPro">Shelly Pro Em</option>
+            <option value="Pmqtt">MQTT (topic distinct)</option>
+          </select>
+        </div>
+        <div class="ligne" id="ligneTopicP_T" style="display:none;">
+          <label for="TopicP_T">MQTT Topic Puissance Triac :</label>
+          <input type="text" id="TopicP_T" name="TopicP_T" autocomplete="on">
+        </div>
+        <div class="ligne" id="ligneSource_T_Warn" style="display:none;color:#c00;">
+          <span class="fsize10">⚠ La source Triac doit être différente de la source Maison.</span>
         </div>
 
         <div><span class="fsize10">Nécessite un Restart de l'ESP32</span></div>

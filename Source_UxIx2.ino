@@ -52,7 +52,9 @@ void LectureUxIx2() {  //Ecriture et Lecture port série du JSY-MK-194  .
     Sens_1 = ByteArray[27];  // Sens 1
     Sens_2 = ByteArray[28];
 
-    //Données du Triac
+    // Voie 1 du JSY = Triac → toujours écrit dans les variables _T.
+    // Cette voie est utilisée que UxIx2 soit appelée comme Source (en remplissant Maison+Triac)
+    // ou comme Source_T (on ne lit alors que la voie 1 et on l'écrit dans _T).
     Tension_T = LesDatas[0] * .0001;
     Intensite_T = LesDatas[1] * .0001;
     float Puiss_1 = PfloatMax(LesDatas[2] * .0001);
@@ -75,28 +77,33 @@ void LectureUxIx2() {  //Ecriture et Lecture port série du JSY-MK-194  .
       PVAI_T_inst = 0;
       PVAS_T_inst = PVA1;
     }
-    // Données générale de la Maison
-    Tension_M = LesDatas[8] * .0001;
-    Intensite_M = LesDatas[9] * .0001;
-    float Puiss_2 = PfloatMax(LesDatas[10] * .0001);
-    Energie_M_Soutiree = int(LesDatas[11] * .1);
-    PowerFactor_M = LesDatas[12] * .001;
-    Energie_M_Injectee = int(LesDatas[13] * .1);
-    float PVA2 = 0;
-    if (PowerFactor_M > 0) {
-      PVA2 = Puiss_2 / PowerFactor_M;
+
+    // Voie 2 du JSY = Maison → écrite uniquement quand UxIx2 est appelée comme Source_M
+    // (canal 'M'). En canal 'T', la voie 2 est ignorée pour ne pas polluer _M.
+    if (canal_lecture_courant == 'M') {
+      Tension_M = LesDatas[8] * .0001;
+      Intensite_M = LesDatas[9] * .0001;
+      float Puiss_2 = PfloatMax(LesDatas[10] * .0001);
+      Energie_M_Soutiree = int(LesDatas[11] * .1);
+      PowerFactor_M = LesDatas[12] * .001;
+      Energie_M_Injectee = int(LesDatas[13] * .1);
+      float PVA2 = 0;
+      if (PowerFactor_M > 0) {
+        PVA2 = Puiss_2 / PowerFactor_M;
+      }
+      if (Sens_2 > 0) {  //Injection en entrée de Maison
+        PuissanceI_M_inst = Puiss_2;
+        PuissanceS_M_inst = 0;
+        PVAI_M_inst = PVA2;
+        PVAS_M_inst = 0;
+      } else {
+        PuissanceS_M_inst = Puiss_2;
+        PuissanceI_M_inst = 0;
+        PVAI_M_inst = 0;
+        PVAS_M_inst = PVA2;
+      }
     }
-    if (Sens_2 > 0) {  //Injection en entrée de Maison
-      PuissanceI_M_inst = Puiss_2;
-      PuissanceS_M_inst = 0;
-      PVAI_M_inst = PVA2;
-      PVAS_M_inst = 0;
-    } else {
-      PuissanceS_M_inst = Puiss_2;
-      PuissanceI_M_inst = 0;
-      PVAI_M_inst = 0;
-      PVAS_M_inst = PVA2;
-    }
+
     filtre_puissance();
     EnergieActiveValide = true;
     Pva_valide = true;

@@ -120,21 +120,22 @@ void LectureShellyEm() {
     }
     total_E_soutire += ValJson("total", Shelly_Data);
     total_E_injecte += ValJson("total_returned", Shelly_Data);
-    Energie_M_Soutiree = int(total_E_soutire);
-    Energie_M_Injectee = int(total_E_injecte);
+    // Triphasé : voie principale écrite via pointeurs canal (alimente _M ou _T)
+    *pEnergie_Soutiree = int(total_E_soutire);
+    *pEnergie_Injectee = int(total_E_injecte);
     if (total_Pw == 0) {
       total_Pva = 0;
     }
     if (total_Pw > 0) {
-      PuissanceS_M_inst = total_Pw;
-      PuissanceI_M_inst = 0;
-      PVAS_M_inst = total_Pva;
-      PVAI_M_inst = 0;
+      *pPuissanceS_inst = total_Pw;
+      *pPuissanceI_inst = 0;
+      *pPVAS_inst = total_Pva;
+      *pPVAI_inst = 0;
     } else {
-      PuissanceS_M_inst = 0;
-      PuissanceI_M_inst = -total_Pw;
-      PVAI_M_inst = total_Pva;
-      PVAS_M_inst = 0;
+      *pPuissanceS_inst = 0;
+      *pPuissanceI_inst = -total_Pw;
+      *pPVAI_inst = total_Pva;
+      *pPVAS_inst = 0;
     }
   } else if (voie < 3) {  //Monophasé Shelly Em de base
     ShEm_dataBrute = "<strong>Voie : " + String(Voie) + "</strong><br>" + Shelly_Data;
@@ -145,32 +146,33 @@ void LectureShellyEm() {
       pf = ValJson("pf", Shelly_Data);
       pf = abs(pf);
       if (pf > 1) pf = 1;
-      if (Voie == voie) {  //voie du routeur
+      if (Voie == voie) {  // Voie principale (configurée) : écrit via pointeurs canal (_M ou _T)
         if (Pw >= 0) {
-          PuissanceS_M_inst = Pw;
-          PuissanceI_M_inst = 0;
+          *pPuissanceS_inst = Pw;
+          *pPuissanceI_inst = 0;
           if (pf > 0.01) {
-            PVAS_M_inst = PfloatMax(Pw / pf);
+            *pPVAS_inst = PfloatMax(Pw / pf);
           } else {
-            PVAS_M_inst = 0;
+            *pPVAS_inst = 0;
           }
-          PVAI_M_inst = 0;
+          *pPVAI_inst = 0;
         } else {
-          PuissanceS_M_inst = 0;
-          PuissanceI_M_inst = -Pw;
+          *pPuissanceS_inst = 0;
+          *pPuissanceI_inst = -Pw;
           if (pf > 0.01) {
-            PVAI_M_inst = PfloatMax(-Pw / pf);
+            *pPVAI_inst = PfloatMax(-Pw / pf);
           } else {
-            PVAI_M_inst = 0;
+            *pPVAI_inst = 0;
           }
-          PVAS_M_inst = 0;
+          *pPVAS_inst = 0;
         }
-        Energie_M_Soutiree = int(ValJson("total", Shelly_Data));
-        Energie_M_Injectee = int(ValJson("total_returned", Shelly_Data));
-        PowerFactor_M = pf;
-        Tension_M = voltage;
+        *pEnergie_Soutiree = int(ValJson("total", Shelly_Data));
+        *pEnergie_Injectee = int(ValJson("total_returned", Shelly_Data));
+        *pPowerFactor = pf;
+        *pTension = voltage;
         Pva_valide = true;
-      } else {  // voie secondaire
+      } else if (canal_lecture_courant == 'M') {
+        // Voie secondaire (mode 2-voies) : hardcodée _T, uniquement quand ShellyEm est en Source_M
         if (LissageLong) {
           PwMoy2 = 0.2 * Pw + 0.8 * PwMoy2;  //Lissage car moins de mesure sur voie secondaire
           pfMoy2 = 0.2 * pf + 0.8 * pfMoy2;
@@ -207,63 +209,68 @@ void LectureShellyEm() {
     Voie = voie % 2;
     ShEm_dataBrute = "<strong>Shelly Em Gen3 Voie : " + String(Voie) + "</strong><br>" + Shelly_Data;
     if (Shelly_Data.indexOf("ssid") > 0) {  // Donnée valide
+      // Gen3 voie principale (configurée) : écrit via pointeurs canal
       Shelly_Data = SubJson("em1:" + String(Voie), "}", Shelly_Data);
       Pw = PfloatMax(ValJson("act_power", Shelly_Data));
       pf = ValJson("pf", Shelly_Data);
       voltage = ValJson("voltage", Shelly_Data);
       if (Pw >= 0) {
-        PuissanceS_M_inst = Pw;
-        PuissanceI_M_inst = 0;
+        *pPuissanceS_inst = Pw;
+        *pPuissanceI_inst = 0;
         if (pf > 0.01) {
-          PVAS_M_inst = PfloatMax(Pw / pf);
+          *pPVAS_inst = PfloatMax(Pw / pf);
         } else {
-          PVAS_M_inst = 0;
+          *pPVAS_inst = 0;
         }
-        PVAI_M_inst = 0;
+        *pPVAI_inst = 0;
       } else {
-        PuissanceS_M_inst = 0;
-        PuissanceI_M_inst = -Pw;
+        *pPuissanceS_inst = 0;
+        *pPuissanceI_inst = -Pw;
         if (pf > 0.01) {
-          PVAI_M_inst = PfloatMax(-Pw / pf);
+          *pPVAI_inst = PfloatMax(-Pw / pf);
         } else {
-          PVAI_M_inst = 0;
+          *pPVAI_inst = 0;
         }
-        PVAS_M_inst = 0;
+        *pPVAS_inst = 0;
       }
       Shelly_Data = SubJson("em1data:" + String(Voie), "}", ShEm_dataBrute);
-      Energie_M_Soutiree = int(ValJson("total_act_energy", Shelly_Data));
-      Energie_M_Injectee = int(ValJson("total_act_ret_energy", Shelly_Data));
-      PowerFactor_M = pf;
-      Tension_M = voltage;
+      *pEnergie_Soutiree = int(ValJson("total_act_energy", Shelly_Data));
+      *pEnergie_Injectee = int(ValJson("total_act_ret_energy", Shelly_Data));
+      *pPowerFactor = pf;
+      *pTension = voltage;
       Pva_valide = true;
-      Voie = (Voie + 1) % 2;
-      Shelly_Data = SubJson("em1:" + String(Voie), "}", ShEm_dataBrute);
-      Pw = PfloatMax(ValJson("act_power", Shelly_Data));
-      pf = ValJson("pf", Shelly_Data);
-      if (Pw >= 0) {
-        PuissanceS_T_inst = Pw;
-        PuissanceI_T_inst = 0;
-        if (pf > 0.01) {
-          PVAS_T_inst = PfloatMax(Pw / pf);
+
+      // Gen3 voie secondaire (mode 2-voies) : hardcodée _T, uniquement quand ShellyEm est en Source_M
+      if (canal_lecture_courant == 'M') {
+        Voie = (Voie + 1) % 2;
+        Shelly_Data = SubJson("em1:" + String(Voie), "}", ShEm_dataBrute);
+        Pw = PfloatMax(ValJson("act_power", Shelly_Data));
+        pf = ValJson("pf", Shelly_Data);
+        if (Pw >= 0) {
+          PuissanceS_T_inst = Pw;
+          PuissanceI_T_inst = 0;
+          if (pf > 0.01) {
+            PVAS_T_inst = PfloatMax(Pw / pf);
+          } else {
+            PVAS_T_inst = 0;
+          }
+          PVAI_T_inst = 0;
         } else {
+          PuissanceS_T_inst = 0;
+          PuissanceI_T_inst = -Pw;
+          if (pf > 0.01) {
+            PVAI_T_inst = PfloatMax(-Pw / pf);
+          } else {
+            PVAI_T_inst = 0;
+          }
           PVAS_T_inst = 0;
         }
-        PVAI_T_inst = 0;
-      } else {
-        PuissanceS_T_inst = 0;
-        PuissanceI_T_inst = -Pw;
-        if (pf > 0.01) {
-          PVAI_T_inst = PfloatMax(-Pw / pf);
-        } else {
-          PVAI_T_inst = 0;
-        }
-        PVAS_T_inst = 0;
+        Shelly_Data = SubJson("em1data:" + String(Voie), "}", ShEm_dataBrute);
+        Energie_T_Soutiree = int(ValJson("total_act_energy", Shelly_Data));
+        Energie_T_Injectee = int(ValJson("total_act_ret_energy", Shelly_Data));
+        PowerFactor_T = pf;
+        Tension_T = voltage;
       }
-      Shelly_Data = SubJson("em1data:" + String(Voie), "}", ShEm_dataBrute);
-      Energie_T_Soutiree = int(ValJson("total_act_energy", Shelly_Data));
-      Energie_T_Injectee = int(ValJson("total_act_ret_energy", Shelly_Data));
-      PowerFactor_T = pf;
-      Tension_T = voltage;
     }
   }
   filtre_puissance();

@@ -24,7 +24,7 @@ void GestionMQTT() {
       if (Source_Temp[C] == "tempMqtt")
         Temper = true;
     }
-    if (MQTTRepet > 0 || Temper || Source == "Pmqtt" || subMQTT == 1) {
+    if (MQTTRepet > 0 || Temper || Source == "Pmqtt" || Source_T == "Pmqtt" || subMQTT == 1) {
       if (testMQTTconnected()) {
         clientMQTT.loop();
         envoiVersMQTT();
@@ -65,6 +65,12 @@ bool testMQTTconnected() {
         char Topicp[50];
         snprintf(Topicp, sizeof(Topicp), "%s", TopicP.c_str());
         clientMQTT.subscribe(Topicp);
+      }
+      // Souscription au topic dédié si Pmqtt est utilisée comme Source_T (canal Triac)
+      if (Source_T == "Pmqtt" && TopicP_T.length() > 0) {
+        char Topicpt[50];
+        snprintf(Topicpt, sizeof(Topicpt), "%s", TopicP_T.c_str());
+        clientMQTT.subscribe(Topicpt);
       }
       if (subMQTT == 1) {
         char TopicAct[60];
@@ -129,13 +135,21 @@ void callback(char *topic, byte *payload, unsigned int length) {
     }
   }
 
-  if (String(topic) == TopicP && Source == "Pmqtt") {  // Mesure de puissance
+  if (String(topic) == TopicP && Source == "Pmqtt") {  // Mesure de puissance canal M
     PwMQTT = ValJson("Pw", message);
     PvaMQTT = ValJson("Pva", message);
     PfMQTT = ValJson("Pf", message);
     P_MQTT_Brute = String(Message);
     if (message.indexOf("Pw") > 0)
       LastPwMQTTMillis = millis();
+  }
+  if (String(topic) == TopicP_T && Source_T == "Pmqtt") {  // Mesure de puissance canal T (Triac)
+    PwMQTT_T = ValJson("Pw", message);
+    PvaMQTT_T = ValJson("Pva", message);
+    PfMQTT_T = ValJson("Pf", message);
+    P_MQTT_Brute_T = String(Message);
+    if (message.indexOf("Pw") > 0)
+      LastPwMQTTMillis_T = millis();
   }
   if (subMQTT == 1) {
     char TopicAct[60];
@@ -195,7 +209,9 @@ void sendMQTTDiscoveryMsg_global() {
   String ActionOnOff;
   // augmente la taille du buffer wifi Mqtt (voir PubSubClient.h)
   clientMQTT.setBufferSize(1700);  // voir -->#define MQTT_MAX_PACKET_SIZE 256 is the default value in PubSubClient.h
-  if (Source == "UxIx2" || Source == "ShellyEm" || Source == "ShellyPro") {
+  // Découverte des capteurs Triac (T) : alimentés si Source_T est configurée
+  // ou si la source M est multi-mesures (UxIx2 / ShellyEm / ShellyProEm en mode 2-voies — remplit _T via sa voie secondaire)
+  if (Source_T != "NotDef" || Source == "UxIx2" || Source == "ShellyEm" || Source == "ShellyPro") {
     DeviceToDiscover("PuissanceS_T", "Puissance T Soutirée", "W", "power", "0");
     DeviceToDiscover("PuissanceI_T", "Puissance T Injectée", "W", "power", "0");
     DeviceToDiscover("Tension_T", "Tension T", "V", "voltage", "2");
@@ -373,8 +389,13 @@ void SendDataToHomeAssistant() {
   // On garde trace de la position
   int len = snprintf(value, sizeof(value), "{\"PuissanceS_M\": %d, \"PuissanceI_M\": %d, \"Tension_M\": %.1f, \"Intensite_M\": %.1f, \"PowerFactor_M\": %.2f, \"Energie_M_Soutiree\":%ld,\"Energie_M_Injectee\":%ld, \"EnergieJour_M_Soutiree\":%ld, \"EnergieJour_M_Injectee\":%ld", PuissanceS_M, PuissanceI_M, Tension_M, Intensite_M, PowerFactor_M, Energie_M_Soutiree, Energie_M_Injectee, EnergieJour_M_Soutiree, EnergieJour_M_Injectee);
 
-  if (Source == "UxIx2" || Source == "ShellyEm" || Source == "ShellyPro") {
+  // Publication des mesures Triac (T) : alimentées si Source_T est configurée
+  // ou si la source M est multi-mesures (UxIx2 / ShellyEm / ShellyProEm en mode 2-voies — remplit _T via sa voie secondaire)
+  if (Source_T != "NotDef" || Source == "UxIx2" || Source == "ShellyEm" || Source == "ShellyPro") {
     len += snprintf(value + len, sizeof(value) - len, ",\"PuissanceS_T\": %d, \"PuissanceI_T\": %d, \"Tension_T\": %.1f, \"Intensite_T\": %.1f, \"PowerFactor_T\": %.2f, \"Energie_T_Soutiree\":%ld,\"Energie_T_Injectee\":%ld, \"EnergieJour_T_Soutiree\":%ld, \"EnergieJour_T_Injectee\":%ld, \"Frequence\":%.2f", PuissanceS_T, PuissanceI_T, Tension_T, Intensite_T, PowerFactor_T, Energie_T_Soutiree, Energie_T_Injectee, EnergieJour_T_Soutiree, EnergieJour_T_Injectee, Frequence);
+    if (Source_T != "NotDef") {  // Identifie la source T dans le payload MQTT
+      len += snprintf(value + len, sizeof(value) - len, ",\"Source_T\":\"%s\"", Source_T.c_str());
+    }
   }
   for (int canal = 0; canal < 4; canal++) {
     if (temperature[canal] > -100 && Source_Temp[canal] != "tempNo") {

@@ -114,32 +114,32 @@ void Lecture_JSY333() {
     Energie_Jour_JSY_Soutiree =  JSY_Soutire - Energie_Minuit_JSY_Soutiree;
     Energie_Jour_JSY_Injectee =  JSY_Injecte - Energie_Minuit_JSY_Injectee;
 
+    // Variables "somme" écrites via pointeurs canal (alimente _M ou _T selon Set_Canal_Lecture).
+    // Les variables par phase (Tension_M1/M2/M3, etc.) restent en dur sur _M — limitation
+    // documentée : quand UxIx3 est utilisée en Source_T, ces variables reflètent en réalité
+    // les phases du Triac mais conservent leur nom historique.
     if (injection) {
-      PuissanceS_M_inst = 0;
-      PuissanceI_M_inst = ((float)((float)(Lecture333[21] * 16777216) + (float)(Lecture333[22] * 65536) + (float)(Lecture333[23] * 256) + (float)Lecture333[24]));
+      *pPuissanceS_inst = 0;
+      *pPuissanceI_inst = ((float)((float)(Lecture333[21] * 16777216) + (float)(Lecture333[22] * 65536) + (float)(Lecture333[23] * 256) + (float)Lecture333[24]));
 
-      PVAS_M_inst = 0;
-      PVAI_M_inst = abs(PVA_M_inst1 + PVA_M_inst2 + PVA_M_inst3);  // car la somme des puissances apparentes "signées" est négative puisqu'en "injection" au global
+      *pPVAS_inst = 0;
+      *pPVAI_inst = abs(PVA_M_inst1 + PVA_M_inst2 + PVA_M_inst3);  // car la somme des puissances apparentes "signées" est négative puisqu'en "injection" au global
       // PhDV61 : on considère que cette puissance active "globale" a duré "delta_temps", et on l'intègre donc pour obtenir une énergie en Wh
-      
-      // --->>> Modification PhDV61
-      delta_Energie = ( (float) delta_temps / 1000.0) * ( PuissanceI_M_inst / 3600.0);
+      delta_Energie = ( (float) delta_temps / 1000.0) * ( (*pPuissanceI_inst) / 3600.0);
 
-      Energie_M_Injectee_double += delta_Energie;
-      Energie_M_Injectee  = (long) Energie_M_Injectee_double; // On conserve la partie entière - Energie_M_Injectee est un long !
-    }  
+      *pEnergie_Injectee_double += delta_Energie;
+      *pEnergie_Injectee = (long)(*pEnergie_Injectee_double); // On conserve la partie entière - long !
+    }
       else {  // soutirage
-      PuissanceI_M_inst = 0;
-      PuissanceS_M_inst = ((float)((float)(Lecture333[21] * 16777216) + (float)(Lecture333[22] * 65536) + (float)(Lecture333[23] * 256) + (float)Lecture333[24]));
-      PVAI_M_inst = 0;
-      PVAS_M_inst = PVA_M_inst1 + PVA_M_inst2 + PVA_M_inst3;
-      // PhDV61 : on considère que cette puissance active "globale" a duré "delta_temps", et on l'intègre donc pour obtenir pour obtenir une énergie en Wh
- 
-      // --->>> Modification PhDV61
-      delta_Energie = ( (float) delta_temps / 1000.0) * ( PuissanceS_M_inst / 3600.0);
-      
-      Energie_M_Soutiree_double += delta_Energie;
-      Energie_M_Soutiree  = (long) Energie_M_Soutiree_double; // On conserve la partie entière - Energie_M_Soutiree est un long !
+      *pPuissanceI_inst = 0;
+      *pPuissanceS_inst = ((float)((float)(Lecture333[21] * 16777216) + (float)(Lecture333[22] * 65536) + (float)(Lecture333[23] * 256) + (float)Lecture333[24]));
+      *pPVAI_inst = 0;
+      *pPVAS_inst = PVA_M_inst1 + PVA_M_inst2 + PVA_M_inst3;
+      // PhDV61 : on considère que cette puissance active "globale" a duré "delta_temps", et on l'intègre donc pour obtenir une énergie en Wh
+      delta_Energie = ( (float) delta_temps / 1000.0) * ( (*pPuissanceS_inst) / 3600.0);
+
+      *pEnergie_Soutiree_double += delta_Energie;
+      *pEnergie_Soutiree = (long)(*pEnergie_Soutiree_double); // On conserve la partie entière - long !
     }
  
     MK333_dataBrute = "";
@@ -160,11 +160,11 @@ void Lecture_JSY333() {
     else
       MK333_dataBrute += "<br>Phase3 : " + String(Tension_M3) + "V x +" + String(Intensite_M3) + "A = +" + String(int(PVA_M_inst3)) + "VA</br>";
 
-// Modification ordre d'apparition PhDV61
-    if (PVAS_M_inst == 0)
-      MK333_dataBrute += "<br>Puissance apparente injectée : " + String(PVAI_M_inst) + "VA</br>";
+// Modification ordre d'apparition PhDV61. Lecture via pointeurs canal pour rester cohérent.
+    if (*pPVAS_inst == 0)
+      MK333_dataBrute += "<br>Puissance apparente injectée : " + String(*pPVAI_inst) + "VA</br>";
     else
-      MK333_dataBrute += "<br>Puissance apparente soutirée : " + String(PVAS_M_inst) + "VA</br>";
+      MK333_dataBrute += "<br>Puissance apparente soutirée : " + String(*pPVAS_inst) + "VA</br>";
  
       // traces PhDV61
       // MK333_dataBrute += "<br>delta Energie                : " + String(delta_Energie) + "Wh</br>"; 
@@ -175,10 +175,10 @@ void Lecture_JSY333() {
 //  Ajout puissances instantanées PhDV61
     MK333_dataBrute += "<br>PW_M1+2+3:("+String(PW_M1)+")+("+String(PW_M2)+")+("+String(PW_M3)+ ") W</br>";
 
-    if (PuissanceS_M_inst == 0)
-      MK333_dataBrute += "<br>Puissance active injectée    : " + String(PuissanceI_M_inst) + "W</br>";
+    if (*pPuissanceS_inst == 0)
+      MK333_dataBrute += "<br>Puissance active injectée    : " + String(*pPuissanceI_inst) + "W</br>";
     else
-      MK333_dataBrute += "<br>Puissance active soutirée    : " + String(PuissanceS_M_inst) + "W</br>";
+      MK333_dataBrute += "<br>Puissance active soutirée    : " + String(*pPuissanceS_inst) + "W</br>";
 
     if (PVA_M_inst1 != 0)
       MK333_dataBrute += "<br>Facteur de puissance phase 1 : " + String(abs(PW_inst1 / PVA_M_inst1)) + "</br>";
