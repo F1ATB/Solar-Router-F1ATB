@@ -1,4 +1,4 @@
-#define Version  "17.19" // PhDV61
+#define Version  "17.20" // PhDV61
 #define HOSTNAME "RMS-ESP32-"
 
 
@@ -306,6 +306,9 @@
     cela devrait fonctionner ok comme pour le Linky.
     Attention, en cas de téléchargement IDE Arduino, on ne bénéficie pas du stockage-restauration sauf à avoir fait un reset auparavant pour stocker 
     les dernières valeurs d'Energie. Et sinon, mettre à jour "manuellement" le fichier "EnergieMinuit.eng" (comme aussi en cas de panne Elec).
+  - Version 17.20
+    Stockage adresse IP Enphase après decouverte par mDNS
+    Mise à jour accès WPS pour s'adapter à la bibliothèque ESP 3.3.6
  
 
 
@@ -327,6 +330,7 @@
 //Librairies
 #include <Arduino.h>
 #include <WiFi.h>
+#include <esp_wifi.h> // SR19 2026 / accès couche IDF Espressif (bas niveau) pour WPS depuis gestionnaire ESP32 en 3.3.6+
 #include <WiFiClientSecure.h>
 #include <ESPmDNS.h>
 #include <WebServer.h>
@@ -907,59 +911,52 @@ void IRAM_ATTR onTimer() {               //Interruption every 100 micro second
   }
 }
 
-/*** WPS Configurations ***/                                          //SR19
-#define ESP_WPS_MODE WPS_TYPE_PBC                                     //SR19
-esp_wps_config_t wps_config = WPS_CONFIG_INIT_DEFAULT(ESP_WPS_MODE);  //SR19
-bool isGOT_IP = false;                                                //true si IP reçue                                                            //SR19
+/*** WPS Configurations ***/                                                                    //SR19 3.3.6+
+esp_wps_config_t wps_config = WPS_CONFIG_INIT_DEFAULT(WPS_TYPE_PBC);                            //SR19
+bool isGOT_IP = false;  //true si IP reçue                                                      //SR19
 
 void wpsStop() {                                                                                //SR19
   esp_err_t err = esp_wifi_wps_disable();                                                       //SR19
   if (err != ESP_OK) {                                                                          //SR19
     TelnetPrintln("WPS Disable Failed: " + String(err, HEX) + "h -> " + esp_err_to_name(err));  //SR19
   }                                                                                             //SR19
-}  //SR19
+}                                                                                               //SR19
 
-//Evènements WPS/WiFi                                                                                //SR19
-void WiFiEvent(WiFiEvent_t event) {  //SR19
-  switch (event) {
+//Gestionnaire évènements WPS/WiFi                                                              //SR19 3.3.6+
+void WiFiEvent(WiFiEvent_t event, arduino_event_info_t info) {                                  //SR19 3.3.6+
+  switch (event) {                                                                              //SR19
 
-    case ARDUINO_EVENT_WIFI_STA_START:                                                         //SR19
-      TelnetPrintln("WiFi Démarré en Mode Station. Attente WPS Client...");                    //SR19
-      break;                                                                                   //SR19
-    case ARDUINO_EVENT_WIFI_STA_GOT_IP:                                                        //SR19
-      TelnetPrintln("WiFi : " + String(WiFi.SSID()) + " connecté via WPS!");                   //SR19
-      ssid = (WiFi.SSID());                                                                    //Récup ssid                                                             //SR19
-      TelnetPrintln("Récupération IP de " + hostname + " -> " + (WiFi.localIP().toString()));  //SR19
-      TelnetPrintln("Récupération password -> " + String(WiFi.psk()));                         //SR19
-      password = (WiFi.psk());
-      password.trim();                                                                  //Récup password                                                      //SR19
-      isGOT_IP = true;                                                                  /*IP reçue*/
-      EcritureEnROM();                                                                  //SR19
-      break;                                                                            //SR19
-    case ARDUINO_EVENT_WIFI_STA_DISCONNECTED:                                           //SR19
-      TelnetPrintln("Déconnecté. Redémarrage WiFi...");                                 //SR19
-      WiFi.disconnect();                                                                //Forçage reconnexion normale                                               //SR19
-      delay(10);                                                                        //SR19
-      WiFi.reconnect();                                                                 //SR19
-      delay(100);                                                                       //SR19
-      isGOT_IP = false;                                                                 //Réinitialiser l'événement si déconnecté                                    //SR19
-      break;                                                                            //SR19
-    case ARDUINO_EVENT_WPS_ER_SUCCESS:                                                  //SR19
-      TelnetPrintln("WPS réussi! Stop WPS et connexion vers: " + String(WiFi.SSID()));  //SR19
-      wpsStop();                                                                        //Must disable WPS before connecting                                                //SR19
-      WiFi.begin();                                                                     //Connect using credentials from WPS                                             //SR19
-      break;                                                                            //SR19
-    case ARDUINO_EVENT_WIFI_STA_CONNECTED:                                              //SR19
-      TelnetPrintln("WiFi Reconnecté en Mode Station");
-      ssid = WiFi.SSID();     // met à jour le SSID global
-      password = WiFi.psk();  // met à jour le mot de passe global
-      password.trim();        // supprime espaces et caractères indésirables (dont \n, \r, \t)                                                                         //SR19
-      break;                  //SR19
-    default:                  //SR19
-      break;                  //SR19
-  }                           //SR19
-}
+    case ARDUINO_EVENT_WIFI_STA_GOT_IP:                                                         //SR19
+    // password déjà capturé en clair dans WPS_ER_SUCCESS                                       //SR19
+      ssid = WiFi.SSID(); // met à jour le SSID global                                          //SR19
+      password = WiFi.psk(); // met à jour le mot de passe global                               //SR19
+      password.trim(); // supprime espaces et caractères indésirables (dont \n, \r, \t)         //SR19
+      TelnetPrintln("WiFi : " + ssid + " connecté via WPS!");                                   //SR19
+      TelnetPrintln("Récupération IP de " + hostname + " -> " + (WiFi.localIP().toString()));   //SR19
+      TelnetPrintln("Récupération password -> " + password);                                    //SR19
+      EcritureEnROM();                                                                          //SR19
+      isGOT_IP = true;                                                                          //SR19
+      break;                                                                                    //SR19
 
+    case ARDUINO_EVENT_WPS_ER_SUCCESS:                                                          //SR19
+      TelnetPrintln("WPS réussi! Stop WPS et connexion vers: " + String(WiFi.SSID()));          //SR19
+      wpsStop(); //Must disable WPS before connecting                                           //SR19
+      delay(10);                                                                                //SR19
+      //WiFi.begin();     // Connect using credentials from WPS --> H.S. depuis 3.3.6+          //SR19
+      esp_wifi_connect(); // la config WPS est déjà chargée dans l'IDF - bibli <esp_wifi.h>     //SR19 3.3.6+
+      break;                                                                                    //SR19
+
+    case ARDUINO_EVENT_WIFI_STA_DISCONNECTED:                                                   //SR19
+      TelnetPrintln("Déconnecté. Redémarrage WiFi...");                                         //SR19
+      WiFi.reconnect();                                                                         //SR19
+      delay(10);                                                                                //SR19
+      isGOT_IP = false; //Réinitialiser l'événement si déconnecté                               //SR19
+      break;                                                                                    //SR19
+
+    default:                                                                                    //SR19
+      break;                                                                                    //SR19
+  }                                                                                             //SR19
+}    
 
 // SETUP
 //*******
@@ -1195,47 +1192,47 @@ void setup() {
       StockMessage("Connecté par WiFi, addresse IP : " + WiFi.localIP().toString() + " or <a href='http://" + hostname + ".local' >" + hostname + ".local</a>");
     } else {
       /*** WPS SETUP ***/                                    //SR19
-      if (WiFi.scanNetworks() != 0 && WiFi.RSSI(0) > -83) {  //WPS inutile si aucun signal WiFi > -83dBm                                                                        //SR19
-        WiFi.disconnect(false, true);                        //RAZ config.                                                                                                                             //SR19
-        delay(100);                                          //SR19
-        WiFi.mode(WIFI_AP_STA);                              //SR19
-        delay(10);                                           //SR19
-        TelnetPrintln("Tentative de connexion via WPS...");  //SR19
-        WiFi.onEvent(WiFiEvent);                                        //appel évènements WPS/WiFi depuis WiFiEvent(WiFiEvent_t event)                                                                               //SR19
+       WiFi.mode(WIFI_AP_STA);                                           //SR19 3.3.6+
+      delay(10);                                                        //SR19
+      
+      if (WiFi.scanNetworks() != 0 && WiFi.RSSI(0) > -83) { //WPS inutile si aucun signal WiFi > -83dBm  //SR19
+        WiFi.disconnect(false, true); //RAZ config.                     //SR19
+        delay(100);                                                     //SR19
+        TelnetPrintln("Tentative de connexion via WPS...");             //SR19
+        WiFi.onEvent(WiFiEvent); //appel évènements WPS/WiFi depuis WiFiEvent(WiFiEvent_t event, arduino_event_info_t info) //SR19
         delay(10);                                                      //SR19
         esp_wifi_wps_enable(&wps_config);                               //SR19
         esp_wifi_wps_start(0);                                          //SR19
         startMillis = millis();                                         //SR19
-        while (isGOT_IP != true && (millis() - startMillis < 20000)) {  //Attente évènement "GOT_IP" pour récupération: ssid, password et IP                                    //SR19
+        while (!isGOT_IP && (millis() - startMillis < 20000)) {  //Attente évènement "GOT_IP" pour récupération: ssid, password et IP //SR19
           Gestion_LEDs();                                               //SR19
           delay(300);                                                   //SR19
         }                                                               //SR19
         if (WiFi.status() == WL_CONNECTED && ModeReseau < 2) {          //SR19
           RMS_IP[0] = String2IP(WiFi.localIP().toString());             //SR19
-          // Go into software AP and STA modes.                                                                                                                                //SR19
-          StockMessage("Connecté par WiFi via WPS, IP : " + WiFi.localIP().toString() + " nom d'hôte : <a href='http://" + hostname + ".local' >" + hostname + ".local</a>"                                                                      //SR19
+          // Go into software AP and STA modes.                         //SR19
+          StockMessage("Connecté par WiFi via WPS, IP : " + WiFi.localIP().toString() + " nom d'hôte : <a href='http://" + hostname + ".local' >" + hostname + ".local</a>"                                                     //SR19
                                                                                                                                                                " Copiez/collez le nom d'hôte dans votre navigateur. ESP32 en mode AP et STA.");  //SR19
-          LireSerial();                                                                                                                                                                                                                          //SR19
-          WiFi.softAP(ap_default_ssid, ap_default_psk);                                                                                                                                                                                          //on entre en mode AP pour enregistrer et lancer le RMS                                                                //SR19
-        } else {                                                                                                                                                                                                                                 //SR19
-          StockMessage("Echec de connexion WiFi via WPS. ESP32 en mode AP et STA.");                                                                                                                                                             //SR19
-          // Go into software AP and STA modes.                                                                                                                                //SR19
-          LireSerial();                                  //SR19
-          WiFi.softAP(ap_default_ssid, ap_default_psk);  //SR19
-          infoSerieAP();                                 //SR19
-        }                                                //SR19
+          LireSerial();                                                 //SR19
+          WiFi.softAP(ap_default_ssid, ap_default_psk); //on entre en mode AP pour enregistrer et lancer le RMS  //SR19
+        } else {                                                        //SR19
+          StockMessage("Echec de connexion WiFi via WPS. ESP32 en mode AP et STA."); //SR19
+          // Go into software AP and STA modes.                         //SR19
+          LireSerial();                                                 //SR19
+          WiFi.softAP(ap_default_ssid, ap_default_psk);                 //SR19
+          infoSerieAP();                                                //SR19
+        }                                                               //SR19
       } else {
         StockMessage("Pas de connexion WIFI. ESP32 en mode AP et STA.");
         // Go into software AP and STA modes.
-        //WiFi.disconnect();
         delay(100);
-        WiFi.mode(WIFI_AP_STA);
-        delay(10);
+        //WiFi.mode(WIFI_AP_STA);                                       //SR19 3.3.6+
+        //delay(10);                                                    //SR19 3.3.6+
         LireSerial();
         WiFi.softAP(ap_default_ssid, ap_default_psk);
         infoSerieAP();
       }
-      WiFi.scanDelete();  //SR19
+      WiFi.scanDelete(); 
     }
   }
 

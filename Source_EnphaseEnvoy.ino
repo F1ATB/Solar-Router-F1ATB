@@ -22,7 +22,8 @@ void Setup_Enphase() {
     }                                                                                                //SR19
     if (envoyIP.toString() != "0.0.0.0") {                                                           //SR19
       StockMessage("IP Enphase : http://" + String(host) + ".local" + " -> " + envoyIP.toString());  //SR19
-      RMSextIP = ipToInt(envoyIP);                                                                   //IP -> uint32                                                                         //SR19
+      RMSextIP = ipToInt(envoyIP);  
+      EcritureEnROM();                                                                  //IP -> uint32                                                                         //SR19
     } else {                                                                                         //SR19
       StockMessage("Échec! passerelle Enphase envoy déconnectée");                                   //SR19
       return;                                                                                        //SR19
