@@ -479,11 +479,13 @@ function AdaptationSource() {
         case 'ShellyEm':
         case 'ShellyPro':
             txtExt = "Shelly (Pro) Em ";
-            lab_enphaseShelly = `<div class='shem'><strong>Shelly (Pro) Em</strong><br>
-                                 Monophasé : Courant maison sur voie 0,1 ou 2<br>
-                                 Triphasé : mettre 3</div>
+            lab_enphaseShelly = `<div class='shem'><strong>Shelly (Pro) Em , Shelly 3EM-63 Gen3</strong><br>
+                                 Monophasé : Puissance maison sur voie 0,1 ou 2<br>
+                                 Triphasé : voie 3</div>
                                  <div class='shem'><Strong>Shelly Em Gen3</strong><br>
-                                 Courant maison sur voie 0 = 30, voie 1 = 31</div>`;
+                                 Puissance maison sur voie 0 = 30, voie 1 = 31<br>
+                                 Triphasé 3EM-63 : voie = 63</div>`;
+                                 
             break;
     }
     

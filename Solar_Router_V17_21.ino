@@ -1,4 +1,4 @@
-#define Version  "17.20" // PhDV61
+#define Version  "17.21" // 
 #define HOSTNAME "RMS-ESP32-"
 
 
@@ -309,6 +309,8 @@
   - Version 17.20
     Stockage adresse IP Enphase après decouverte par mDNS
     Mise à jour accès WPS pour s'adapter à la bibliothèque ESP 3.3.6
+  - Version 17.21
+    Prise en compte Shelly 3EM-63 Gen3 Triphasé
  
 
 
@@ -316,7 +318,7 @@
   https://f1atb.fr  Section Domotique / Home Automation
 
   
-  F1ATB Mai 2026
+  F1ATB Juin 2026
 
   GNU Affero General Public License (AGPL) / AGPL-3.0-or-later
 
