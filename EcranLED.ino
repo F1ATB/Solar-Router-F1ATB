@@ -13,7 +13,7 @@ void Init_LED_OLED(void) {
     oled.LGFXoled_init(LEDyellow[LEDgroupe], LEDgreen[LEDgroupe], SD);  //SDA , SCL et SSD1306 ou SH1106
     // put your setup code here, to run once:
     oled.begin();
-    oled.setRotation(2);
+    oled.setRotation(rotationOLED);
     oled.setBrightness(255);
     oled.setTextFont(1);
     oled.setTextColor(TFT_WHITE, TFT_BLACK);
@@ -32,8 +32,8 @@ void Gestion_LEDs() {
   int retard_min = 100;
   int retardI;
   cptLEDyellow++;
-  if ((WiFi.status() != WL_CONNECTED && (ESP32_Type < 10 || ESP32_Type==101)) || (EthernetBug > 0 && ESP32_Type == 10)) {  // Attente connexion au Wifi ou ethernet
-    if (WiFi.getMode() == WIFI_STA) {                                                                 // en  Station mode
+  if ((WiFi.status() != WL_CONNECTED && (ESP32_Type < 10 || ESP32_Type == 101)) || (EthernetBug > 0 && ESP32_Type == 10)) {  // Attente connexion au Wifi ou ethernet
+    if (WiFi.getMode() == WIFI_STA) {                                                                                        // en  Station mode
       cptLEDyellow = (cptLEDyellow + 6) % 10;
       cptLEDgreen = cptLEDyellow;
     } else {  //AP Mode
@@ -54,8 +54,8 @@ void Gestion_LEDs() {
 
 
   if (LEDgroupe > 0 && LEDgroupe < 10) {
-    int L = 0, H = 1;  //LED classique
-    if (LEDgroupe == 2 || LEDgroupe == 4) { //Inversé pour LED sur carte graphique GPIOs 4,16,17
+    int L = 0, H = 1;                        //LED classique
+    if (LEDgroupe == 2 || LEDgroupe == 4) {  //Inversé pour LED sur carte graphique GPIOs 4,16,17
       L = 1;
       H = 0;
     }
@@ -75,14 +75,18 @@ void Gestion_LEDs() {
     if (cptLEDyellow == 5) {  //New puissance dispo
       oled.fillRect(0, 0, oled.width(), 16, TFT_BLACK);
       int Puissance = PuissanceS_M - PuissanceI_M;
-      PrintCentreO(String(Puissance) + "W", -1, 0, 2);
-      int teta = 360 * Puissance / 5000;
-      if (Puissance >= 0) {
-        oled.fillArc(8, 8, 0, 7, -90, teta - 90, TFT_WHITE);
+      if (rotationOLED == 0 || rotationOLED == 2) {
+        PrintCentreO(String(Puissance) + "W", -1, 0, 2);
+        int teta = 360 * Puissance / 5000;
+        if (Puissance >= 0) {
+          oled.fillArc(8, 8, 0, 7, -90, teta - 90, TFT_WHITE);
+        } else {
+          oled.fillArc(8, 8, 0, 7, teta - 90, -90, TFT_WHITE);
+        }
       } else {
-        oled.fillArc(8, 8, 0, 7, teta - 90, -90, TFT_WHITE);
+        PrintGaucheO(String(Puissance) + "W", 0, 0, 1);
       }
-      PrintDroiteO(String(int(100 -retard_min )) + "%", oled.width(), 8, 1);
+      PrintDroiteO(String(int(100 - retard_min)) + "%", oled.width(), 8, 1);
     }
     if (cptLEDyellow > 200) {
       oled.fillRect(0, 0, oled.width(), 16, TFT_BLACK);
@@ -92,14 +96,13 @@ void Gestion_LEDs() {
 }
 
 void PrintScroll(String m) {
-  TelnetPrintln( m);
+  TelnetPrintln(m);
   if (LEDgroupe >= 10) {
     oled.setTextSize(1);
     oled.setTextScroll(true);
     oled.println(Ascii(m));
     oled.setTextScroll(false);
   }
-  
 }
 void PrintCentreO(String S, int X, int Y, float Sz) {
   if (X < 0) X = oled.width() / 2;
@@ -111,4 +114,8 @@ void PrintDroiteO(String S, int X, int Y, float Sz) {
   oled.setTextSize(Sz);
   int W = oled.textWidth(S);
   oled.drawString(S, X - W - 4, Y);
+}
+void PrintGaucheO(String S, int X, int Y, float Sz) {
+  oled.setTextSize(Sz);
+  oled.drawString(S, X, Y);
 }

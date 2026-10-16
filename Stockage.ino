@@ -298,6 +298,7 @@ void DeserializeConfiguration(String json) {
   ntpServer = conf["ntpServer"] | ntpServer;
   ESP32_Type = conf["ESP32_Type"];
   LEDgroupe = conf["LEDgroupe"];
+  rotationOLED = conf["rotationOLED"] ;
   rotation = conf["rotation"];
   DurEcran = conf["DurEcran"];
   clickPresence = conf["clickPresence"].isNull() ? clickPresence : conf["clickPresence"];
@@ -429,6 +430,7 @@ String SerializeConfiguration() {
   conf["ntpServer"] = ntpServer;
   conf["ESP32_Type"] = ESP32_Type;
   conf["LEDgroupe"] = LEDgroupe;
+  conf["rotationOLED"] = rotationOLED;
   conf["rotation"] = rotation;
   conf["DurEcran"] = DurEcran;
   conf["clickPresence"] = clickPresence;

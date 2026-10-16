@@ -35,7 +35,7 @@ void LectureLinky() {  //Lecture port série du LINKY .
     boucle_appel_Linky = 0;
     V = MySerial.read();
     DataRawLinky[IdxDataRawLinky] = char(V);
-    IdxDataRawLinky = (IdxDataRawLinky + 1) % 10000;
+    IdxDataRawLinky = (IdxDataRawLinky + 1) % 4000;
     switch (V) {
       case 2:  //STX (Start Text)
         break;
@@ -71,7 +71,7 @@ void LectureLinky() {  //Lecture port série du LINKY .
                 checksum += (int)DataRawLinky[IdxBufDecodLinky];
               }
             }
-            IdxBufDecodLinky = (IdxBufDecodLinky + 1) % 10000;
+            IdxBufDecodLinky = (IdxBufDecodLinky + 1) % 4000;
             if (checkLinky == -1 && nb_tab == 2) {
               checkLinky = (int)DataRawLinky[IdxBufDecodLinky];
               checksum += 18;            //2 tabulations

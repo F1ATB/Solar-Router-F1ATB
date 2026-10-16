@@ -158,7 +158,7 @@ void Init_Server() {
 
 void handleRoot() {  // Pages principales
 
-  server.send(200, "text/html", MainHtml);
+  server.send_P(200, "text/html", MainHtml);
 }
 void handleWifi() {
   lectureCookie(ConnectAP_Html);
@@ -173,23 +173,23 @@ void handleMainJS1() {                  // Code Javascript
 }
 void handleMainJS2() {  // Code Javascript
   CacheEtClose(300);
-  server.send(200, "text/javascript", MainJS2);  // Javascript code
+  server.send_P(200, "text/javascript", MainJS2);  // Javascript code
 }
 void handleMainJS3() {  // Code Javascript
   CacheEtClose(300);
-  server.send(200, "text/javascript", MainJS3);  // Javascript code
+  server.send_P(200, "text/javascript", MainJS3);  // Javascript code
 }
 void handleBrute() {  // Page données brutes
   CacheEtClose(300);
-  server.send(200, "text/html", PageBrute);
+  server.send_P(200, "text/html", PageBrute);
 }
 void handleBruteJS1() {  // Code Javascript
   CacheEtClose(300);
-  server.send(200, "text/javascript", PageBruteJS1);  // Javascript code
+  server.send_P(200, "text/javascript", PageBruteJS1);  // Javascript code
 }
 void handleBruteJS2() {  // Code Javascript
   CacheEtClose(300);
-  server.send(200, "text/javascript", PageBruteJS2);  // Javascript code
+  server.send_P(200, "text/javascript", PageBruteJS2);  // Javascript code
 }
 void handleAjaxRMS() {  // Envoi des dernières données  brutes reçues du RMS
   String S = "";
@@ -261,7 +261,7 @@ void handleAjaxRMS() {  // Envoi des dernières données  brutes reçues du RMS
       S += GS;
       while (LastIdx != IdxDataRawLinky) {
         S += String(DataRawLinky[LastIdx]);
-        LastIdx = (1 + LastIdx) % 10000;
+        LastIdx = (1 + LastIdx) % 4000;
       }
       S += GS + String(IdxDataRawLinky);
     }
@@ -392,7 +392,7 @@ void handleAjaxESP32() {  // Envoi des dernières infos sur l'ESP32
 
   server.send(200, "text/html", S);
 }
-void handleAjaxHisto1an() {  // Envoi Historique Energie quotiiienne sur 1 an 370 points
+void handleAjaxHisto1an() {  
   envoyerHistoriqueEnergie(server);  // envoi direct depuis la fonction qui produit les données
 }
 void handleAjaxData() {  // Données page d'accueil
@@ -564,19 +564,19 @@ void handleActions() {
 }
 void handleActionsJS1() {
   CacheEtClose(300);
-  server.send(200, "text/javascript", ActionsJS1);
+  server.send_P(200, "text/javascript", ActionsJS1);
 }
 void handleActionsJS2() {
   CacheEtClose(300);
-  server.send(200, "text/javascript", ActionsJS2);
+  server.send_P(200, "text/javascript", ActionsJS2);
 }
 void handleActionsJS3() {
   CacheEtClose(300);
-  server.send(200, "text/javascript", ActionsJS3);
+  server.send_P(200, "text/javascript", ActionsJS3);
 }
 void handleActionsJS4() {
   CacheEtClose(300);
-  server.send(200, "text/javascript", ActionsJS4);
+  server.send_P(200, "text/javascript", ActionsJS4);
 }
 
 
@@ -653,15 +653,15 @@ void handleCleUpdate() {
 }
 void handleParaJS1() {
   CacheEtClose(300);
-  server.send(200, "text/javascript", ParaJS1);
+  server.send_P(200, "text/javascript", ParaJS1);
 }
 void handleParaJS2() {
   CacheEtClose(300);
-  server.send(200, "text/javascript", ParaJS2);
+  server.send_P(200, "text/javascript", ParaJS2);
 }
 void handleParaCommunJS() {
   CacheEtClose(300);
-  server.send(200, "text/javascript", ParaCommunJS);
+  server.send_P(200, "text/javascript", ParaCommunJS);
 }
 void handleParaFixe() {  //Paramètres stockés en fichier
   File file = LittleFS.open("/parametres.json", "r");
@@ -879,7 +879,7 @@ void handleCouleurs() {
 }
 void handleCommunCouleurJS() {  // Code Javascript
   CacheEtClose(300);
-  server.send(200, "text/javascript", CommunCouleurJS);  // Javascript code
+  server.send_P(200, "text/javascript", CommunCouleurJS);  // Javascript code
 }
 void handleCouleursAjax() {
 
@@ -913,13 +913,13 @@ void handleCommunCSS() {
 }
 
 void handleFavicon() {
-  server.send(200, "image/svg+xml", Favicon);
+  server.send_P(200, "image/svg+xml", Favicon);
 }
 void handleFavicon192() {
-  server.send(200, "image/svg+xml", Favicon192);
+  server.send_P(200, "image/svg+xml", Favicon192);
 }
 void handleManifest() {
-  server.send(200, "application/json", Manifest);
+  server.send_P(200, "application/json", Manifest);
 }
 void handleNotFound() {  // Page Web pas trouvé
   String message = "Fichier non trouvé\n\n";

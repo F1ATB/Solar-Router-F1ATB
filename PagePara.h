@@ -237,6 +237,15 @@ const char *ParaHtml = R"====(
             <option value="13">SH1106 sda=g4, scl=g32</option>
           </select>
         </div>
+        <div class="ligne" id="RotOLED">
+          <label for="rotationOLED">Format écran OLED</label>
+          <select id="rotationOLED" onclick="checkDisabled();">
+            <option value="0" >Paysage (0°)</option>
+            <option value="1">Portrait (90°)</option>
+            <option value="2" selected>Paysage (180°)</option>
+            <option value="3">Portrait (270°)</option>
+          </select>
+        </div>
 
         <div class="ligne" id="pTemp">
           <label for="PTemp">Capteur(s) de température</label>

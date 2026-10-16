@@ -138,13 +138,14 @@ function SetParaFixe() {
     GID("pTriac").value = F.pTriac;
     GID("ESP").value = F.ESP32_Type;
     GID("pLED").value = F.LEDgroupe;
+    GID("rotationOLED").value = F.rotationOLED;
     GID("Rot").value = F.rotation;
     GID("DurEcran").value = F.DurEcran;
     GID("clickPresence").value = F.clickPresence;
     GID("NumPageBoot").value = F.NumPageBoot;
     GID("pUxI").value = F.pUxI;
     GID("PTemp").value = F.pTemp;
-    GID("EstimCACSI").checked = (F.ReacCACSI == 100)? true:false; 1;
+    GID("EstimCACSI").checked = (F.ReacCACSI == 100)? true:false; 
 
     // --- Paramètres de Température (LesParas[1] à LesParas[4]) ---
     const NbCanauxTemp = 4;
@@ -191,6 +192,7 @@ function SendValues() {
   F.ModeReseau = GID("ModeW").value;
   F.ESP32_Type = GID("ESP").value;
   F.LEDgroupe = GID("pLED").value;
+  F.rotationOLED = GID("rotationOLED").value;
   F.rotation = GID("Rot").value;
   F.DurEcran = GID("DurEcran").value;
   F.clickPresence = GID("clickPresence").value;
@@ -354,6 +356,10 @@ function checkDisabled() {
     if (GID("sources").options[11]) {
         GID("sources").options[11].disabled = isDisabledExpert;
     }
+
+    // Visibilité rotation OLED
+    F.LEDgroupe = GID("pLED").value;
+    GID("RotOLED").style.display = (F.LEDgroupe<10) ? "none" : "table-row";
 
     // Désactivation des options de température par canal
     for (let i = 0; i < 4; i++) {
