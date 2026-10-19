@@ -153,7 +153,7 @@ void LectureShellyProEm() {
     PowerFactor_M = pf;
     Tension_M = voltage;
     Pva_valide = true;
-  } else if (Shelly_Name == "shellypro3em" && Shelly_Triphase_As_Monophase) {
+  } else if (Shelly_Name.indexOf("shellypro3em") == 0 && Shelly_Triphase_As_Monophase) {  // Une seule phase mesurée
     // on utilise le code ASCII de a (97) pour obtenir le prefix de la phase. Voie 0=a 1=b 2=c
     Shelly_Phase = char(voie + 97);
 
@@ -192,7 +192,7 @@ void LectureShellyProEm() {
     PowerFactor_M = pf;
     Tension_M = voltage;
     Pva_valide = true;
-  } else if (Shelly_Name == "shellypro3em") {
+  } else if (Shelly_Name.indexOf("shellypro3em") == 0) {
     // 3 em Monophasé : Voie != 3
     ShEm_dataBrute = "<strong>" + Shelly_Name + "</strong><br>" + Shelly_Data;
 
