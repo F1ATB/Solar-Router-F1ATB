@@ -332,6 +332,7 @@
   - Version 17.30
     Affichage de la raison du dernier reset suivant méthode recommandée
     Choix rotation écran OLED
+    Shelly Pro 3EM (et variantes shellypro3em*, Pro 3EM EcoFlow) en triphasé, monophasé ou mesure d'une seule phase (voie 0, 1 ou 2 en profil triphasé)
  
 
 
