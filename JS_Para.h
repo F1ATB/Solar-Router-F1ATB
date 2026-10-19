@@ -497,7 +497,8 @@ function AdaptationSource() {
             txtExt = "Shelly (Pro) Em ";
             lab_enphaseShelly = `<div class='shem'><strong>Shelly (Pro) Em , Shelly 3EM-63 Gen3</strong><br>
                                  Monophasé : Puissance maison sur voie 0,1 ou 2<br>
-                                 Triphasé : voie 3</div>
+                                 Triphasé : voie 3<br>
+                                 Pro 3EM en profil triphasé : une seule phase sur voie 0 (A), 1 (B) ou 2 (C)</div>
                                  <div class='shem'><Strong>Shelly Em Gen3</strong><br>
                                  Puissance maison sur voie 0 = 30, voie 1 = 31<br>
                                  Triphasé 3EM-63 : voie = 63</div>`;
