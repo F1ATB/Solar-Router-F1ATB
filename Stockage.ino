@@ -375,6 +375,7 @@ void DeserializeConfiguration(String json) {
       LesActions[iAct].PID = obj["PID"];
     }
     LesActions[iAct].ForceOuvre = !obj["ForceOuvre"].isNull() ? obj["ForceOuvre"] : 100;
+    LesActions[iAct].ForceOuvre=constrain(LesActions[iAct].ForceOuvre,0,100);
     LesActions[iAct].NbPeriode = obj["NbPeriode"];
 
     Hdeb = 0;
@@ -389,6 +390,7 @@ void DeserializeConfiguration(String json) {
       LesActions[iAct].Vmin[i] = objP["Vmin"];
       LesActions[iAct].Vmax[i] = objP["Vmax"];
       LesActions[iAct].ONouvre[i] = !objP["ONouvre"].isNull() ? objP["ONouvre"] : 100;
+      LesActions[iAct].ONouvre[i]=constrain(LesActions[iAct].ONouvre[i],0,100);
       LesActions[iAct].Tinf[i] = objP["Tinf"];
       LesActions[iAct].Tsup[i] = objP["Tsup"];
       LesActions[iAct].Hmin[i] = objP["Hmin"];

@@ -1,4 +1,4 @@
-#define Version "17.30"  //
+#define Version "17.31"  //
 #define HOSTNAME "RMS-ESP32-"
 
 
@@ -332,6 +332,9 @@
   - Version 17.30
     Affichage de la raison du dernier reset suivant méthode recommandée
     Choix rotation écran OLED
+  - Version 17.31
+    Limite à 100% ouverture forcée
+    Relance recherche de l'heure si non valide
  
 
 
@@ -339,12 +342,12 @@
   https://f1atb.fr  Section Domotique / Home Automation
 
   
-  F1ATB Août 2026
+  F1ATB Novembre 2026
 
   GNU Affero General Public License (AGPL) / AGPL-3.0-or-later
 
   Arduino IDE 2.3.10
-  Espressif ESP V3.3.11
+  Espressif ESP V3.3.12
   Compilation avec Partition Scheme : custom 
 
 
@@ -437,17 +440,17 @@ String Source_data = "NotDef";
 String SerialIn = "";
 String hostname = "";
 byte dhcpOn = 1;
-byte ModePara = 0;                                                      //0 = Minimal, 1= Expert
-byte ModeReseau = 0;                                                    //0 = Internet, 1= LAN only, 2 =AP pas de réseau
-byte ESP32_Type = 0;                                                    //0=Inconnu,1=Wroom seul,2=Wroom 1 relais,3=Wroom 4 relais,
-                                                                        //4 = Ecran 320*240 ILI9341/BL21 2.8pouces
-                                                                        //5 = Ecran 320*240 ST7789/BL21  2.8pouces
-                                                                        //6 = Ecran 320*240 ILI9341/BL27 2.4pouces
-                                                                        //7 = Ecran 320*240 ST7789/BL27  2.4pouces
-                                                                        //8 = Ecran 320*240 ST7789/BL27  2.4pouces capacitif
-                                                                        //9 = Ecran 320*240 ST7789/BL27  2.8pouces capacitif
-                                                                        //10 = ESP32-ETH01
-byte LEDgroupe = 0;                                                     //0:pas de LED,1à9 pour les LED. 10 et 11 pour les écrans  OLED
+byte ModePara = 0;    //0 = Minimal, 1= Expert
+byte ModeReseau = 0;  //0 = Internet, 1= LAN only, 2 =AP pas de réseau
+byte ESP32_Type = 0;  //0=Inconnu,1=Wroom seul,2=Wroom 1 relais,3=Wroom 4 relais,
+                      //4 = Ecran 320*240 ILI9341/BL21 2.8pouces
+                      //5 = Ecran 320*240 ST7789/BL21  2.8pouces
+                      //6 = Ecran 320*240 ILI9341/BL27 2.4pouces
+                      //7 = Ecran 320*240 ST7789/BL27  2.4pouces
+                      //8 = Ecran 320*240 ST7789/BL27  2.4pouces capacitif
+                      //9 = Ecran 320*240 ST7789/BL27  2.8pouces capacitif
+                      //10 = ESP32-ETH01
+byte LEDgroupe = 0;   //0:pas de LED,1à9 pour les LED. 10 et 11 pour les écrans  OLED
 byte rotationOLED = 2;
 byte LEDyellow[] = { 0, 18, 4, 2, 4, 0, 0, 0, 0, 0, 18, 4, 18, 4 };     //Ou SDA pour OLED
 byte LEDgreen[] = { 0, 19, 16, 4, 17, 0, 0, 0, 0, 0, 19, 32, 19, 32 };  //ou SCL pour OLED
@@ -503,6 +506,7 @@ int16_t old_Minute = 0;
 byte Horloge = 0;  //0=Internet, 1=Linky, 2=Interne, 3=IT 10ms/triac, 4=IT 20ms, 5=externe
 byte idxFuseau = 0;
 String ntpServer = "";
+extern const char *ntpServer1 = "fr.pool.ntp.org";
 bool LastRecordConf = false;
 
 // ***************************
@@ -996,7 +1000,7 @@ void setup() {
   //Reset Reason
   Serial.println("\n--- ANALSE DU DERNIER BOOT ---");
 
-print_reset_reason();
+  print_reset_reason();
 
   Serial.println("--------------------------------\n");
 
@@ -1625,6 +1629,14 @@ void loop() {
     JourHeureChange();
 
     TelnetPrintln("\nDate : " + DATE);
+    if (ModeReseau == 0 && WiFi.status() == WL_CONNECTED && WiFi.dnsIP(0).toString().indexOf(':') >= 0) {
+      IPAddress ipTest;
+      if (WiFi.hostByName(ntpServer1, ipTest) != 1) {  // le DNS IPv6 ne résout pas
+        WiFi.setDNS(WiFi.gatewayIP(), IPAddress(8, 8, 8, 8));
+        StockMessage("DNS IPv6 inopérant : bascule sur un DNS IPv4");
+        if (Horloge == 0 && !HeureValide) InitHeure();  // relance la synchro NTP
+      }
+    }
     if (ESP32_Type < 10 || ESP32_Type == 101) {  //ESP32 en WIFI
       if (WiFi.getMode() == WIFI_STA) {
         if (WiFi.waitForConnectResult(10000) != WL_CONNECTED) {
@@ -1975,38 +1987,37 @@ void H_Ouvre_Equivalent(unsigned long dt) {
   }
 }
 
-void print_reset_reason()
-{
-    esp_reset_reason_t reason = esp_reset_reason();
-    String S="";
-    switch (reason) {
-        case ESP_RST_POWERON:
-            S="Power ON";
-            break;
-        case ESP_RST_SW:
-            S="Software reset";
-            break;
-        case ESP_RST_PANIC:
-            S="Panic / crash";
-            break;
-        case ESP_RST_INT_WDT:
-            S="Interrupt Watchdog";
-            break;
-        case ESP_RST_TASK_WDT:
-            S="Task Watchdog";
-            break;
-        case ESP_RST_WDT:
-            S="Watchdog";
-            break;
-        case ESP_RST_DEEPSLEEP:
-            S="Deep Sleep";
-            break;
-        case ESP_RST_BROWNOUT:
-            S="Brownout";
-            break;
-        default:
-            S="Autre cause";
-            break;
-    }
-    StockMessage("Dernier reset " +S);
+void print_reset_reason() {
+  esp_reset_reason_t reason = esp_reset_reason();
+  String S = "";
+  switch (reason) {
+    case ESP_RST_POWERON:
+      S = "Power ON";
+      break;
+    case ESP_RST_SW:
+      S = "Software reset";
+      break;
+    case ESP_RST_PANIC:
+      S = "Panic / crash";
+      break;
+    case ESP_RST_INT_WDT:
+      S = "Interrupt Watchdog";
+      break;
+    case ESP_RST_TASK_WDT:
+      S = "Task Watchdog";
+      break;
+    case ESP_RST_WDT:
+      S = "Watchdog";
+      break;
+    case ESP_RST_DEEPSLEEP:
+      S = "Deep Sleep";
+      break;
+    case ESP_RST_BROWNOUT:
+      S = "Brownout";
+      break;
+    default:
+      S = "Autre cause";
+      break;
+  }
+  StockMessage("Dernier reset " + S);
 }

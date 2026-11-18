@@ -1,7 +1,7 @@
 // Heure et Date
 #define MAX_SIZE_T 80
 
-const char *ntpServer1 = "fr.pool.ntp.org";
+
 const char *ntpServer2 = "time.nist.gov";
 
 unsigned short Int_Last_10Millis = 0;                                                                      // Europe Centrale                                                                                  //-1=inconnu,0=dimache,1=lundi...
